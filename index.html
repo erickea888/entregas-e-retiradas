@@ -327,8 +327,67 @@
   .mc-parada.visitada{opacity:.8;}
   .mc-parada.atual{border-color:var(--accent);}
   .mc-parada-topo{display:flex; justify-content:space-between; align-items:flex-start; gap:8px; flex-wrap:wrap;}
-  .mc-chegada{font-size:12px; font-weight:700; color:var(--accent-2);}
   .mc-parada .mc-botoes{margin-top:10px;}
+
+  /* Barra enxuta do motorista e corrida atual em destaque */
+  .mc-barra{display:flex; align-items:center; gap:8px; margin-bottom:10px;}
+  .mc-barra-nome{flex:1; min-width:0; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .mc-barra-btn{
+    min-height:44px; padding:0 12px; display:inline-flex; align-items:center; border-radius:9px; border:1px solid var(--border);
+    background:var(--panel); color:var(--text); font-size:14px; font-weight:600; font-family:inherit; cursor:pointer; text-decoration:none; flex:none;
+  }
+  .mc-barra-btn:hover{border-color:var(--accent); color:var(--accent);}
+  .mc-resumo{margin:0 0 14px; font-size:13px; color:var(--muted);}
+  .mc-resumo:empty{display:none;}
+  .mc-card.mc-atual{border:2px solid var(--accent); border-left-width:6px; box-shadow:0 6px 20px rgba(59,130,246,.12);}
+  .mc-atual-rot{font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); margin-bottom:-6px;}
+  .mc-end-l1{font-size:19px; font-weight:800; line-height:1.3; margin-top:6px; overflow-wrap:anywhere;}
+  .mc-end-l2{font-size:15px; font-weight:600; margin-top:2px; overflow-wrap:anywhere;}
+  .mc-end-cep{font-size:12px; color:var(--muted); margin-top:2px;}
+  .mc-nav{display:flex; flex-direction:column; gap:4px;}
+  .mc-navegar{min-height:52px; font-size:16px;}
+  .mc-link{
+    align-self:center; min-height:40px; padding:0 8px; background:none; border:none; color:var(--accent);
+    font-size:13px; font-weight:600; text-decoration:underline; cursor:pointer; font-family:inherit;
+  }
+  .mc-passos{display:flex; gap:6px; align-items:center; flex-wrap:wrap;}
+  .mc-passos span{
+    width:28px; height:28px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:700; border:2px solid var(--border); color:var(--muted); background:var(--panel);
+  }
+  .mc-passos span.feito{background:var(--accent-2); border-color:var(--accent-2); color:#fff;}
+  .mc-passos span.atual{border-color:var(--accent); color:var(--accent);}
+  /* Ação principal fixa embaixo (zona do polegar) */
+  .mc-acao-fixa{
+    position:sticky; bottom:0; z-index:30; display:flex; flex-direction:column; gap:4px; margin-top:16px;
+    padding:10px 0 calc(10px + env(safe-area-inset-bottom)); background:var(--bg); border-top:1px solid var(--border);
+  }
+  .mc-acao-fixa .mc-btn{min-height:56px; font-size:17px;}
+  .mc-acao-ctx{text-align:center; font-size:12px; color:var(--muted);}
+  /* Janela de confirmação / escolha de app */
+  .mc-sheet{width:min(480px,94vw) !important;}
+  .mc-sheet .modal-body{display:flex; flex-direction:column; gap:14px; overscroll-behavior:contain;}
+  .mc-sheet .form-field input, .mc-sheet .form-field textarea{font-size:16px; min-height:44px;}
+  .mc-sheet-end .mc-end-l1{font-size:17px;}
+  .mc-sheet-rodape .mc-btn{flex:1; min-height:52px; font-size:16px; width:auto;}
+  .mc-apps{display:grid; gap:10px;}
+  .mc-apps .mc-btn{min-height:56px; font-size:17px;}
+  .mc-apps .mc-btn.ativo{border-color:var(--accent); color:var(--accent);}
+  .mc-foto-prev{display:flex; align-items:center; gap:10px; margin-top:8px;}
+  .mc-foto-prev img{width:96px; height:96px; object-fit:cover; border-radius:8px; border:1px solid var(--border);}
+  .comprovante{margin-top:6px; font-size:12.5px;}
+  .comp-tit{color:var(--accent-2); font-weight:700;}
+  .comp-obs{color:var(--muted); margin-top:2px; white-space:pre-wrap; overflow-wrap:anywhere;}
+  .comp-foto img{display:block; margin-top:6px; width:84px; height:84px; object-fit:cover; border-radius:8px; border:1px solid var(--border);}
+  @media (max-width:900px){
+    /* No celular o motorista só vê a barra dele: some o topo do sistema e as abas */
+    body.modo-motorista .topbar, body.modo-motorista .nav-mobile{display:none;}
+    body.modo-motorista .page-content{padding-top:12px; padding-bottom:0;}
+  }
+  @media (max-width:700px){
+    .mc-sheet-backdrop{padding:0; align-items:flex-end;}
+    .mc-sheet{width:100% !important; max-height:92dvh; border-radius:16px 16px 0 0;}
+  }
   @media (max-width:420px){
     .mc-card{padding:14px 12px;}
     .mc-btn{font-size:14px;}
@@ -489,10 +548,17 @@
     <div class="page-content">
 
       <div id="vistaMotorista" hidden>
-        <div class="page-header-row mc-topo">
+        <!-- Barra enxuta do motorista (depois de entrar): nome, trocar, tema e volta ao painel -->
+        <div class="mc-barra" id="mcBarra" hidden>
+          <span class="mc-barra-nome">🧭 <b id="mcBarraNome"></b></span>
+          <button type="button" class="mc-barra-btn" id="mcTrocar">Trocar</button>
+          <button type="button" class="mc-barra-btn" id="mcTema" aria-label="Alternar tema claro/escuro">🌓</button>
+          <a class="mc-barra-btn" href="#painel">Painel</a>
+        </div>
+        <div class="page-header-row mc-topo" id="mcEntrar">
           <div>
             <h1>Minhas corridas</h1>
-            <p class="sub" id="mcResumo">Visão do motorista: aceite as corridas, siga as paradas e conclua pelo celular.</p>
+            <p class="sub">Visão do motorista: aceite as corridas, siga as paradas e conclua pelo celular.</p>
           </div>
           <div class="mc-login">
             <label for="mcMotorista">Entrar como</label>
@@ -500,7 +566,10 @@
             <span class="form-hint">Login simulado — na versão real cada motorista entra com a própria conta.</span>
           </div>
         </div>
+        <p class="mc-resumo" id="mcResumo"></p>
         <div id="mcConteudo"></div>
+        <!-- Ação principal sempre embaixo, onde o polegar alcança -->
+        <div class="mc-acao-fixa" id="mcAcaoFixa" hidden></div>
       </div>
 
       <div id="vistaPainel">
@@ -717,6 +786,18 @@
   </div>
 </div>
 
+<!-- Janela de baixo (celular) da tela do motorista: confirmar chegada e escolher o app de navegação -->
+<div class="modal-backdrop mc-sheet-backdrop" id="mcSheet">
+  <div class="modal mc-sheet" role="dialog" aria-modal="true" aria-labelledby="mcSheetTitulo">
+    <div class="modal-header">
+      <h3 id="mcSheetTitulo"></h3>
+      <button type="button" class="modal-close" id="mcSheetFechar" aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal-body" id="mcSheetCorpo"></div>
+    <div class="modal-footer mc-sheet-rodape" id="mcSheetRodape"></div>
+  </div>
+</div>
+
 <div class="modal-backdrop" id="modalBackdropEr">
   <div class="modal" style="width:min(680px,94vw);">
     <div class="modal-header">
@@ -857,6 +938,17 @@ function paradasDaViagem(v){
   if(v.paradas && v.paradas.length) return v.paradas;
   return [{endereco:v.origem||""}, {endereco:v.destino||""}];
 }
+// O que o motorista registrou na parada (chegada, coleta/entrega, quem recebeu, observação e foto).
+const ACAO_PARADA_LABEL = {coletado:"Material coletado", feito:"Parada feita", entregue:"Entregue"};
+function htmlComprovanteParada(p){
+  if(!p.chegadaEm) return "";
+  const c = p.comprovante || {};
+  const quem = c.recebidoPor ? ` a ${esc(c.recebidoPor)}` : "";
+  const titulo = c.acao ? `✓ ${ACAO_PARADA_LABEL[c.acao] || "Feito"}${quem} às ${fmtHora(p.chegadaEm)}` : `✓ Motorista chegou às ${fmtHora(p.chegadaEm)}`;
+  const temFoto = c.foto && typeof c.foto.dataUrl === "string" && c.foto.dataUrl.startsWith("data:image/");
+  const foto = temFoto ? `<a class="comp-foto" href="${esc(c.foto.dataUrl)}" download="${esc(c.foto.name || "comprovante.jpg")}" title="Baixar foto"><img src="${esc(c.foto.dataUrl)}" alt="Foto do comprovante"></a>` : "";
+  return `<div class="comprovante"><div class="comp-tit">${titulo}</div>${c.obs ? `<div class="comp-obs">${esc(c.obs)}</div>` : ""}${foto}</div>`;
+}
 function nIntermed(v){ return Math.max(0, paradasDaViagem(v).length - 2); }
 function renderPercursoDrawer(v){
   const ps = paradasDaViagem(v);
@@ -865,7 +957,7 @@ function renderPercursoDrawer(v){
     const anexos = (p.anexos||[]).length
       ? `<ul class="anexo-lista">${p.anexos.map(a=>`<li><a href="${esc(a.dataUrl)}" download="${esc(a.name)}">📎 ${esc(a.name)}</a><span style="color:var(--muted); font-size:11px;">${Math.max(1, Math.round((a.size||0)/1024))} KB</span></li>`).join("")}</ul>`
       : "";
-    const chegada = p.chegadaEm ? `<div class="table-subtext" style="color:var(--accent-2); font-weight:600;">✓ Motorista chegou às ${fmtHora(p.chegadaEm)}</div>` : "";
+    const chegada = htmlComprovanteParada(p);
     return `<div class="parada-card"><span class="parada-tag ${tipo}">${TIPO_PARADA_LABEL[tipo]}</span><div style="font-weight:600; font-size:13px;">${esc(enderecoCompleto(p))}</div>${chegada}${p.instrucoes ? `<div class="er-obs" style="margin:8px 0 0;">${esc(p.instrucoes)}</div>` : ""}${anexos}</div>`;
   }).join("");
 }
@@ -2059,17 +2151,39 @@ function enderecoParaMapas(p){
 function linkGoogleMaps(p){ return "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(enderecoParaMapas(p)); }
 function linkWaze(p){ return "https://waze.com/ul?q=" + encodeURIComponent(enderecoParaMapas(p)) + "&navigate=yes"; }
 
-function htmlLinksMapas(p){
-  return `<a class="er-btn mc-btn" href="${esc(linkGoogleMaps(p))}" target="_blank" rel="noopener noreferrer">📍 Abrir no Google Maps</a>` +
-         `<a class="er-btn mc-btn" href="${esc(linkWaze(p))}" target="_blank" rel="noopener noreferrer">🚙 Abrir no Waze</a>`;
+// App de navegação preferido do motorista (lembrado no celular depois da primeira escolha).
+const MAPA_APP_KEY = "suprimentos-demo-entregas-app-mapa";
+const APP_MAPA = {
+  google: {nome:"Google Maps", icone:"📍", link: linkGoogleMaps},
+  waze: {nome:"Waze", icone:"🚙", link: linkWaze},
+};
+function lerAppMapa(){ try{ const a = localStorage.getItem(MAPA_APP_KEY); return APP_MAPA[a] ? a : ""; }catch(e){ return ""; } }
+function salvarAppMapa(app){ try{ localStorage.setItem(MAPA_APP_KEY, app); }catch(e){} }
+
+// Botão único "Navegar": abre direto no app escolhido; na primeira vez pergunta qual app usar.
+function htmlNavegar(v, idx, principal){
+  const app = lerAppMapa();
+  const p = paradasDaViagem(v)[idx];
+  const cls = principal ? "btn-primary mc-btn mc-navegar" : "er-btn mc-btn";
+  const dados = `data-id="${esc(v.id)}" data-parada="${idx}"`;
+  if(!app) return `<button type="button" class="${cls}" data-acao="escolher-app" ${dados}>🧭 Navegar até aqui</button>`;
+  return `<a class="${cls}" href="${esc(APP_MAPA[app].link(p))}" target="_blank" rel="noopener noreferrer">🧭 Navegar · ${APP_MAPA[app].nome}</a>` +
+    (principal ? `<button type="button" class="mc-link" data-acao="escolher-app" ${dados}>Usar outro app</button>` : "");
+}
+// Endereço em letra grande: rua e número, depois bairro e cidade; CEP pequeno.
+function htmlEnderecoGrande(p){
+  const l1 = [p.endereco, p.numero].filter(Boolean).join(", ") || "Endereço não informado";
+  const l2 = [p.bairro, [p.cidade, p.estado].filter(Boolean).join("/")].filter(Boolean).join(" · ");
+  return `<div class="mc-end-l1">${esc(l1)}</div>${l2 ? `<div class="mc-end-l2">${esc(l2)}</div>` : ""}${p.cep ? `<div class="mc-end-cep">CEP ${esc(p.cep)}</div>` : ""}`;
 }
 function htmlAnexosMc(p){
   const lista = (p.anexos || []).filter(a => a && typeof a.dataUrl === "string" && a.dataUrl.startsWith("data:"));
   if(!lista.length) return "";
   return `<ul class="anexo-lista">${lista.map(a=>`<li><a href="${esc(a.dataUrl)}" download="${esc(a.name)}">📎 ${esc(a.name)}</a><span style="color:var(--muted); font-size:11px;">${Math.max(1, Math.round((a.size||0)/1024))} KB</span></li>`).join("")}</ul>`;
 }
+const ROTULO_CHEGUEI = {retirada:"Cheguei na retirada", intermediaria:"Cheguei na parada", entrega:"Cheguei na entrega"};
 
-function htmlCorridaMc(v, grupo){
+function htmlCorridaMc(v, grupo, atual){
   const ps = paradasDaViagem(v);
   const n = ps.length;
   const prox = proximaParadaIdx(v);
@@ -2078,73 +2192,87 @@ function htmlCorridaMc(v, grupo){
 
   let badge;
   if(grupo === "nova") badge = `<span class="badge st-pendente">Aguardando aceite</span>`;
-  else if(v.status === "pendente") badge = `<span class="badge st-pendente">Aceita · não iniciada</span>`;
+  else if(v.status === "pendente") badge = `<span class="badge st-aceita">Aceita · não iniciada</span>`;
   else badge = `<span class="badge st-${v.status}">${STATUS_LABEL[v.status]}</span>`;
 
-  // Próxima parada pendente em destaque no topo (só depois do aceite)
+  // Próxima parada pendente em destaque (só depois do aceite)
   let destaque = "";
   if(grupo === "andamento"){
     if(prox >= 0){
       const p = ps[prox], tipo = tipoParada(prox, n);
       destaque = `<div class="mc-proxima">
-        <div class="mc-proxima-rot">Próxima parada · ${prox+1} de ${n}</div>
-        <div><span class="parada-tag ${tipo}">${TIPO_PARADA_LABEL[tipo]}</span><div class="mc-endereco">${esc(enderecoCompleto(p))}</div></div>
+        <div class="mc-proxima-rot">${v.status === "em_rota" ? "Vá para" : "Primeira parada"} · ${prox+1} de ${n}</div>
+        <div><span class="parada-tag ${tipo}">${TIPO_PARADA_LABEL[tipo]}</span>${htmlEnderecoGrande(p)}</div>
         ${p.instrucoes ? `<div class="mc-instr">${esc(p.instrucoes)}</div>` : ""}
         ${htmlAnexosMc(p)}
-        <div class="mc-botoes">
-          ${htmlLinksMapas(p)}
-          ${v.status === "em_rota" ? `<button type="button" class="btn-primary mc-btn ok mc-btn-cheio" data-acao="chegada" data-id="${idAttr}" data-parada="${prox}">✓ Cheguei</button>` : ""}
-        </div>
-        ${v.status === "pendente" ? `<p class="mc-dica">Toque em "Iniciar rota" quando sair, para poder marcar as chegadas.</p>` : ""}
+        <div class="mc-nav">${htmlNavegar(v, prox, true)}</div>
+        ${!atual && v.status === "em_rota" ? `<button type="button" class="btn-primary mc-btn ok" data-acao="chegada" data-id="${idAttr}" data-parada="${prox}">✓ ${ROTULO_CHEGUEI[tipo]}</button>` : ""}
       </div>`;
     } else {
-      destaque = `<div class="mc-proxima fim"><div class="mc-proxima-rot">Todas as paradas visitadas</div><p class="mc-dica">Confira a entrega e toque em "Concluir corrida".</p></div>`;
+      destaque = `<div class="mc-proxima fim"><div class="mc-proxima-rot">Todas as paradas feitas</div><p class="mc-dica">Confira tudo e toque em "Concluir corrida".</p></div>`;
     }
   }
 
-  // Ação principal do cartão
+  // Ação do cartão (na corrida atual a ação fica na barra fixa de baixo)
   let acoes = "";
   if(grupo === "nova"){
     acoes = `<button type="button" class="btn-primary mc-btn" data-acao="aceitar" data-id="${idAttr}">Aceitar corrida</button>`;
-  } else if(grupo === "andamento" && v.status === "pendente"){
-    acoes = `<button type="button" class="btn-primary mc-btn" data-acao="iniciar" data-id="${idAttr}">▶ Iniciar rota</button>`;
-  } else if(grupo === "andamento" && v.status === "em_rota"){
-    const falta = prox >= 0;
-    acoes = `<button type="button" class="btn-primary mc-btn ok" data-acao="concluir" data-id="${idAttr}" ${falta ? "disabled" : ""}>✔ Concluir corrida</button>` +
-      (falta ? `<p class="mc-dica">Marque a chegada em todas as paradas para concluir (${paradasVisitadas(v)} de ${n}).</p>` : "");
+  } else if(grupo === "andamento" && !atual && v.status === "pendente"){
+    acoes = `<button type="button" class="er-btn mc-btn" data-acao="iniciar" data-id="${idAttr}">▶ Iniciar esta corrida</button>`;
+  } else if(grupo === "andamento" && !atual && v.status === "em_rota" && prox < 0){
+    acoes = `<button type="button" class="btn-primary mc-btn ok" data-acao="concluir" data-id="${idAttr}">✔ Concluir corrida</button>`;
   } else if(grupo === "concluida"){
     const dc = dataConclusao(v);
     acoes = dc ? `<p class="mc-dica">Concluída às ${fmtHora(dc)}.</p>` : "";
   }
 
-  // Lista completa das paradas (recolhível), com instruções e anexos
+  // Lista completa das paradas (recolhível), com instruções, anexos e o que foi feito em cada uma
   const ultimaVisitada = ps.reduce((acc, p, i)=> p.chegadaEm ? i : acc, -1);
   const listaParadas = ps.map((p, i)=>{
     const tipo = tipoParada(i, n);
-    const atual = grupo === "andamento" && i === prox;
+    const eAtual = grupo === "andamento" && i === prox;
     const podeDesfazer = v.status === "em_rota" && i === ultimaVisitada;
-    return `<div class="parada-card mc-parada ${p.chegadaEm ? "visitada" : ""} ${atual ? "atual" : ""}">
-      <div class="mc-parada-topo"><span class="parada-tag ${tipo}">${i+1}. ${TIPO_PARADA_LABEL[tipo]}</span>${p.chegadaEm ? `<span class="mc-chegada">✓ Chegada às ${fmtHora(p.chegadaEm)}</span>` : ""}</div>
+    return `<div class="parada-card mc-parada ${p.chegadaEm ? "visitada" : ""} ${eAtual ? "atual" : ""}">
+      <div class="mc-parada-topo"><span class="parada-tag ${tipo}">${i+1}. ${TIPO_PARADA_LABEL[tipo]}</span></div>
       <div style="font-weight:600; font-size:14px; overflow-wrap:anywhere;">${esc(enderecoCompleto(p))}</div>
+      ${htmlComprovanteParada(p, tipo)}
       ${p.instrucoes ? `<div class="mc-instr" style="margin-top:8px;">${esc(p.instrucoes)}</div>` : ""}
       ${htmlAnexosMc(p)}
-      ${grupo === "andamento" ? `<div class="mc-botoes">${htmlLinksMapas(p)}${podeDesfazer ? `<button type="button" class="er-btn mc-btn mc-btn-cheio" data-acao="desfazer" data-id="${idAttr}" data-parada="${i}">↶ Desfazer chegada</button>` : ""}</div>` : ""}
+      ${grupo === "andamento" ? `<div class="mc-botoes">${htmlNavegar(v, i, false)}${podeDesfazer ? `<button type="button" class="er-btn mc-btn" data-acao="desfazer" data-id="${idAttr}" data-parada="${i}">↶ Desfazer</button>` : ""}</div>` : ""}
     </div>`;
   }).join("");
   const abertas = mcParadasAbertas.has(v.id);
   const resumoParadas = grupo === "nova" ? `Ver paradas, instruções e anexos (${n})` : `Ver todas as paradas (${n})`;
+  // Bolinhas de progresso: uma por parada (feita, atual, pendente)
+  const passos = grupo === "andamento"
+    ? `<div class="mc-passos" aria-label="Parada ${prox < 0 ? n : prox + 1} de ${n}">${ps.map((p,i)=> `<span class="${p.chegadaEm ? "feito" : (i === prox ? "atual" : "")}">${p.chegadaEm ? "✓" : i + 1}</span>`).join("")}</div>`
+    : "";
 
-  return `<article class="mc-card ${grupo}" data-card="${idAttr}">
+  return `<article class="mc-card ${grupo}${atual ? " mc-atual" : ""}" data-card="${idAttr}">
+    ${atual ? `<div class="mc-atual-rot">Corrida atual</div>` : ""}
     <div class="mc-head">
       <div><div class="mc-id">${idAttr}</div><div class="mc-data">${dia ? `<b>${dia}</b> · ` : ""}${fmtData(v.data)}${v.projetoNumero ? ` · ${esc(v.projetoNumero)}` : ""}</div></div>
       ${badge}
     </div>
-    <div class="mc-meta"><span><span class="rot">Solicitante:</span> <b>${esc(v.solicitante)}</b></span><span class="badge setor">${esc(v.setor)}</span></div>
-    <div class="mc-rota">${esc(v.origem)}<span class="rota-seta">→</span>${esc(v.destino)}${nIntermed(v) ? `<div class="table-subtext" style="font-size:12px;">+ ${nIntermed(v)} parada(s) intermediária(s)</div>` : ""}</div>
+    ${passos}
+    ${grupo !== "andamento" ? `<div class="mc-rota">${esc(v.origem)}<span class="rota-seta">→</span>${esc(v.destino)}${nIntermed(v) ? `<div class="table-subtext" style="font-size:12px;">+ ${nIntermed(v)} parada(s) no caminho</div>` : ""}</div>` : ""}
     ${destaque}
     ${acoes}
+    <div class="mc-meta"><span><span class="rot">Solicitante:</span> <b>${esc(v.solicitante)}</b></span><span class="badge setor">${esc(v.setor)}</span></div>
     <details class="mc-paradas" data-id="${idAttr}" ${abertas ? "open" : ""}><summary>${resumoParadas}</summary>${listaParadas}</details>
   </article>`;
+}
+
+// Separa as corridas do motorista: a atual (em rota primeiro), as novas para aceitar, as outras aceitas e as concluídas hoje.
+function corridasSeparadasMc(){
+  const minhas = VIAGENS.filter(v => v.motorista === motoristaLogado);
+  const hojeIso = paraDataLocalISO(new Date());
+  const novas = minhas.filter(v => v.status === "pendente" && !v.aceitaEm).sort((a,b)=> a.data - b.data);
+  const aceitas = minhas.filter(v => v.status === "em_rota" || (v.status === "pendente" && v.aceitaEm))
+    .sort((a,b)=> ((b.status === "em_rota") - (a.status === "em_rota")) || (a.data - b.data));
+  const concluidas = minhas.filter(v => { if(v.status !== "concluida") return false; const d = dataConclusao(v); return !!d && paraDataLocalISO(d) === hojeIso; })
+    .sort((a,b)=> dataConclusao(b) - dataConclusao(a));
+  return {novas, atual: aceitas[0] || null, outras: aceitas.slice(1), concluidas};
 }
 
 function renderMinhasCorridas(){
@@ -2153,38 +2281,60 @@ function renderMinhasCorridas(){
   const resumo = document.getElementById("mcResumo");
   if(!sel || !cont) return;
   if(sel.value !== motoristaLogado) sel.value = motoristaLogado;
+  document.getElementById("mcEntrar").hidden = !!motoristaLogado;
+  document.getElementById("mcBarra").hidden = !motoristaLogado;
   if(!motoristaLogado){
-    resumo.textContent = "Visão do motorista: aceite as corridas, siga as paradas e conclua pelo celular.";
+    resumo.textContent = "";
     cont.innerHTML = `<div class="card mc-vazio">Escolha seu nome em <b>Entrar como</b> para ver as suas corridas.</div>`;
+    renderAcaoFixaMc(null, []);
     return;
   }
-  const minhas = VIAGENS.filter(v => v.motorista === motoristaLogado);
-  const hojeIso = paraDataLocalISO(new Date());
-  const novas = minhas.filter(v => v.status === "pendente" && !v.aceitaEm).sort((a,b)=> a.data - b.data);
-  const andamento = minhas.filter(v => v.status === "em_rota" || (v.status === "pendente" && v.aceitaEm))
-    .sort((a,b)=> ((b.status === "em_rota") - (a.status === "em_rota")) || (a.data - b.data));
-  const concluidas = minhas.filter(v => { if(v.status !== "concluida") return false; const d = dataConclusao(v); return !!d && paraDataLocalISO(d) === hojeIso; })
-    .sort((a,b)=> dataConclusao(b) - dataConclusao(a));
+  document.getElementById("mcBarraNome").textContent = motoristaLogado;
+  const {novas, atual, outras, concluidas} = corridasSeparadasMc();
+  resumo.textContent = `${novas.length} nova(s) para aceitar · ${atual ? 1 + outras.length : 0} aceita(s) · ${concluidas.length} concluída(s) hoje`;
 
-  resumo.textContent = `Olá, ${motoristaLogado}. ${novas.length} nova(s) para aceitar · ${andamento.length} em andamento · ${concluidas.length} concluída(s) hoje.`;
-
-  const grupo = (titulo, lista, tipo, vazio) =>
-    `<div class="mc-grupo"><h2 class="mc-grupo-titulo">${titulo} <span class="mc-contagem">${lista.length}</span></h2>` +
-    (lista.length ? `<div class="mc-lista">${lista.map(v=> htmlCorridaMc(v, tipo)).join("")}</div>` : `<p class="mc-vazio-grupo">${vazio}</p>`) +
-    `</div>`;
+  const grupo = (titulo, lista, tipo) =>
+    lista.length ? `<div class="mc-grupo"><h2 class="mc-grupo-titulo">${titulo} <span class="mc-contagem">${lista.length}</span></h2>` +
+      `<div class="mc-lista">${lista.map(v=> htmlCorridaMc(v, tipo)).join("")}</div></div>` : "";
 
   cont.innerHTML =
-    grupo("Aguardando aceite", novas, "nova", "Nenhuma corrida nova para aceitar.") +
-    grupo("Em andamento", andamento, "andamento", "Nenhuma corrida em andamento.") +
+    (atual ? `<div class="mc-grupo">${htmlCorridaMc(atual, "andamento", true)}</div>`
+           : `<div class="card mc-vazio">Nenhuma corrida em andamento.${novas.length ? " Veja abaixo as novas para aceitar." : ""}</div>`) +
+    grupo("Novas para aceitar", novas, "nova") +
+    grupo("Próximas aceitas", outras, "andamento") +
     `<details class="mc-grupo mc-concluidas" ${mcConcluidasAberto ? "open" : ""}><summary class="mc-grupo-titulo">Concluídas hoje <span class="mc-contagem">${concluidas.length}</span></summary>` +
     (concluidas.length ? `<div class="mc-lista">${concluidas.map(v=> htmlCorridaMc(v, "concluida")).join("")}</div>` : `<p class="mc-vazio-grupo">Nenhuma corrida concluída hoje.</p>`) +
     `</details>`;
+  renderAcaoFixaMc(atual, novas);
 }
 
-// Depois de uma ação o cartão pode mudar de grupo: rola até ele para o motorista não se perder.
+// Barra fixa de baixo: a próxima ação da corrida atual (ou aceitar a próxima nova).
+function renderAcaoFixaMc(atual, novas){
+  const bar = document.getElementById("mcAcaoFixa");
+  let html = "";
+  if(atual){
+    const ps = paradasDaViagem(atual), n = ps.length, prox = proximaParadaIdx(atual);
+    const id = esc(atual.id);
+    if(atual.status === "pendente"){
+      html = `<button type="button" class="btn-primary mc-btn" data-acao="iniciar" data-id="${id}">▶ Iniciar rota</button><span class="mc-acao-ctx">${id} · saia e toque para começar</span>`;
+    } else if(prox >= 0){
+      const tipo = tipoParada(prox, n);
+      html = `<button type="button" class="btn-primary mc-btn ok" data-acao="chegada" data-id="${id}" data-parada="${prox}">✓ ${ROTULO_CHEGUEI[tipo]}</button><span class="mc-acao-ctx">${id} · parada ${prox + 1} de ${n}</span>`;
+    } else {
+      html = `<button type="button" class="btn-primary mc-btn ok" data-acao="concluir" data-id="${id}">✔ Concluir corrida</button><span class="mc-acao-ctx">${id} · todas as paradas feitas</span>`;
+    }
+  } else if(novas.length){
+    const id = esc(novas[0].id);
+    html = `<button type="button" class="btn-primary mc-btn" data-acao="aceitar" data-id="${id}">Aceitar corrida ${id}</button><span class="mc-acao-ctx">${novas.length > 1 ? `mais ${novas.length - 1} esperando` : "confira os endereços acima antes"}</span>`;
+  }
+  bar.hidden = !html;
+  bar.innerHTML = html;
+}
+
+// Depois de uma ação o cartão pode mudar de lugar: rola até ele para o motorista não se perder.
 function focarCartaoMc(id){
   const card = [...document.querySelectorAll("#mcConteudo [data-card]")].find(el => el.dataset.card === id);
-  if(card && typeof card.scrollIntoView === "function") card.scrollIntoView({block:"nearest", behavior:"smooth"});
+  if(card && typeof card.scrollIntoView === "function") card.scrollIntoView({block:"start", behavior:"smooth"});
 }
 function atualizarTelasEr(){ renderTabelaEr(); renderKanbanEr(); renderRoteiroDia(); renderMinhasCorridas(); }
 function corridaDoMotorista(id){
@@ -2204,15 +2354,22 @@ function iniciarRotaCorrida(id){
   if(!v || v.status !== "pendente" || !v.aceitaEm) return;
   mudarStatusEr(id, "em_rota", motoristaLogado);
 }
-function marcarChegadaParada(id, idx){
+// comprovante: {acao:"coletado"|"feito"|"entregue", recebidoPor?, obs?, foto?:{name,size,dataUrl}}
+function marcarChegadaParada(id, idx, comprovante){
   const v = corridaDoMotorista(id);
   if(!v || v.status !== "em_rota") return;
   if(!v.paradas || !v.paradas.length) v.paradas = paradasDaViagem(v);
   if(idx !== proximaParadaIdx(v)) return; // as paradas são marcadas em ordem
   const n = v.paradas.length;
-  v.paradas[idx].chegadaEm = new Date();
-  v.historico.push({status:v.status, data:new Date(), usuario: motoristaLogado,
-    evento:`Chegada na parada ${idx+1} de ${n} (${TIPO_PARADA_LABEL[tipoParada(idx, n)]})`});
+  const p = v.paradas[idx];
+  p.chegadaEm = new Date();
+  if(comprovante) p.comprovante = comprovante;
+  const onde = `parada ${idx+1} de ${n}`;
+  let evento = `Chegada na ${onde} (${TIPO_PARADA_LABEL[tipoParada(idx, n)]})`;
+  if(comprovante && comprovante.acao === "coletado") evento = `Material coletado (${onde})`;
+  if(comprovante && comprovante.acao === "feito") evento = `Parada feita (${onde})`;
+  if(comprovante && comprovante.acao === "entregue") evento = `Entregue a ${comprovante.recebidoPor} (${onde})${comprovante.foto ? " · com foto" : ""}`;
+  v.historico.push({status:v.status, data:new Date(), usuario: motoristaLogado, evento});
   atualizarTelasEr();
 }
 function desfazerChegadaParada(id, idx){
@@ -2220,9 +2377,10 @@ function desfazerChegadaParada(id, idx){
   if(!v || v.status !== "em_rota" || !v.paradas || !v.paradas[idx] || !v.paradas[idx].chegadaEm) return;
   if(v.paradas.slice(idx + 1).some(p => p.chegadaEm)) return; // só a última marcada
   delete v.paradas[idx].chegadaEm;
+  delete v.paradas[idx].comprovante;
   const n = v.paradas.length;
   v.historico.push({status:v.status, data:new Date(), usuario: motoristaLogado,
-    evento:`Chegada desfeita na parada ${idx+1} de ${n} (${TIPO_PARADA_LABEL[tipoParada(idx, n)]})`});
+    evento:`Desfeito: parada ${idx+1} de ${n} (${TIPO_PARADA_LABEL[tipoParada(idx, n)]})`});
   atualizarTelasEr();
 }
 function concluirCorrida(id){
@@ -2230,6 +2388,123 @@ function concluirCorrida(id){
   if(!v || v.status !== "em_rota" || proximaParadaIdx(v) !== -1) return;
   mudarStatusEr(id, "concluida", motoristaLogado);
 }
+
+// ---------- Janela de baixo: confirmar o que foi feito na parada / escolher app de navegação ----------
+const mcSheetEl = document.getElementById("mcSheet");
+let mcSheetCtx = null; // {tipo:"chegada"|"app", id, idx, foto}
+function abrirSheetMc(titulo, corpo, rodape, ctx){
+  mcSheetCtx = ctx;
+  document.getElementById("mcSheetTitulo").textContent = titulo;
+  document.getElementById("mcSheetCorpo").innerHTML = corpo;
+  document.getElementById("mcSheetRodape").innerHTML = rodape;
+  mcSheetEl.classList.add("open");
+  travarRolagemFundoEr(true);
+}
+function fecharSheetMc(){
+  mcSheetEl.classList.remove("open");
+  travarRolagemFundoEr(false);
+  mcSheetCtx = null;
+}
+document.getElementById("mcSheetFechar").addEventListener("click", fecharSheetMc);
+mcSheetEl.addEventListener("click", (e)=>{ if(e.target === mcSheetEl) fecharSheetMc(); });
+
+function abrirEscolhaAppMc(id, idx){
+  const v = corridaDoMotorista(id);
+  if(!v) return;
+  const p = paradasDaViagem(v)[idx];
+  const atual = lerAppMapa();
+  const corpo = `<p class="mc-dica" style="margin:0 0 12px;">Escolha o app. Da próxima vez o botão "Navegar" abre direto nele.</p>
+    <div class="mc-apps">${Object.entries(APP_MAPA).map(([k,a])=>
+      `<a class="er-btn mc-btn${k === atual ? " ativo" : ""}" href="${esc(a.link(p))}" target="_blank" rel="noopener noreferrer" data-app="${k}">${a.icone} ${a.nome}</a>`).join("")}</div>`;
+  abrirSheetMc("Navegar com qual app?", corpo, `<button type="button" class="er-btn mc-btn" data-sheet="cancelar">Cancelar</button>`, {tipo:"app", id, idx});
+}
+
+function abrirConfirmacaoChegadaMc(id, idx){
+  const v = corridaDoMotorista(id);
+  if(!v || v.status !== "em_rota" || idx !== proximaParadaIdx(v)) return;
+  const ps = paradasDaViagem(v), n = ps.length, tipo = tipoParada(idx, n), p = ps[idx];
+  const entrega = tipo === "entrega";
+  const titulo = {retirada:"Na retirada", intermediaria:"Na parada", entrega:"Na entrega"}[tipo];
+  const botao = {retirada:"✓ Material coletado", intermediaria:"✓ Parada feita", entrega:"✓ Entregue"}[tipo];
+  const corpo = `<div class="mc-sheet-end"><span class="parada-tag ${tipo}">${idx + 1} de ${n} · ${TIPO_PARADA_LABEL[tipo]}</span>${htmlEnderecoGrande(p)}</div>
+    ${entrega ? `<div class="form-field">
+      <label for="mcRecebidoPor">Nome de quem recebeu *</label>
+      <input type="text" id="mcRecebidoPor" maxlength="80" autocomplete="off" placeholder="Ex.: Carlos da portaria">
+    </div>` : ""}
+    <div class="form-field">
+      <label>Foto ${entrega ? "do comprovante" : ""} (opcional)</label>
+      <button type="button" class="er-btn mc-btn" data-sheet="foto">📷 Tirar foto</button>
+      <input type="file" id="mcFotoInput" accept="image/*" capture="environment" hidden>
+      <div id="mcFotoPreview"></div>
+    </div>
+    <div class="form-field">
+      <label for="mcObs">Observação (opcional)</label>
+      <textarea id="mcObs" maxlength="300" placeholder="${entrega ? "Ex.: deixado no almoxarifado" : "Ex.: faltou 1 caixa, fornecedor envia amanhã"}"></textarea>
+    </div>
+    <p class="form-erro" id="mcSheetErro"></p>`;
+  const rodape = `<button type="button" class="er-btn mc-btn" data-sheet="cancelar">Cancelar</button>
+    <button type="button" class="btn-primary mc-btn ok" data-sheet="confirmar">${botao}</button>`;
+  abrirSheetMc(titulo, corpo, rodape, {tipo:"chegada", id, idx, entrega, acao: entrega ? "entregue" : (tipo === "retirada" ? "coletado" : "feito"), foto:null});
+  if(entrega) setTimeout(()=>{ const el = document.getElementById("mcRecebidoPor"); if(el) el.focus(); }, 250);
+}
+
+// Foto: reduz para no máximo 1280 px (JPEG) para não pesar no celular; aceita só imagem.
+async function lerFotoReduzidaMc(f){
+  if(!f || !/^image\//.test(f.type) || f.size > 20 * 1024 * 1024) return null;
+  const url = await new Promise(res=>{ const fr = new FileReader(); fr.onload = ()=>res(fr.result); fr.onerror = ()=>res(null); fr.readAsDataURL(f); });
+  if(!url) return null;
+  try{
+    const img = await new Promise((res, rej)=>{ const i = new Image(); i.onload = ()=>res(i); i.onerror = rej; i.src = url; });
+    const k = Math.min(1, 1280 / Math.max(img.width, img.height));
+    const c = document.createElement("canvas");
+    c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    const out = c.toDataURL("image/jpeg", 0.8);
+    return {name: f.name || "foto.jpg", size: Math.round(out.length * 0.75), dataUrl: out};
+  }catch(err){
+    return f.size <= ANEXO_MAX_BYTES ? {name: f.name || "foto", size: f.size, dataUrl: url} : null;
+  }
+}
+mcSheetEl.addEventListener("change", async (e)=>{
+  if(e.target.id !== "mcFotoInput" || !mcSheetCtx) return;
+  const ctx = mcSheetCtx;
+  const foto = await lerFotoReduzidaMc(e.target.files[0]);
+  e.target.value = "";
+  if(mcSheetCtx !== ctx) return;
+  const prev = document.getElementById("mcFotoPreview");
+  if(!foto){ prev.innerHTML = `<p class="form-hint alerta">Não foi possível usar esse arquivo. Envie uma foto (imagem).</p>`; return; }
+  ctx.foto = foto;
+  prev.innerHTML = `<div class="mc-foto-prev"><img src="${esc(foto.dataUrl)}" alt="Foto anexada"><button type="button" class="er-btn" data-sheet="tirar-foto">Remover foto</button></div>`;
+});
+mcSheetEl.addEventListener("click", (e)=>{
+  const app = e.target.closest("[data-app]");
+  if(app){ salvarAppMapa(app.dataset.app); fecharSheetMc(); renderMinhasCorridas(); return; } // o link abre o app; a escolha fica lembrada
+  const b = e.target.closest("[data-sheet]");
+  if(!b || !mcSheetCtx) return;
+  const ctx = mcSheetCtx;
+  if(b.dataset.sheet === "cancelar"){ fecharSheetMc(); return; }
+  if(b.dataset.sheet === "foto"){ document.getElementById("mcFotoInput").click(); return; }
+  if(b.dataset.sheet === "tirar-foto"){ ctx.foto = null; document.getElementById("mcFotoPreview").innerHTML = ""; return; }
+  if(b.dataset.sheet === "confirmar" && ctx.tipo === "chegada"){
+    const nomeEl = document.getElementById("mcRecebidoPor");
+    const recebidoPor = nomeEl ? nomeEl.value.trim() : "";
+    if(ctx.entrega && !recebidoPor){
+      nomeEl.classList.add("invalido"); nomeEl.focus();
+      const erro = document.getElementById("mcSheetErro");
+      erro.textContent = "Informe o nome de quem recebeu."; erro.classList.add("show");
+      return;
+    }
+    const obs = document.getElementById("mcObs").value.trim();
+    const comprovante = {acao: ctx.acao};
+    if(recebidoPor) comprovante.recebidoPor = recebidoPor;
+    if(obs) comprovante.obs = obs;
+    if(ctx.foto) comprovante.foto = ctx.foto;
+    fecharSheetMc();
+    marcarChegadaParada(ctx.id, ctx.idx, comprovante);
+    focarCartaoMc(ctx.id);
+  }
+});
+mcSheetEl.addEventListener("input", (e)=>{ if(e.target.id === "mcRecebidoPor") e.target.classList.remove("invalido"); });
 
 (function iniciarMinhasCorridas(){
   const sel = document.getElementById("mcMotorista");
@@ -2240,9 +2515,18 @@ function concluirCorrida(id){
     salvarMotoristaLogado(motoristaLogado);
     mcParadasAbertas.clear();
     renderMinhasCorridas();
+    window.scrollTo(0, 0);
   });
-  const cont = document.getElementById("mcConteudo");
-  cont.addEventListener("click", (e)=>{
+  document.getElementById("mcTrocar").addEventListener("click", ()=>{
+    motoristaLogado = "";
+    salvarMotoristaLogado("");
+    renderMinhasCorridas();
+    window.scrollTo(0, 0);
+  });
+  document.getElementById("mcTema").addEventListener("click", ()=> document.getElementById("temaToggle").click());
+  // Os botões ficam nos cartões e na barra fixa de baixo: um ouvinte só para a tela inteira.
+  const vista = document.getElementById("vistaMotorista");
+  vista.addEventListener("click", (e)=>{
     const btn = e.target.closest("button[data-acao]");
     if(!btn || btn.disabled) return;
     const id = btn.dataset.id;
@@ -2250,7 +2534,8 @@ function concluirCorrida(id){
     switch(btn.dataset.acao){
       case "aceitar": aceitarCorrida(id); break;
       case "iniciar": iniciarRotaCorrida(id); break;
-      case "chegada": marcarChegadaParada(id, idx); break;
+      case "chegada": abrirConfirmacaoChegadaMc(id, idx); return;
+      case "escolher-app": abrirEscolhaAppMc(id, idx); return;
       case "desfazer": desfazerChegadaParada(id, idx); break;
       case "concluir": concluirCorrida(id); break;
       default: return;
@@ -2258,7 +2543,7 @@ function concluirCorrida(id){
     focarCartaoMc(id);
   });
   // "toggle" não sobe na árvore; com captura dá para ouvir todos os <details> da lista.
-  cont.addEventListener("toggle", (e)=>{
+  document.getElementById("mcConteudo").addEventListener("toggle", (e)=>{
     const d = e.target;
     if(!d || d.tagName !== "DETAILS") return;
     if(d.classList.contains("mc-concluidas")) mcConcluidasAberto = d.open;
@@ -2272,6 +2557,7 @@ function definirVistaEr(vista){
   const motorista = vistaAtualEr === "motorista";
   document.getElementById("vistaPainel").hidden = motorista;
   document.getElementById("vistaMotorista").hidden = !motorista;
+  document.body.classList.toggle("modo-motorista", motorista);
   document.querySelectorAll(".sidebar .nav-item[data-vista]").forEach(a=>{
     const ativo = a.dataset.vista === vistaAtualEr;
     a.classList.toggle("active", ativo);

@@ -19,7 +19,7 @@ Pedidos de entrega e retirada costumam chegar ao motorista por mensagem, ligaç�
 - **Painel de quem pede:** resumo no topo com quadros clicáveis (Aguardando motorista, Aceitas, Em rota, Concluídas), lista agrupada por data (Hoje, Próximos dias, Dias anteriores) e botão **Minhas viagens**.
 - **Andamento claro:** um status só, com barra de progresso: Aguardando motorista → Aceita → Em rota (parada X de Y) → Concluída, além do histórico de quem mudou e quando.
 - **Aviso de motorista não cadastrado:** se o responsável digitado não é um motorista cadastrado, a viagem aparece em vermelho, porque ninguém vai recebê-la.
-- **Minhas corridas (motorista):** tela própria no celular para aceitar a corrida, iniciar a rota, abrir o endereço no Google Maps ou Waze, marcar a chegada em cada parada e concluir.
+- **Minhas corridas (motorista):** tela pensada para o celular na rua. A corrida atual vem no topo com o endereço em letra grande e um botão **Navegar** (lembra se o motorista usa Google Maps ou Waze). A próxima ação fica fixa embaixo, onde o polegar alcança: aceitar, iniciar rota, "Cheguei" e concluir. Em cada parada o motorista confirma o que fez (material coletado ou entregue), com **nome de quem recebeu**, foto e observação, que viram comprovante para quem pediu.
 - **Duas visões:** lista e Kanban com arrastar e soltar entre os status.
 - **Detalhe da viagem** em gaveta lateral, com o percurso completo, instruções, anexos e histórico.
 - **Editar, duplicar e excluir** viagens, com confirmação, pelo menu "⋮" de cada linha ou card.
@@ -53,7 +53,7 @@ Teste rápido: crie uma viagem (escreva os endereços ou use um CEP real, por ex
 ## Próximos passos
 
 - Botão "Ligar" e "Recusar corrida" na tela do motorista.
-- Comprovação da entrega por foto ou assinatura.
+- Assinatura de quem recebeu na tela do celular.
 - Notificação ao solicitante quando a viagem mudar de status.
 - Revisão de segurança, no mesmo padrão da Requisição de Compras.
 - Login e banco de dados reais (Firebase).
