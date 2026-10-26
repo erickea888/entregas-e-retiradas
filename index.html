@@ -436,6 +436,21 @@
   .grupo-seta{display:inline-block; width:14px;}
   .rot-mobile{display:none;}
   .filtro-minhas{align-self:flex-end;}
+  .aviso-permissao{margin:10px 0 0; padding:8px 10px; border-radius:8px; background:var(--panel-2); border:1px solid var(--border); font-size:12px; color:var(--muted); line-height:1.5;}
+  #kanbanAvisoEr{margin:0 0 12px;}
+  .kanban-card.travado{cursor:pointer;}
+  .badge.st-cancelada{background:rgba(239,68,68,.12); color:var(--danger);}
+  .progresso.st-cancelada span{background:rgba(239,68,68,.25);}
+  .resumo-card.st-cancelada{border-left-color:var(--danger);}
+  .er-btn-perigo{color:var(--danger); border-color:rgba(239,68,68,.45); margin-top:12px;}
+  .er-btn-perigo:hover{color:#fff; background:var(--danger); border-color:var(--danger);}
+  .er-cancelada{border:1px solid var(--danger); background:rgba(239,68,68,.07); border-radius:10px; padding:10px 12px; font-size:12.5px; line-height:1.5; margin-bottom:12px; overflow-wrap:anywhere;}
+  .er-cancelada b{color:var(--danger);}
+  .mc-aviso-cancel{border:1px solid var(--danger); background:rgba(239,68,68,.07); border-radius:10px; padding:12px; font-size:14px; line-height:1.5; margin-bottom:14px; overflow-wrap:anywhere;}
+  .mc-aviso-cancel b{color:var(--danger);}
+  .card-menu-item[hidden]{display:none;}
+  .perfil-gestor{display:flex; gap:10px; align-items:flex-start; margin-top:14px; font-size:13px; cursor:pointer;}
+  .perfil-gestor input{width:18px; height:18px; margin-top:2px; flex:none;}
   .filtro-minhas.ativo{background:rgba(59,130,246,.12); border-color:var(--accent); color:var(--accent);}
 
   /* ---------- Formulário Nova viagem (uma tela só) ---------- */
@@ -611,6 +626,7 @@
                 <option value="aceita">Aceita</option>
                 <option value="em_rota">Em rota</option>
                 <option value="concluida">Concluída</option>
+                <option value="cancelada">Cancelada</option>
               </select>
             </div>
             <div class="filtro-grupo">
@@ -655,6 +671,7 @@
               <tbody id="tabelaViagens"></tbody>
             </table>
           </div>
+          <p class="aviso-permissao" id="kanbanAvisoEr" hidden></p>
           <div class="kanban-board" id="kanbanBoardEr" style="display:none;"></div>
         </div>
       </section>
@@ -720,10 +737,13 @@
       <div class="er-obs" id="erInfoObs"></div>
     </div>
 
+    <div class="er-cancelada" id="erCanceladaInfo" hidden></div>
     <div class="er-status-row">
       <select id="erStatusSelect"></select>
       <button type="button" class="er-btn" id="erStatusSalvar">Salvar status</button>
     </div>
+    <p class="aviso-permissao" id="erStatusAviso" hidden></p>
+    <button type="button" class="er-btn er-btn-perigo" id="btnCancelarViagem" hidden>✕ Cancelar viagem</button>
     <p class="er-section-title" style="margin-top:16px;">Histórico</p>
     <ul class="er-historico" id="erHistorico"></ul>
   </div>
@@ -731,7 +751,29 @@
 
 <div class="card-menu" id="cardMenuEr">
   <button type="button" class="card-menu-item" id="cardMenuErDuplicar">⧉ Duplicar</button>
+  <button type="button" class="card-menu-item perigo" id="cardMenuErCancelar">✕ Cancelar viagem</button>
   <button type="button" class="card-menu-item perigo" id="cardMenuErExcluir">🗑 Excluir</button>
+</div>
+
+<div class="modal-backdrop" id="cancelarBackdropEr">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-header">
+      <h3 id="cancelarTituloEr">Cancelar viagem?</h3>
+      <button type="button" class="modal-close" id="cancelarCloseEr" aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="form-hint" style="margin:0 0 10px; font-size:12px;">A viagem fica no histórico como <b>Cancelada</b> e sai da tela do motorista, que vê o aviso com o motivo.</p>
+      <div class="form-field full">
+        <label for="cancelarMotivoEr">Motivo do cancelamento *</label>
+        <textarea id="cancelarMotivoEr" maxlength="300" placeholder="Ex.: material ainda não chegou no fornecedor"></textarea>
+      </div>
+      <p class="form-erro" id="cancelarErroEr">Informe o motivo do cancelamento.</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="er-btn" id="cancelarVoltarEr">Voltar</button>
+      <button type="button" class="btn-primary btn-perigo" id="cancelarConfirmarEr">Cancelar viagem</button>
+    </div>
+  </div>
 </div>
 
 <div class="modal-backdrop" id="excluirBackdropEr">
@@ -773,11 +815,15 @@
       <button type="button" class="modal-close" id="perfilClose">✕</button>
     </div>
     <div class="modal-body">
-      <p class="form-hint" style="margin-bottom:10px;">O mesmo nome definido aqui é usado na Requisição de Compras (fica salvo no navegador) — é só pra identificar quem fez cada alteração no histórico, ainda não é um login de verdade.</p>
+      <p class="form-hint" style="margin-bottom:10px;">Ainda não existe login: diga aqui quem você é (fica salvo no navegador). O nome aparece no histórico e libera as permissões abaixo.</p>
       <div class="form-field full">
         <label for="perfilNomeInput">Seu nome</label>
-        <input type="text" id="perfilNomeInput" placeholder="Ex.: Jailson Souza">
+        <input type="text" id="perfilNomeInput" placeholder="Ex.: Jailson Souza" maxlength="80">
       </div>
+      <label class="perfil-gestor">
+        <input type="checkbox" id="perfilGestorInput">
+        <span><b>Sou gestor geral da conta</b><br><span class="form-hint">Posso mudar o status de qualquer viagem e arrastar os cards no Kanban.</span></span>
+      </label>
     </div>
     <div class="modal-footer">
       <button type="button" class="er-btn" id="perfilVoltar">Fechar</button>
@@ -872,11 +918,38 @@ const PERFIL_NOME_KEY = "suprimentos-demo-entregas-usuario-nome";
 function usuarioAtualNome(){ try{ return localStorage.getItem(PERFIL_NOME_KEY) || ""; }catch(e){ return ""; } }
 function atualizarBadgePerfil(){
   const nome = usuarioAtualNome();
-  document.getElementById("perfilUsuarioLabel").textContent = nome || "Definir meu usuário";
+  document.getElementById("perfilUsuarioLabel").textContent = nome ? nome + (usuarioAtualGestor() ? " (Gestor)" : "") : "Definir meu usuário";
+}
+// ---------- PERMISSÕES (simuladas no navegador; na versão real vêm do login) ----------
+// Pelo painel, só o gestor geral muda o status (inclusive arrastando no Kanban): o andamento normal
+// vem do motorista, que aceita, inicia e conclui pelo celular. Exceção: viagem Em rota pode ser
+// concluída pelo próprio motorista dela. Quando o login existir, basta trocar usuarioAtualNome()/
+// usuarioAtualGestor() pelos dados da sessão — as regras abaixo continuam iguais.
+const PERFIL_GESTOR_KEY = "suprimentos-demo-entregas-usuario-gestor";
+function usuarioAtualGestor(){ try{ return localStorage.getItem(PERFIL_GESTOR_KEY) === "1"; }catch(e){ return false; } }
+function podeMudarStatusEr(v, novo){
+  if(!v || v.status === novo) return false;
+  if(v.status === "cancelada" || novo === "cancelada") return false; // cancelar só pelo botão, com motivo
+  if(usuarioAtualGestor()) return true;
+  const eu = motoristaCanonico(usuarioAtualNome());
+  return v.status === "em_rota" && novo === "concluida" && !!eu && eu === v.motorista;
+}
+function souSolicitanteEr(v){ const eu = normalizarNome(usuarioAtualNome()); return !!eu && eu === normalizarNome(v.solicitante); }
+// Editar: quem pediu, enquanto pendente; o gestor sempre (menos viagem cancelada).
+function podeEditarEr(v){ return !!v && v.status !== "cancelada" && (usuarioAtualGestor() || (v.status === "pendente" && souSolicitanteEr(v))); }
+// Cancelar (com motivo): quem pediu ou o gestor, enquanto a viagem não saiu.
+function podeCancelarEr(v){ return !!v && v.status === "pendente" && (usuarioAtualGestor() || souSolicitanteEr(v)); }
+// Excluir apaga de vez: só o gestor. Quem pede usa "Cancelar", que mantém o histórico.
+function podeExcluirEr(){ return usuarioAtualGestor(); }
+function motivoSemPermissaoEr(v){
+  if(v && v.status === "cancelada") return "Viagem cancelada: não muda mais de status.";
+  if(v && v.status === "em_rota") return `🔒 Viagem em rota: só o motorista (${v.motorista || "responsável"}) ou o gestor geral pode concluir. O motorista conclui pelo celular, em "Minhas corridas".`;
+  return "🔒 Só o gestor geral muda o status pelo painel. O andamento vem do motorista: ele aceita, inicia a rota e conclui pelo celular.";
 }
 const perfilBackdrop = document.getElementById("perfilBackdrop");
 document.getElementById("btnPerfilUsuario").addEventListener("click", ()=>{
   document.getElementById("perfilNomeInput").value = usuarioAtualNome();
+  document.getElementById("perfilGestorInput").checked = usuarioAtualGestor();
   perfilBackdrop.classList.add("open");
 });
 function fecharPerfil(){ perfilBackdrop.classList.remove("open"); }
@@ -884,7 +957,10 @@ document.getElementById("perfilClose").addEventListener("click", fecharPerfil);
 document.getElementById("perfilVoltar").addEventListener("click", fecharPerfil);
 perfilBackdrop.addEventListener("click", (e)=>{ if(e.target === perfilBackdrop) fecharPerfil(); });
 document.getElementById("perfilSalvar").addEventListener("click", ()=>{
-  try{ localStorage.setItem(PERFIL_NOME_KEY, document.getElementById("perfilNomeInput").value.trim()); }catch(e){}
+  try{
+    localStorage.setItem(PERFIL_NOME_KEY, document.getElementById("perfilNomeInput").value.trim());
+    localStorage.setItem(PERFIL_GESTOR_KEY, document.getElementById("perfilGestorInput").checked ? "1" : "0");
+  }catch(e){}
   atualizarBadgePerfil();
   fecharPerfil();
   // Veio do botão "Minhas viagens" sem usuário definido: agora que tem nome, liga o filtro.
@@ -894,11 +970,12 @@ document.getElementById("perfilSalvar").addEventListener("click", ()=>{
   atualizarBotaoMinhasEr();
   renderTabelaEr();
   renderKanbanEr();
+  if(viagemAtualId && erDrawer.classList.contains("open")) abrirDrawerEr(viagemAtualId); // permissões mudaram
 });
 atualizarBadgePerfil();
 
 // ---------- DADOS BASE ----------
-const STATUS_LABEL = {pendente:"Pendente", em_rota:"Em rota", concluida:"Concluída"};
+const STATUS_LABEL = {pendente:"Pendente", em_rota:"Em rota", concluida:"Concluída", cancelada:"Cancelada"};
 const STATUS_ORDEM = ["pendente","em_rota","concluida"];
 
 const SOLICITANTES_SEED = ["Marcos Aurélio","Fernanda Lima","Ricardo Nunes","Juliana Prado","Bruno Castilho","Patrícia Gomes","André Salles","Camila Duarte"];
@@ -1254,17 +1331,20 @@ const ETAPA_SOLIC = {
   aceita:{nome:"Aceita", passo:2, cls:"st-aceita"},
   em_rota:{nome:"Em rota", passo:3, cls:"st-em_rota"},
   concluida:{nome:"Concluída", passo:4, cls:"st-concluida"},
+  cancelada:{nome:"Cancelada", passo:0, cls:"st-cancelada"},
 };
 function etapaSolicitante(v){
+  if(v.status === "cancelada") return "cancelada";
   if(v.status === "concluida") return "concluida";
   if(v.status === "em_rota") return "em_rota";
   return v.aceitaEm ? "aceita" : "aguardando";
 }
 // Viagem em aberto com responsável que não é motorista cadastrado: ninguém vai receber a corrida.
-function semMotoristaCadastrado(v){ return v.status !== "concluida" && !motoristaCanonico(v.motorista); }
+function semMotoristaCadastrado(v){ return v.status !== "concluida" && v.status !== "cancelada" && !motoristaCanonico(v.motorista); }
 // Detalhe curto embaixo do status (sem texto de usuário).
 function detalheEtapa(v){
   const etapa = etapaSolicitante(v);
+  if(etapa === "cancelada") return v.cancelamento ? `Motivo: ${esc(v.cancelamento.motivo)}` : "";
   if(etapa === "aguardando") return semMotoristaCadastrado(v) ? `<span class="txt-alerta">⚠ Motorista não cadastrado</span>` : "O motorista ainda não aceitou";
   if(etapa === "aceita") return `Aceita às ${fmtHora(v.aceitaEm)} · aguardando saída`;
   if(etapa === "em_rota"){ const n = paradasDaViagem(v).length; return `${paradasVisitadas(v)} de ${n} paradas visitadas`; }
@@ -1369,18 +1449,18 @@ function grupoDataEr(v){
   const iso = paraDataLocalISO(v.data), hoje = paraDataLocalISO(new Date());
   if(iso === hoje) return "hoje";
   if(iso > hoje) return "proximos";
-  return v.status === "concluida" ? "anteriores_concluidas" : "anteriores_abertas";
+  return (v.status === "concluida" || v.status === "cancelada") ? "anteriores_concluidas" : "anteriores_abertas";
 }
 const GRUPOS_DATA_ER = [
   {id:"hoje", titulo:"Hoje"},
   {id:"proximos", titulo:"Próximos dias"},
   {id:"anteriores_abertas", titulo:"Dias anteriores — ainda em aberto"},
-  {id:"anteriores_concluidas", titulo:"Dias anteriores — concluídas", recolhivel:true},
+  {id:"anteriores_concluidas", titulo:"Dias anteriores — concluídas e canceladas", recolhivel:true},
 ];
 function htmlLinhaViagemEr(v){
   const cadastrado = motoristaCanonico(v.motorista);
   const motorista = v.motorista
-    ? `${esc(v.motorista)}${!cadastrado && v.status !== "concluida" ? `<div class="table-subtext txt-alerta">⚠ não cadastrado</div>` : ""}`
+    ? `${esc(v.motorista)}${!cadastrado && v.status !== "concluida" && v.status !== "cancelada" ? `<div class="table-subtext txt-alerta">⚠ não cadastrado</div>` : ""}`
     : `<span class="txt-alerta">—</span>`;
   return `<tr class="er-row${semMotoristaCadastrado(v) ? " linha-alerta" : ""}" data-id="${v.id}">
       <td class="c-id"><b>${v.id}</b></td>
@@ -1405,7 +1485,7 @@ function renderTabelaEr(){
       .sort((a,b)=> g.id === "proximos" ? a.data - b.data : b.data - a.data);
     if(!doGrupo.length) return;
     // As concluídas antigas ficam recolhidas, a não ser que o filtro peça só concluídas.
-    const recolhido = g.recolhivel && !grupoConcluidasAbertoEr && filtroAtivoEr.status !== "concluida";
+    const recolhido = g.recolhivel && !grupoConcluidasAbertoEr && filtroAtivoEr.status !== "concluida" && filtroAtivoEr.status !== "cancelada";
     html += `<tr class="grupo-linha${g.recolhivel ? " recolhivel" : ""}"${g.recolhivel ? ` data-grupo="${g.id}" tabindex="0" aria-expanded="${!recolhido}"` : ""}>
       <td colspan="7">${g.recolhivel ? `<span class="grupo-seta">${recolhido ? "▸" : "▾"}</span>` : ""}${g.titulo} <span class="contagem">${doGrupo.length}</span></td></tr>`;
     if(!recolhido) html += doGrupo.map(htmlLinhaViagemEr).join("");
@@ -1429,9 +1509,12 @@ tabelaBodyEr.addEventListener("keydown", (e)=>{
 const kanbanBoardEr = document.getElementById("kanbanBoardEr");
 let cardArrastadoIdEr = null;
 function renderKanbanEr(){
+  const aviso = document.getElementById("kanbanAvisoEr");
+  aviso.textContent = usuarioAtualGestor() ? "" : "🔒 Só o gestor geral arrasta os cards entre as colunas. Defina seu usuário no botão 👤 do topo.";
+  aviso.hidden = usuarioAtualGestor() || kanbanBoardEr.style.display === "none";
   const lista = VIAGENS.filter(passaFiltroEr);
   kanbanBoardEr.innerHTML = "";
-  STATUS_ORDEM.forEach(status=>{
+  [...STATUS_ORDEM, "cancelada"].forEach(status=>{
     const col = document.createElement("div");
     col.className = "kanban-coluna";
     col.dataset.status = status;
@@ -1449,7 +1532,8 @@ function renderKanbanEr(){
       doStatus.forEach(v=>{
         const card = document.createElement("div");
         card.className = "kanban-card";
-        card.draggable = true;
+        card.draggable = usuarioAtualGestor(); // só o gestor geral arrasta
+        if(!card.draggable) card.classList.add("travado");
         card.dataset.id = v.id;
         card.innerHTML = `
           <div class="kc-top">
@@ -1478,6 +1562,10 @@ function renderKanbanEr(){
       col.classList.remove("arrasto-sobre");
       const idSolto = cardArrastadoIdEr || (e.dataTransfer && e.dataTransfer.getData("text/plain"));
       if(!idSolto) return;
+      const v = VIAGENS.find(x=>x.id===idSolto);
+      if(!v || v.status === status) return;
+      if(status === "cancelada" || v.status === "cancelada"){ alert("Para cancelar, abra a viagem e use \"Cancelar viagem\" (com motivo). Viagem cancelada não volta pelo Kanban."); return; }
+      if(!podeMudarStatusEr(v, status)){ alert(motivoSemPermissaoEr(v).replace("🔒 ", "")); return; }
       mudarStatusEr(idSolto, status);
     });
     kanbanBoardEr.appendChild(col);
@@ -1507,6 +1595,7 @@ function definirVisaoEr(visao){
   btnVisaoTabelaEr.classList.toggle("ativo", !isKanban);
   btnVisaoKanbanEr.classList.toggle("ativo", isKanban);
   if(isKanban) renderKanbanEr();
+  else document.getElementById("kanbanAvisoEr").hidden = true;
 }
 btnVisaoTabelaEr.addEventListener("click", ()=> definirVisaoEr("tabela"));
 btnVisaoKanbanEr.addEventListener("click", ()=> definirVisaoEr("kanban"));
@@ -1593,8 +1682,25 @@ function abrirDrawerEr(id){
   else { obsWrap.style.display = "none"; }
 
 
+  // Só aparecem os status que este usuário pode escolher (ver podeMudarStatusEr).
   const statusSelect = document.getElementById("erStatusSelect");
-  statusSelect.innerHTML = STATUS_ORDEM.map(s=> `<option value="${s}" ${s===v.status?'selected':''}>${STATUS_LABEL[s]}</option>`).join("");
+  const permitidos = STATUS_ORDEM.filter(s=> s === v.status || podeMudarStatusEr(v, s));
+  statusSelect.innerHTML = permitidos.map(s=> `<option value="${s}" ${s===v.status?'selected':''}>${STATUS_LABEL[s]}</option>`).join("");
+  const travado = permitidos.length < 2;
+  statusSelect.disabled = travado;
+  document.getElementById("erStatusSalvar").disabled = travado;
+  document.querySelector("#erDrawer .er-status-row").hidden = v.status === "cancelada";
+  const avisoStatus = document.getElementById("erStatusAviso");
+  avisoStatus.hidden = !travado || v.status === "cancelada";
+  avisoStatus.textContent = travado ? motivoSemPermissaoEr(v) : "";
+  // Ações conforme a permissão de quem está usando
+  document.getElementById("btnEditarViagem").hidden = !podeEditarEr(v);
+  document.getElementById("btnCancelarViagem").hidden = !podeCancelarEr(v);
+  const canc = document.getElementById("erCanceladaInfo");
+  canc.hidden = v.status !== "cancelada";
+  canc.innerHTML = v.status === "cancelada" && v.cancelamento
+    ? `<b>✕ Cancelada</b> por ${esc(v.cancelamento.por)} em ${fmtDataHora(v.cancelamento.em)}<div>Motivo: ${esc(v.cancelamento.motivo)}</div>`
+    : "";
 
   const historicoEl = document.getElementById("erHistorico");
   historicoEl.innerHTML = [...v.historico].reverse().map(h=>
@@ -1607,7 +1713,10 @@ function abrirDrawerEr(id){
 
 document.getElementById("erStatusSalvar").addEventListener("click", ()=>{
   if(!viagemAtualId) return;
-  mudarStatusEr(viagemAtualId, document.getElementById("erStatusSelect").value);
+  const v = VIAGENS.find(x=>x.id===viagemAtualId);
+  const novo = document.getElementById("erStatusSelect").value;
+  if(!podeMudarStatusEr(v, novo)) return;
+  mudarStatusEr(viagemAtualId, novo);
   abrirDrawerEr(viagemAtualId);
 });
 
@@ -1617,6 +1726,9 @@ let cardMenuErAlvoId = null;
 function fecharCardMenuEr(){ cardMenuEr.classList.remove("open"); cardMenuErAlvoId = null; }
 function abrirCardMenuEr(id, btnEl){
   cardMenuErAlvoId = id;
+  const v = VIAGENS.find(x=>x.id===id);
+  document.getElementById("cardMenuErCancelar").hidden = !podeCancelarEr(v);
+  document.getElementById("cardMenuErExcluir").hidden = !podeExcluirEr();
   cardMenuEr.classList.add("open");
   const rect = btnEl.getBoundingClientRect();
   const largura = cardMenuEr.offsetWidth || 150;
@@ -1665,7 +1777,7 @@ document.getElementById("duplicarSimEr").addEventListener("click", ()=>{
     projetoNumero: original.projetoNumero, motorista: original.motorista,
     origem: original.origem, destino: original.destino, atividade: original.atividade || "",
     // a cópia começa do zero para o motorista: sem aceite e sem chegadas marcadas
-    paradas: JSON.parse(JSON.stringify(paradasDaViagem(original))).map(p=>{ delete p.chegadaEm; return p; }),
+    paradas: JSON.parse(JSON.stringify(paradasDaViagem(original))).map(p=>{ delete p.chegadaEm; delete p.comprovante; return p; }),
     observacao: original.observacao,
     status: "pendente", historico: [{status:"pendente", data:new Date(), usuario: usuarioAtualNome() || original.solicitante}],
   };
@@ -1680,12 +1792,55 @@ document.getElementById("cardMenuErDuplicar").addEventListener("click", (e)=>{
   abrirConfirmacaoDuplicarEr(id);
 });
 
+// ---------- CANCELAR VIAGEM (com motivo; fica no histórico e some da tela do motorista) ----------
+const cancelarBackdropEr = document.getElementById("cancelarBackdropEr");
+let idPendenteCancelarEr = null;
+function abrirCancelarEr(id){
+  const v = VIAGENS.find(x=>x.id===id);
+  if(!podeCancelarEr(v)) return;
+  idPendenteCancelarEr = id;
+  document.getElementById("cancelarTituloEr").textContent = `Cancelar a viagem ${v.id}?`;
+  const motivo = document.getElementById("cancelarMotivoEr");
+  motivo.value = ""; motivo.classList.remove("invalido");
+  document.getElementById("cancelarErroEr").classList.remove("show");
+  cancelarBackdropEr.classList.add("open");
+  setTimeout(()=> motivo.focus(), 50);
+}
+function fecharCancelarEr(){ cancelarBackdropEr.classList.remove("open"); idPendenteCancelarEr = null; }
+document.getElementById("btnCancelarViagem").addEventListener("click", ()=> abrirCancelarEr(viagemAtualId));
+document.getElementById("cardMenuErCancelar").addEventListener("click", (e)=>{
+  e.stopPropagation();
+  const id = cardMenuErAlvoId;
+  fecharCardMenuEr();
+  abrirCancelarEr(id);
+});
+document.getElementById("cancelarCloseEr").addEventListener("click", fecharCancelarEr);
+document.getElementById("cancelarVoltarEr").addEventListener("click", fecharCancelarEr);
+cancelarBackdropEr.addEventListener("click", (e)=>{ if(e.target === cancelarBackdropEr) fecharCancelarEr(); });
+document.getElementById("cancelarMotivoEr").addEventListener("input", (e)=>{
+  e.target.classList.remove("invalido"); document.getElementById("cancelarErroEr").classList.remove("show");
+});
+document.getElementById("cancelarConfirmarEr").addEventListener("click", ()=>{
+  const v = VIAGENS.find(x=>x.id===idPendenteCancelarEr);
+  const motivoEl = document.getElementById("cancelarMotivoEr");
+  const motivo = motivoEl.value.trim();
+  if(!motivo){ motivoEl.classList.add("invalido"); document.getElementById("cancelarErroEr").classList.add("show"); motivoEl.focus(); return; }
+  if(!podeCancelarEr(v)){ fecharCancelarEr(); return; }
+  const por = usuarioAtualNome() || "Não identificado";
+  v.status = "cancelada";
+  v.cancelamento = {motivo, por, em: new Date()};
+  v.historico.push({status:"cancelada", data:new Date(), usuario: por, evento:`Cancelada — motivo: ${motivo}`});
+  fecharCancelarEr();
+  atualizarTelasEr();
+  abrirDrawerEr(v.id);
+});
+
 // ---------- EXCLUIR VIAGEM ----------
 const excluirBackdropEr = document.getElementById("excluirBackdropEr");
 let idPendenteExcluirEr = null;
 function abrirConfirmacaoExcluirEr(id){
   const v = VIAGENS.find(x=>x.id===id);
-  if(!v) return;
+  if(!v || !podeExcluirEr()) return;
   idPendenteExcluirEr = id;
   document.getElementById("excluirTextoEr").textContent = `Tem certeza que deseja excluir a viagem ${v.id} (${v.solicitante})? Essa ação não pode ser desfeita.`;
   excluirBackdropEr.classList.add("open");
@@ -1698,7 +1853,7 @@ document.getElementById("excluirConfirmarEr").addEventListener("click", ()=>{
   const id = idPendenteExcluirEr;
   fecharExcluirEr();
   const idx = VIAGENS.findIndex(x=>x.id===id);
-  if(idx === -1) return;
+  if(idx === -1 || !podeExcluirEr()) return;
   VIAGENS.splice(idx, 1);
   if(viagemAtualId === id) fecharDrawerEr();
   renderTabelaEr(); renderKanbanEr(); atualizarOpcoesFiltroMotoristaEr(); renderRoteiroDia();
@@ -1869,7 +2024,7 @@ function abrirModalNovaViagem(){
 }
 function abrirModalEdicaoEr(id){
   const v = VIAGENS.find(x=>x.id===id);
-  if(!v) return;
+  if(!v || !podeEditarEr(v)) return;
   modoEdicaoIdEr = id;
   const paradas = JSON.parse(JSON.stringify(paradasDaViagem(v))).map(p=> Object.assign(paradaVazia(), p));
   while(paradas.length < 2) paradas.push(paradaVazia());
@@ -2272,7 +2427,9 @@ function corridasSeparadasMc(){
     .sort((a,b)=> ((b.status === "em_rota") - (a.status === "em_rota")) || (a.data - b.data));
   const concluidas = minhas.filter(v => { if(v.status !== "concluida") return false; const d = dataConclusao(v); return !!d && paraDataLocalISO(d) === hojeIso; })
     .sort((a,b)=> dataConclusao(b) - dataConclusao(a));
-  return {novas, atual: aceitas[0] || null, outras: aceitas.slice(1), concluidas};
+  // Canceladas hoje: o motorista vê o aviso com o motivo (a corrida sai das listas dele)
+  const canceladas = minhas.filter(v => v.status === "cancelada" && v.cancelamento && paraDataLocalISO(v.cancelamento.em) === hojeIso);
+  return {novas, atual: aceitas[0] || null, outras: aceitas.slice(1), concluidas, canceladas};
 }
 
 function renderMinhasCorridas(){
@@ -2290,14 +2447,16 @@ function renderMinhasCorridas(){
     return;
   }
   document.getElementById("mcBarraNome").textContent = motoristaLogado;
-  const {novas, atual, outras, concluidas} = corridasSeparadasMc();
+  const {novas, atual, outras, concluidas, canceladas} = corridasSeparadasMc();
   resumo.textContent = `${novas.length} nova(s) para aceitar · ${atual ? 1 + outras.length : 0} aceita(s) · ${concluidas.length} concluída(s) hoje`;
 
   const grupo = (titulo, lista, tipo) =>
     lista.length ? `<div class="mc-grupo"><h2 class="mc-grupo-titulo">${titulo} <span class="mc-contagem">${lista.length}</span></h2>` +
       `<div class="mc-lista">${lista.map(v=> htmlCorridaMc(v, tipo)).join("")}</div></div>` : "";
 
-  cont.innerHTML =
+  const avisosCancel = canceladas.map(v=>
+    `<div class="mc-aviso-cancel" role="status">✕ <b>${esc(v.id)} foi cancelada</b> por ${esc(v.cancelamento.por)} às ${fmtHora(v.cancelamento.em)}.<div>Motivo: ${esc(v.cancelamento.motivo)}</div></div>`).join("");
+  cont.innerHTML = avisosCancel +
     (atual ? `<div class="mc-grupo">${htmlCorridaMc(atual, "andamento", true)}</div>`
            : `<div class="card mc-vazio">Nenhuma corrida em andamento.${novas.length ? " Veja abaixo as novas para aceitar." : ""}</div>`) +
     grupo("Novas para aceitar", novas, "nova") +

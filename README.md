@@ -20,9 +20,10 @@ Pedidos de entrega e retirada costumam chegar ao motorista por mensagem, ligaç�
 - **Andamento claro:** um status só, com barra de progresso: Aguardando motorista → Aceita → Em rota (parada X de Y) → Concluída, além do histórico de quem mudou e quando.
 - **Aviso de motorista não cadastrado:** se o responsável digitado não é um motorista cadastrado, a viagem aparece em vermelho, porque ninguém vai recebê-la.
 - **Minhas corridas (motorista):** tela pensada para o celular na rua. A corrida atual vem no topo com o endereço em letra grande e um botão **Navegar** (lembra se o motorista usa Google Maps ou Waze). A próxima ação fica fixa embaixo, onde o polegar alcança: aceitar, iniciar rota, "Cheguei" e concluir. Em cada parada o motorista confirma o que fez (material coletado ou entregue), com **nome de quem recebeu**, foto e observação, que viram comprovante para quem pediu.
-- **Duas visões:** lista e Kanban com arrastar e soltar entre os status.
+- **Duas visões:** lista e Kanban com arrastar e soltar entre os status (só o gestor geral arrasta).
+- **Regra de permissão:** pelo painel, só o gestor geral muda o status. Depois que a viagem está em rota, só o motorista dela ou o gestor pode concluir, porque é ele quem está executando o serviço. Quem pediu pode editar ou **cancelar com motivo** enquanto a viagem está pendente (o motorista recebe o aviso); excluir de vez é só para o gestor.
 - **Detalhe da viagem** em gaveta lateral, com o percurso completo, instruções, anexos e histórico.
-- **Editar, duplicar e excluir** viagens, com confirmação, pelo menu "⋮" de cada linha ou card.
+- **Editar, duplicar, cancelar e excluir** viagens, com confirmação, pelo menu "⋮" de cada linha ou card (cada um conforme a permissão).
 - **Filtros** por status, setor e responsável, busca livre (solicitante, projeto, origem, destino) e tema claro/escuro.
 - **Pensado para o celular:** o motorista é o usuário principal, então os botões têm toque grande e os campos não provocam zoom no iPhone.
 
