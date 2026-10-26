@@ -258,6 +258,81 @@
   @media (max-width:1000px){
     .form-grid{grid-template-columns:1fr;}
   }
+
+  /* ---------- Navegação entre visões (painel x motorista) ---------- */
+  [hidden]{display:none !important;}
+  .nav-mobile{display:none; gap:4px; padding:8px 12px; background:var(--panel); border-bottom:1px solid var(--border);}
+  .nav-mobile a{
+    flex:1; min-height:44px; display:flex; align-items:center; justify-content:center; gap:6px; border-radius:9px;
+    font-size:14px; font-weight:700; color:var(--muted); text-decoration:none; background:var(--panel-2); border:1px solid var(--border);
+  }
+  .nav-mobile a.ativo{background:rgba(59,130,246,.12); color:var(--accent); border-color:var(--accent);}
+  @media (max-width:900px){
+    .nav-mobile{display:flex;}
+    .topbar{flex-wrap:wrap; padding:10px 12px;}
+  }
+
+  /* ---------- Minhas corridas (visão do motorista, celular primeiro) ---------- */
+  .mc-topo{align-items:flex-end;}
+  .mc-login{display:flex; flex-direction:column; gap:6px; flex:1 1 260px; max-width:420px; min-width:0;}
+  .mc-login label{font-size:10.5px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.03em;}
+  .mc-login select{
+    min-height:48px; padding:10px 12px; border-radius:10px; border:1px solid var(--border);
+    background:var(--panel); color:var(--text); font-size:16px; font-family:inherit; width:100%;
+  }
+  .mc-grupo{margin-bottom:26px;}
+  .mc-grupo-titulo{
+    display:flex; align-items:center; gap:8px; min-height:44px; margin:0 0 6px;
+    font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--muted);
+  }
+  details.mc-grupo > summary{cursor:pointer; list-style:none;}
+  details.mc-grupo > summary::-webkit-details-marker{display:none;}
+  details.mc-grupo > summary::after{content:"▾"; margin-left:auto; font-size:14px; transition:transform .15s ease;}
+  details.mc-grupo:not([open]) > summary::after{transform:rotate(-90deg);}
+  .mc-contagem{background:var(--panel); border:1px solid var(--border); border-radius:999px; padding:1px 8px; font-size:11px; color:var(--text);}
+  .mc-lista{display:grid; gap:14px; grid-template-columns:repeat(auto-fill, minmax(min(100%, 380px), 1fr)); align-items:start;}
+  .mc-vazio{text-align:center; color:var(--muted); font-size:14px; padding:28px 16px;}
+  .mc-vazio-grupo{margin:0; font-size:13px; color:var(--muted); font-style:italic;}
+  .mc-card{
+    background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:16px;
+    display:flex; flex-direction:column; gap:12px; min-width:0;
+  }
+  .mc-card.nova{border-left:4px solid var(--warn);}
+  .mc-card.andamento{border-left:4px solid var(--accent);}
+  .mc-card.concluida{border-left:4px solid var(--accent-2);}
+  .mc-head{display:flex; justify-content:space-between; align-items:flex-start; gap:8px; flex-wrap:wrap;}
+  .mc-id{font-size:16px; font-weight:700;}
+  .mc-data{font-size:12.5px; color:var(--muted); margin-top:2px;}
+  .mc-meta{font-size:14px; display:flex; flex-wrap:wrap; gap:6px 10px; align-items:center; overflow-wrap:anywhere;}
+  .mc-meta .rot{color:var(--muted);}
+  .mc-rota{font-size:14px; line-height:1.45; overflow-wrap:anywhere;}
+  .mc-proxima{border:2px solid var(--accent); background:rgba(59,130,246,.08); border-radius:10px; padding:12px; display:flex; flex-direction:column; gap:10px; min-width:0;}
+  .mc-proxima.fim{border-color:var(--accent-2); background:rgba(34,197,94,.08);}
+  .mc-proxima-rot{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--accent);}
+  .mc-proxima.fim .mc-proxima-rot{color:var(--accent-2);}
+  .mc-endereco{font-size:15px; font-weight:700; line-height:1.4; overflow-wrap:anywhere;}
+  .mc-instr{white-space:pre-wrap; font-size:14px; line-height:1.45; background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:10px 12px; overflow-wrap:anywhere;}
+  .mc-botoes{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  .mc-botoes .mc-btn-cheio{grid-column:1 / -1;}
+  .mc-btn{
+    min-height:48px; width:100%; display:flex; align-items:center; justify-content:center; gap:8px; padding:10px 12px;
+    font-size:15px; font-weight:700; border-radius:10px; text-decoration:none; text-align:center; line-height:1.2;
+  }
+  .mc-btn.ok{background:var(--accent-2); border:1px solid var(--accent-2); color:#fff;}
+  .mc-btn.ok:hover{color:#fff;}
+  .mc-dica{font-size:13px; color:var(--muted); margin:0;}
+  .mc-card .anexo-lista li{min-height:44px;}
+  .mc-paradas > summary{min-height:44px; display:flex; align-items:center; cursor:pointer; font-size:14px; font-weight:600; color:var(--accent);}
+  .mc-paradas[open] > summary{margin-bottom:8px;}
+  .mc-parada.visitada{opacity:.8;}
+  .mc-parada.atual{border-color:var(--accent);}
+  .mc-parada-topo{display:flex; justify-content:space-between; align-items:flex-start; gap:8px; flex-wrap:wrap;}
+  .mc-chegada{font-size:12px; font-weight:700; color:var(--accent-2);}
+  .mc-parada .mc-botoes{margin-top:10px;}
+  @media (max-width:420px){
+    .mc-card{padding:14px 12px;}
+    .mc-btn{font-size:14px;}
+  }
 </style>
 </head>
 <body>
@@ -270,14 +345,15 @@
     </div>
     <div class="nav-group">
       <div class="nav-group-label">Logística</div>
-      <a class="nav-item active" href="index.html"><span class="nav-icon">🚚</span>Entregas e Retiradas</a>
+      <a class="nav-item active" href="#painel" data-vista="painel"><span class="nav-icon">🚚</span>Entregas e Retiradas</a>
+      <a class="nav-item" href="#corridas" data-vista="motorista"><span class="nav-icon">🧭</span>Minhas corridas</a>
     </div>
     <div class="sidebar-footer">Dados de exemplo (ilustrativo)</div>
   </aside>
 
   <div class="app-main">
     <div class="topbar">
-      <div class="breadcrumb">Logística <span>/</span> <b>Entregas e Retiradas</b></div>
+      <div class="breadcrumb">Logística <span>/</span> <b id="breadcrumbAtual">Entregas e Retiradas</b></div>
       <div class="topbar-spacer"></div>
       <button type="button" class="usuario-toggle" id="btnPerfilUsuario">
         <span>👤</span><span id="perfilUsuarioLabel">Definir meu usuário</span>
@@ -286,9 +362,29 @@
         <span id="temaIcon">🌙</span><span id="temaLabel">Tema escuro</span>
       </button>
     </div>
+    <nav class="nav-mobile" aria-label="Navegação">
+      <a href="#painel" data-vista="painel" class="ativo">🚚 Viagens</a>
+      <a href="#corridas" data-vista="motorista">🧭 Minhas corridas</a>
+    </nav>
 
     <div class="page-content">
 
+      <div id="vistaMotorista" hidden>
+        <div class="page-header-row mc-topo">
+          <div>
+            <h1>Minhas corridas</h1>
+            <p class="sub" id="mcResumo">Visão do motorista: aceite as corridas, siga as paradas e conclua pelo celular.</p>
+          </div>
+          <div class="mc-login">
+            <label for="mcMotorista">Entrar como</label>
+            <select id="mcMotorista"></select>
+            <span class="form-hint">Login simulado — na versão real cada motorista entra com a própria conta.</span>
+          </div>
+        </div>
+        <div id="mcConteudo"></div>
+      </div>
+
+      <div id="vistaPainel">
       <div class="page-header-row">
         <div>
           <h1>Entregas e Retiradas</h1>
@@ -313,7 +409,7 @@
           </div>
           <p class="roteiro-nota">Rota calculada pelas ruas de verdade usando o OSRM, um serviço público e gratuito de roteirização (sem trânsito em tempo real) — se ele estiver indisponível no momento, cai automaticamente para uma estimativa em linha reta. Base de partida: Osasco, 08:00.</p>
           <div id="roteiroResumo" class="form-hint" style="margin-bottom:12px;"></div>
-          <div id="roteiroMapa" style="height:360px; border-radius:10px; overflow:hidden; border:1px solid var(--border); margin-bottom:16px;"></div>
+          <div id="roteiroMapa" style="position:relative; z-index:0; isolation:isolate; height:360px; border-radius:10px; overflow:hidden; border:1px solid var(--border); margin-bottom:16px;"></div>
           <ul class="er-historico" id="roteiroTimeline"></ul>
           <div id="roteiroVazio" style="display:none; font-size:12.5px; color:var(--muted); text-align:center; padding:24px 10px;">Nenhuma viagem pendente ou em rota para esse motorista nessa data.</div>
         </div>
@@ -386,6 +482,7 @@
           <div class="kanban-board" id="kanbanBoardEr" style="display:none;"></div>
         </div>
       </section>
+      </div><!-- /vistaPainel -->
 
     </div>
   </div>
@@ -505,8 +602,7 @@
         <div class="form-grid">
           <div class="form-field">
             <label for="fSolicitanteEr">Solicitante *</label>
-            <input type="text" id="fSolicitanteEr" list="listaSolicitantesEr" placeholder="Quem está pedindo a viagem">
-            <datalist id="listaSolicitantesEr"></datalist>
+            <input type="text" id="fSolicitanteEr" placeholder="Digite o nome de quem está pedindo a viagem" maxlength="80" autocomplete="off" required>
           </div>
           <div class="form-field">
             <label for="fSetorEr">Setor *</label>
@@ -527,8 +623,9 @@
           </div>
           <div class="form-field full">
             <label for="fMotoristaEr">Responsável pela viagem *</label>
-            <input type="text" id="fMotoristaEr" list="listaMotoristasEr" placeholder="Digite o nome de quem vai fazer a corrida">
+            <input type="text" id="fMotoristaEr" list="listaMotoristasEr" placeholder="Digite e escolha um motorista cadastrado">
             <datalist id="listaMotoristasEr"></datalist>
+            <p class="form-hint" id="fMotoristaAviso"></p>
           </div>
         </div>
       </div>
@@ -592,7 +689,10 @@ const TEMA_STORAGE_KEY = "suprimentos-demo-entregas-tema";
   const salvo = localStorage.getItem(TEMA_STORAGE_KEY);
   if(salvo === "dark"){ document.documentElement.setAttribute("data-theme","dark"); }
 })();
+// Visão atual da página: "painel" (tabela/Kanban/Roteiro) ou "motorista" (Minhas corridas).
+let vistaAtualEr = "painel";
 function fmtData(d){ return new Date(d).toLocaleDateString("pt-BR"); }
+function fmtHora(d){ return new Date(d).toLocaleTimeString("pt-BR", {hour:"2-digit", minute:"2-digit"}); }
 function fmtDataHora(d){ const dt = new Date(d); return dt.toLocaleDateString("pt-BR") + " às " + dt.toLocaleTimeString("pt-BR", {hour:"2-digit", minute:"2-digit"}); }
 
 // ---------- PERFIL DO USUÁRIO (mesma chave da Requisição de Compras — identidade carrega entre as páginas) ----------
@@ -667,7 +767,8 @@ function renderPercursoDrawer(v){
     const anexos = (p.anexos||[]).length
       ? `<ul class="anexo-lista">${p.anexos.map(a=>`<li><a href="${esc(a.dataUrl)}" download="${esc(a.name)}">📎 ${esc(a.name)}</a><span style="color:var(--muted); font-size:11px;">${Math.max(1, Math.round((a.size||0)/1024))} KB</span></li>`).join("")}</ul>`
       : "";
-    return `<div class="parada-card"><span class="parada-tag ${tipo}">${TIPO_PARADA_LABEL[tipo]}</span><div style="font-weight:600; font-size:13px;">${esc(enderecoCompleto(p))}</div>${p.instrucoes ? `<div class="er-obs" style="margin:8px 0 0;">${esc(p.instrucoes)}</div>` : ""}${anexos}</div>`;
+    const chegada = p.chegadaEm ? `<div class="table-subtext" style="color:var(--accent-2); font-weight:600;">✓ Motorista chegou às ${fmtHora(p.chegadaEm)}</div>` : "";
+    return `<div class="parada-card"><span class="parada-tag ${tipo}">${TIPO_PARADA_LABEL[tipo]}</span><div style="font-weight:600; font-size:13px;">${esc(enderecoCompleto(p))}</div>${chegada}${p.instrucoes ? `<div class="er-obs" style="margin:8px 0 0;">${esc(p.instrucoes)}</div>` : ""}${anexos}</div>`;
   }).join("");
 }
 // Geocodificação de apoio: o CEP já traz coordenadas aproximadas; se faltar, tenta o Nominatim (gratuito).
@@ -735,7 +836,7 @@ function popularMotoristaRoteiro(){
   if(!sel) return;
   const atual = sel.value;
   const nomes = [...new Set([...MOTORISTAS_SEED, ...VIAGENS.map(v=>v.motorista).filter(Boolean)])].sort((a,b)=>a.localeCompare(b,"pt-BR"));
-  sel.innerHTML = nomes.map(n=>`<option value="${n}">${n}</option>`).join("");
+  sel.innerHTML = nomes.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join("");
   if(nomes.includes(atual)) sel.value = atual;
   else if(nomes.includes("Jailson Souza")) sel.value = "Jailson Souza";
 }
@@ -744,6 +845,8 @@ let mapaRoteiro = null;
 let roteiroRequestId = 0;
 async function renderRoteiroDia(){
   const minhaRequisicao = ++roteiroRequestId;
+  // Com o painel escondido (tela do motorista) não desenha o mapa: ele é refeito ao voltar para o painel.
+  if(vistaAtualEr !== "painel") return;
   const dataInput = document.getElementById("roteiroData");
   const motoristaSel = document.getElementById("roteiroMotorista");
   if(!dataInput || !motoristaSel) return;
@@ -898,11 +1001,16 @@ const DEFINICOES_SEED = [
   {diasCriacao:6, solicitanteIdx:0, setor:"Obras", projeto:"PRJ-2192", motoristaIdx:0, origemIdx:4, destinoIdx:6, atividadeIdx:3, status:"concluida"},
   {diasCriacao:5, solicitanteIdx:2, setor:"Manutenção", projeto:"CTR-1100", motoristaIdx:1, origemIdx:1, destinoIdx:7, atividadeIdx:2, status:"concluida"},
   {diasCriacao:4, solicitanteIdx:4, setor:"Obras", projeto:"PRJ-2184", motoristaIdx:0, origemIdx:5, destinoIdx:6, atividadeIdx:0, status:"concluida"},
-  {diasCriacao:3, solicitanteIdx:6, setor:"Obras", projeto:"", motoristaIdx:0, origemIdx:2, destinoIdx:8, atividadeIdx:4, status:"em_rota"},
+  // chegadas: quantas paradas o motorista já marcou como visitadas (tela Minhas corridas)
+  {diasCriacao:3, solicitanteIdx:6, setor:"Obras", projeto:"", motoristaIdx:0, origemIdx:2, destinoIdx:8, atividadeIdx:4, status:"em_rota", chegadas:1},
   {diasCriacao:2, solicitanteIdx:1, setor:"Administrativo", projeto:"", motoristaIdx:2, origemIdx:1, destinoIdx:1, atividadeIdx:2, status:"em_rota"},
   {diasCriacao:1, solicitanteIdx:3, setor:"Administrativo", projeto:"ADM-3002", motoristaIdx:1, origemIdx:3, destinoIdx:1, atividadeIdx:1, status:"pendente"},
-  {diasCriacao:0, solicitanteIdx:5, setor:"Manutenção", projeto:"CTR-1088", motoristaIdx:0, origemIdx:4, destinoIdx:7, atividadeIdx:3, status:"pendente"},
+  // aceita: o motorista já aceitou, mas ainda não iniciou a rota
+  {diasCriacao:0, solicitanteIdx:5, setor:"Manutenção", projeto:"CTR-1088", motoristaIdx:0, origemIdx:4, destinoIdx:7, atividadeIdx:3, status:"pendente", aceita:true},
+  // pendente e ainda não aceita — aparece em "Aguardando aceite" na tela do Jailson
   {diasCriacao:0, solicitanteIdx:7, setor:"Obras", projeto:"PRJ-2192", motoristaIdx:0, origemIdx:6, destinoIdx:2, atividadeIdx:5, status:"pendente", intermediariasIdx:[8]},
+  // concluída hoje — aparece em "Concluídas hoje" na tela do Jailson
+  {diasCriacao:2, solicitanteIdx:2, setor:"Manutenção", projeto:"CTR-1100", motoristaIdx:0, origemIdx:0, destinoIdx:3, atividadeIdx:4, status:"concluida"},
 ];
 
 (function gerarSeed(){
@@ -912,11 +1020,18 @@ const DEFINICOES_SEED = [
     const solicitante = SOLICITANTES_SEED[def.solicitanteIdx % SOLICITANTES_SEED.length];
     const motorista = MOTORISTAS_SEED[def.motoristaIdx % MOTORISTAS_SEED.length];
     const historico = [{status:"pendente", data, usuario: solicitante}];
+    const tEmRota = new Date(data.getTime() + 86400000);
+    const tConcluida = new Date(data.getTime() + 2*86400000);
+    // Aceite do motorista: marcador (não é um status). Viagens em rota/concluídas já foram aceitas.
+    let aceitaEm = null;
+    if(def.status !== "pendente") aceitaEm = new Date(tEmRota.getTime() - 30*60000);
+    else if(def.aceita) aceitaEm = new Date(data.getTime());
+    if(aceitaEm) historico.push({status:"pendente", data:aceitaEm, usuario: motorista, evento:"Corrida aceita pelo motorista"});
     if(def.status !== "pendente"){
-      historico.push({status:"em_rota", data:new Date(data.getTime() + 86400000), usuario: motorista});
+      historico.push({status:"em_rota", data:tEmRota, usuario: motorista});
     }
     if(def.status === "concluida"){
-      historico.push({status:"concluida", data:new Date(data.getTime() + 2*86400000), usuario: motorista});
+      historico.push({status:"concluida", data:tConcluida, usuario: motorista});
     }
     const idxs = [def.origemIdx, ...(def.intermediariasIdx || []), def.destinoIdx];
     const paradas = idxs.map((li, k)=>{
@@ -926,11 +1041,18 @@ const DEFINICOES_SEED = [
       return {cep:l.cep, endereco:l.endereco, numero:l.numero, bairro:l.bairro, cidade:l.cidade, estado:l.estado,
               instrucoes:`${l.nome} — ${instr}`, anexos:[], coord: ENDERECOS_COORDS[l.nome] || null, coordCep:l.cep};
     });
-    VIAGENS.push({
+    // Chegadas nas paradas (horários fixos, sem sorteio): todas nas concluídas; "chegadas" nas em rota.
+    paradas.forEach((p, k)=>{
+      if(def.status === "concluida") p.chegadaEm = new Date(tConcluida.getTime() - (paradas.length - 1 - k)*40*60000);
+      else if(def.status === "em_rota" && k < (def.chegadas || 0)) p.chegadaEm = new Date(tEmRota.getTime() + (k+1)*45*60000);
+    });
+    const viagem = {
       id: novoId(), data, solicitante, setor: def.setor, projetoNumero: def.projeto || "",
       motorista, origem: rotuloParada(paradas[0]), destino: rotuloParada(paradas[paradas.length - 1]),
       atividade: "", observacao: "", paradas, status: def.status, historico,
-    });
+    };
+    if(aceitaEm){ viagem.aceitaEm = aceitaEm; viagem.aceitaPor = motorista; }
+    VIAGENS.push(viagem);
   });
   VIAGENS.sort((a,b)=> b.data - a.data);
 })();
@@ -951,16 +1073,15 @@ function atualizarOpcoesFiltroMotoristaEr(){
   const el = document.getElementById("filtroMotoristaEr");
   const atual = el.value || "todos";
   const nomes = [...new Set(VIAGENS.map(v=>v.motorista).filter(Boolean))].sort((a,b)=> a.localeCompare(b,"pt-BR"));
-  el.innerHTML = `<option value="todos">Todos</option>` + nomes.map(n=>`<option value="${n}">${n}</option>`).join("");
+  el.innerHTML = `<option value="todos">Todos</option>` + nomes.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join("");
   el.value = nomes.includes(atual) ? atual : "todos";
   filtroAtivoEr.motorista = el.value;
   popularMotoristaRoteiro();
 }
 function atualizarDatalistsEr(){
-  const nomesSolic = [...new Set([...SOLICITANTES_SEED, ...VIAGENS.map(v=>v.solicitante)])].sort((a,b)=>a.localeCompare(b,"pt-BR"));
-  document.getElementById("listaSolicitantesEr").innerHTML = nomesSolic.map(n=>`<option value="${n}">`).join("");
-  const nomesMotor = [...new Set([...MOTORISTAS_SEED, ...VIAGENS.map(v=>v.motorista).filter(Boolean)])].sort((a,b)=>a.localeCompare(b,"pt-BR"));
-  document.getElementById("listaMotoristasEr").innerHTML = nomesMotor.map(n=>`<option value="${n}">`).join("");
+  // Sugestões do "Responsável pela viagem" = motoristas cadastrados (usuários que têm a tela Minhas corridas).
+  const nomesMotor = [...MOTORISTAS_SEED].sort((a,b)=>a.localeCompare(b,"pt-BR"));
+  document.getElementById("listaMotoristasEr").innerHTML = nomesMotor.map(n=>`<option value="${esc(n)}">`).join("");
 }
 
 // ---------- RENDER TABELA ----------
@@ -979,10 +1100,10 @@ function renderTabelaEr(){
     tr.innerHTML = `
       <td><b>${v.id}</b></td>
       <td>${fmtData(v.data)}</td>
-      <td>${v.solicitante}</td>
-      <td><span class="badge setor">${v.setor}</span></td>
+      <td>${esc(v.solicitante)}</td>
+      <td><span class="badge setor">${esc(v.setor)}</span></td>
       <td>${esc(v.origem)}<span class="rota-seta">→</span>${esc(v.destino)}${nIntermed(v) ? `<div class="table-subtext">+ ${nIntermed(v)} parada(s) intermediária(s)</div>` : ""}</td>
-      <td><span class="badge st-${v.status}">${STATUS_LABEL[v.status]}</span></td>
+      <td><span class="badge st-${v.status}">${STATUS_LABEL[v.status]}</span>${subStatusMotorista(v) ? `<div class="table-subtext">${subStatusMotorista(v)}</div>` : ""}</td>
       <td class="td-menu"><button type="button" class="card-menu-btn" data-id="${v.id}" title="Mais ações">⋮</button></td>
     `;
     tr.addEventListener("click", ()=> abrirDrawerEr(v.id));
@@ -1021,8 +1142,9 @@ function renderKanbanEr(){
             <div class="kc-id">${v.id}</div>
             <button type="button" class="card-menu-btn" data-id="${v.id}" title="Mais ações">⋮</button>
           </div>
-          <div class="kc-sub">${v.solicitante} · ${v.setor}</div>
+          <div class="kc-sub">${esc(v.solicitante)} · ${esc(v.setor)}</div>
           <div class="kc-rota">${esc(v.origem)}<span class="rota-seta">→</span>${esc(v.destino)}${nIntermed(v) ? `<div class="kc-sub">+ ${nIntermed(v)} parada(s) intermediária(s)</div>` : ""}</div>
+          ${subStatusMotorista(v) ? `<div class="kc-sub" style="margin-top:6px;">${subStatusMotorista(v)}</div>` : ""}
         `;
         card.addEventListener("click", ()=> abrirDrawerEr(v.id));
         card.addEventListener("dragstart", (e)=>{
@@ -1047,14 +1169,16 @@ function renderKanbanEr(){
   });
 }
 
-function mudarStatusEr(id, novoStatus){
+// usuario (opcional): quem fez a mudança — a tela Minhas corridas passa o motorista logado.
+function mudarStatusEr(id, novoStatus, usuario){
   const v = VIAGENS.find(x=>x.id===id);
   if(!v || v.status === novoStatus) return;
   v.status = novoStatus;
-  v.historico.push({status:novoStatus, data:new Date(), usuario: usuarioAtualNome() || "Não identificado"});
+  v.historico.push({status:novoStatus, data:new Date(), usuario: usuario || usuarioAtualNome() || "Não identificado"});
   renderTabelaEr();
   renderKanbanEr();
   renderRoteiroDia();
+  renderMinhasCorridas();
 }
 
 // ---------- ALTERNÂNCIA DE VISÃO ----------
@@ -1119,7 +1243,7 @@ function abrirDrawerEr(id){
   document.getElementById("erDrawerTitulo").textContent = `${v.id} — ${v.solicitante}`;
   document.getElementById("erDrawerSub").textContent = `Criada em ${fmtData(v.historico && v.historico[0] ? v.historico[0].data : v.data)}`;
   document.getElementById("erInfoSolicitante").textContent = v.solicitante;
-  document.getElementById("erInfoSetor").innerHTML = `<span class="badge setor">${v.setor}</span>`;
+  document.getElementById("erInfoSetor").innerHTML = `<span class="badge setor">${esc(v.setor)}</span>`;
   document.getElementById("erInfoProjeto").textContent = v.projetoNumero || "—";
   document.getElementById("erInfoMotorista").textContent = v.motorista || "—";
   document.getElementById("erInfoDataViagem").textContent = fmtData(v.data);
@@ -1138,7 +1262,7 @@ function abrirDrawerEr(id){
 
   const historicoEl = document.getElementById("erHistorico");
   historicoEl.innerHTML = [...v.historico].reverse().map(h=>
-    `<li><span>${STATUS_LABEL[h.status]} — ${h.usuario || "Não identificado"}</span><span>${fmtDataHora(h.data)}</span></li>`
+    `<li><span>${h.evento ? esc(h.evento) : STATUS_LABEL[h.status]} — ${esc(h.usuario || "Não identificado")}</span><span>${fmtDataHora(h.data)}</span></li>`
   ).join("");
 
   erBackdrop.classList.add("open");
@@ -1203,7 +1327,9 @@ document.getElementById("duplicarSimEr").addEventListener("click", ()=>{
   const copia = {
     id: novoId(), data: new Date(), solicitante: original.solicitante, setor: original.setor,
     projetoNumero: original.projetoNumero, motorista: original.motorista,
-    origem: original.origem, destino: original.destino, atividade: original.atividade || "", paradas: JSON.parse(JSON.stringify(paradasDaViagem(original))),
+    origem: original.origem, destino: original.destino, atividade: original.atividade || "",
+    // a cópia começa do zero para o motorista: sem aceite e sem chegadas marcadas
+    paradas: JSON.parse(JSON.stringify(paradasDaViagem(original))).map(p=>{ delete p.chegadaEm; return p; }),
     observacao: original.observacao,
     status: "pendente", historico: [{status:"pendente", data:new Date(), usuario: usuarioAtualNome() || original.solicitante}],
   };
@@ -1317,6 +1443,7 @@ function wizMostrarPasso(){
     document.getElementById("fDataViagemEr").value = d.dataViagem;
     document.getElementById("fProjetoEr").value = d.projetoNumero;
     document.getElementById("fMotoristaEr").value = d.motorista;
+    atualizarAvisoMotoristaEr();
   } else {
     const i = wiz.passo - 1;
     const p = wiz.paradas[i];
@@ -1388,6 +1515,18 @@ document.getElementById("btnEditarViagem").addEventListener("click", ()=>{
   abrirModalEdicaoEr(id);
 });
 document.getElementById("modalCloseEr").addEventListener("click", cancelarModalEr);
+
+// Aviso abaixo do "Responsável pela viagem": diz se o nome é de um motorista cadastrado
+// (só nesse caso a corrida aparece na tela Minhas corridas dele). Não bloqueia o cadastro.
+function atualizarAvisoMotoristaEr(){
+  const el = document.getElementById("fMotoristaAviso");
+  const nome = campo("fMotoristaEr").trim();
+  const cadastrado = motoristaCanonico(nome);
+  if(!nome) el.textContent = "";
+  else if(cadastrado) el.textContent = `✓ Motorista cadastrado — a corrida vai aparecer em "Minhas corridas" de ${cadastrado}.`;
+  else el.textContent = "Nome não cadastrado: a viagem será criada, mas não vai aparecer em \"Minhas corridas\" de nenhum motorista.";
+}
+document.getElementById("fMotoristaEr").addEventListener("input", atualizarAvisoMotoristaEr);
 
 // Validação em tempo real: os botões só habilitam com os obrigatórios preenchidos.
 modalBackdropEr.addEventListener("input", wizAtualizarBotoes);
@@ -1494,6 +1633,8 @@ document.getElementById("wizConcluir").addEventListener("click", ()=>{
   if(erro){ wizMostrarPasso(); wizErroEl.textContent = erro; wizErroEl.classList.add("show"); return; }
 
   const d = wiz.dados;
+  // Se o nome bate com um motorista cadastrado (ignorando maiúsculas/acentos), grava o nome exato do cadastro.
+  d.motorista = motoristaCanonico(d.motorista) || d.motorista;
   const paradas = wiz.paradas.map(p=> ({...p, anexos: [...p.anexos]}));
   const [ano, mes, dia] = d.dataViagem.split("-").map(Number);
   const dataViagem = new Date(ano, mes - 1, dia, 12, 0, 0);
@@ -1503,6 +1644,8 @@ document.getElementById("wizConcluir").addEventListener("click", ()=>{
   let idAbrir;
   if(modoEdicaoIdEr){
     const v = VIAGENS.find(x=>x.id===modoEdicaoIdEr);
+    // Trocou o responsável: o aceite era do motorista anterior, então o novo precisa aceitar de novo.
+    if(v && v.motorista !== d.motorista){ delete v.aceitaEm; delete v.aceitaPor; }
     if(v) Object.assign(v, {data: dataViagem, solicitante: d.solicitante, setor: d.setor, projetoNumero: d.projetoNumero,
       motorista: d.motorista, origem, destino, paradas});
     idAbrir = modoEdicaoIdEr;
@@ -1521,6 +1664,287 @@ document.getElementById("wizConcluir").addEventListener("click", ()=>{
   renderTabelaEr(); renderKanbanEr(); atualizarOpcoesFiltroMotoristaEr(); atualizarDatalistsEr(); renderRoteiroDia();
   abrirDrawerEr(idAbrir);
 });
+
+// ---------- MINHAS CORRIDAS (visão do motorista, pensada para o celular) ----------
+// "Usuários cadastrados" = MOTORISTAS_SEED. Login simulado: o motorista escolhe o nome em "Entrar como".
+const MOTORISTA_LOGADO_KEY = "suprimentos-demo-entregas-motorista-logado";
+function lerMotoristaLogado(){
+  try{ const n = localStorage.getItem(MOTORISTA_LOGADO_KEY) || ""; return MOTORISTAS_SEED.includes(n) ? n : ""; }catch(e){ return ""; }
+}
+function salvarMotoristaLogado(nome){
+  try{ if(nome) localStorage.setItem(MOTORISTA_LOGADO_KEY, nome); else localStorage.removeItem(MOTORISTA_LOGADO_KEY); }catch(e){}
+}
+let motoristaLogado = lerMotoristaLogado();
+let mcConcluidasAberto = false;       // grupo "Concluídas hoje" aberto/fechado
+const mcParadasAbertas = new Set();   // cartões com a lista de paradas aberta (mantém entre re-renders)
+
+function normalizarNome(s){ return String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().trim().replace(/\s+/g," "); }
+function motoristaCanonico(nome){
+  const alvo = normalizarNome(nome);
+  if(!alvo) return "";
+  return MOTORISTAS_SEED.find(m => normalizarNome(m) === alvo) || "";
+}
+function proximaParadaIdx(v){ return paradasDaViagem(v).findIndex(p => !p.chegadaEm); }
+function paradasVisitadas(v){ return paradasDaViagem(v).filter(p => p.chegadaEm).length; }
+function corridaAceita(v){ return !!v.aceitaEm || v.status !== "pendente"; } // em rota/concluída conta como aceita
+function dataConclusao(v){
+  for(let i = v.historico.length - 1; i >= 0; i--){
+    const h = v.historico[i];
+    if(h.status === "concluida" && !h.evento) return new Date(h.data);
+  }
+  return null;
+}
+// Texto curto mostrado na tabela/Kanban sobre o andamento do motorista (sem texto de usuário).
+function subStatusMotorista(v){
+  if(v.status === "pendente") return v.aceitaEm ? "✓ Aceita pelo motorista" : "Aguardando aceite";
+  if(v.status === "em_rota"){ const n = paradasDaViagem(v).length; return `${paradasVisitadas(v)}/${n} paradas visitadas`; }
+  return "";
+}
+function rotuloDiaCorrida(d){
+  const iso = paraDataLocalISO(d), agora = new Date();
+  if(iso === paraDataLocalISO(agora)) return "Hoje";
+  if(iso === paraDataLocalISO(new Date(agora.getTime() + 86400000))) return "Amanhã";
+  if(iso === paraDataLocalISO(new Date(agora.getTime() - 86400000))) return "Ontem";
+  return "";
+}
+// Links de navegação: sempre https, montados aqui, com o endereço codificado.
+function enderecoParaMapas(p){
+  return [[p.endereco, p.numero].filter(Boolean).join(", "), p.bairro, p.cidade, p.estado, p.cep, "Brasil"].filter(Boolean).join(", ");
+}
+function linkGoogleMaps(p){ return "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(enderecoParaMapas(p)); }
+function linkWaze(p){ return "https://waze.com/ul?q=" + encodeURIComponent(enderecoParaMapas(p)) + "&navigate=yes"; }
+
+function htmlLinksMapas(p){
+  return `<a class="er-btn mc-btn" href="${esc(linkGoogleMaps(p))}" target="_blank" rel="noopener noreferrer">📍 Abrir no Google Maps</a>` +
+         `<a class="er-btn mc-btn" href="${esc(linkWaze(p))}" target="_blank" rel="noopener noreferrer">🚙 Abrir no Waze</a>`;
+}
+function htmlAnexosMc(p){
+  const lista = (p.anexos || []).filter(a => a && typeof a.dataUrl === "string" && a.dataUrl.startsWith("data:"));
+  if(!lista.length) return "";
+  return `<ul class="anexo-lista">${lista.map(a=>`<li><a href="${esc(a.dataUrl)}" download="${esc(a.name)}">📎 ${esc(a.name)}</a><span style="color:var(--muted); font-size:11px;">${Math.max(1, Math.round((a.size||0)/1024))} KB</span></li>`).join("")}</ul>`;
+}
+
+function htmlCorridaMc(v, grupo){
+  const ps = paradasDaViagem(v);
+  const n = ps.length;
+  const prox = proximaParadaIdx(v);
+  const idAttr = esc(v.id);
+  const dia = rotuloDiaCorrida(v.data);
+
+  let badge;
+  if(grupo === "nova") badge = `<span class="badge st-pendente">Aguardando aceite</span>`;
+  else if(v.status === "pendente") badge = `<span class="badge st-pendente">Aceita · não iniciada</span>`;
+  else badge = `<span class="badge st-${v.status}">${STATUS_LABEL[v.status]}</span>`;
+
+  // Próxima parada pendente em destaque no topo (só depois do aceite)
+  let destaque = "";
+  if(grupo === "andamento"){
+    if(prox >= 0){
+      const p = ps[prox], tipo = tipoParada(prox, n);
+      destaque = `<div class="mc-proxima">
+        <div class="mc-proxima-rot">Próxima parada · ${prox+1} de ${n}</div>
+        <div><span class="parada-tag ${tipo}">${TIPO_PARADA_LABEL[tipo]}</span><div class="mc-endereco">${esc(enderecoCompleto(p))}</div></div>
+        ${p.instrucoes ? `<div class="mc-instr">${esc(p.instrucoes)}</div>` : ""}
+        ${htmlAnexosMc(p)}
+        <div class="mc-botoes">
+          ${htmlLinksMapas(p)}
+          ${v.status === "em_rota" ? `<button type="button" class="btn-primary mc-btn ok mc-btn-cheio" data-acao="chegada" data-id="${idAttr}" data-parada="${prox}">✓ Cheguei</button>` : ""}
+        </div>
+        ${v.status === "pendente" ? `<p class="mc-dica">Toque em "Iniciar rota" quando sair, para poder marcar as chegadas.</p>` : ""}
+      </div>`;
+    } else {
+      destaque = `<div class="mc-proxima fim"><div class="mc-proxima-rot">Todas as paradas visitadas</div><p class="mc-dica">Confira a entrega e toque em "Concluir corrida".</p></div>`;
+    }
+  }
+
+  // Ação principal do cartão
+  let acoes = "";
+  if(grupo === "nova"){
+    acoes = `<button type="button" class="btn-primary mc-btn" data-acao="aceitar" data-id="${idAttr}">Aceitar corrida</button>`;
+  } else if(grupo === "andamento" && v.status === "pendente"){
+    acoes = `<button type="button" class="btn-primary mc-btn" data-acao="iniciar" data-id="${idAttr}">▶ Iniciar rota</button>`;
+  } else if(grupo === "andamento" && v.status === "em_rota"){
+    const falta = prox >= 0;
+    acoes = `<button type="button" class="btn-primary mc-btn ok" data-acao="concluir" data-id="${idAttr}" ${falta ? "disabled" : ""}>✔ Concluir corrida</button>` +
+      (falta ? `<p class="mc-dica">Marque a chegada em todas as paradas para concluir (${paradasVisitadas(v)} de ${n}).</p>` : "");
+  } else if(grupo === "concluida"){
+    const dc = dataConclusao(v);
+    acoes = dc ? `<p class="mc-dica">Concluída às ${fmtHora(dc)}.</p>` : "";
+  }
+
+  // Lista completa das paradas (recolhível), com instruções e anexos
+  const ultimaVisitada = ps.reduce((acc, p, i)=> p.chegadaEm ? i : acc, -1);
+  const listaParadas = ps.map((p, i)=>{
+    const tipo = tipoParada(i, n);
+    const atual = grupo === "andamento" && i === prox;
+    const podeDesfazer = v.status === "em_rota" && i === ultimaVisitada;
+    return `<div class="parada-card mc-parada ${p.chegadaEm ? "visitada" : ""} ${atual ? "atual" : ""}">
+      <div class="mc-parada-topo"><span class="parada-tag ${tipo}">${i+1}. ${TIPO_PARADA_LABEL[tipo]}</span>${p.chegadaEm ? `<span class="mc-chegada">✓ Chegada às ${fmtHora(p.chegadaEm)}</span>` : ""}</div>
+      <div style="font-weight:600; font-size:14px; overflow-wrap:anywhere;">${esc(enderecoCompleto(p))}</div>
+      ${p.instrucoes ? `<div class="mc-instr" style="margin-top:8px;">${esc(p.instrucoes)}</div>` : ""}
+      ${htmlAnexosMc(p)}
+      ${grupo === "andamento" ? `<div class="mc-botoes">${htmlLinksMapas(p)}${podeDesfazer ? `<button type="button" class="er-btn mc-btn mc-btn-cheio" data-acao="desfazer" data-id="${idAttr}" data-parada="${i}">↶ Desfazer chegada</button>` : ""}</div>` : ""}
+    </div>`;
+  }).join("");
+  const abertas = mcParadasAbertas.has(v.id);
+  const resumoParadas = grupo === "nova" ? `Ver paradas, instruções e anexos (${n})` : `Ver todas as paradas (${n})`;
+
+  return `<article class="mc-card ${grupo}" data-card="${idAttr}">
+    <div class="mc-head">
+      <div><div class="mc-id">${idAttr}</div><div class="mc-data">${dia ? `<b>${dia}</b> · ` : ""}${fmtData(v.data)}${v.projetoNumero ? ` · ${esc(v.projetoNumero)}` : ""}</div></div>
+      ${badge}
+    </div>
+    <div class="mc-meta"><span><span class="rot">Solicitante:</span> <b>${esc(v.solicitante)}</b></span><span class="badge setor">${esc(v.setor)}</span></div>
+    <div class="mc-rota">${esc(v.origem)}<span class="rota-seta">→</span>${esc(v.destino)}${nIntermed(v) ? `<div class="table-subtext" style="font-size:12px;">+ ${nIntermed(v)} parada(s) intermediária(s)</div>` : ""}</div>
+    ${destaque}
+    ${acoes}
+    <details class="mc-paradas" data-id="${idAttr}" ${abertas ? "open" : ""}><summary>${resumoParadas}</summary>${listaParadas}</details>
+  </article>`;
+}
+
+function renderMinhasCorridas(){
+  const sel = document.getElementById("mcMotorista");
+  const cont = document.getElementById("mcConteudo");
+  const resumo = document.getElementById("mcResumo");
+  if(!sel || !cont) return;
+  if(sel.value !== motoristaLogado) sel.value = motoristaLogado;
+  if(!motoristaLogado){
+    resumo.textContent = "Visão do motorista: aceite as corridas, siga as paradas e conclua pelo celular.";
+    cont.innerHTML = `<div class="card mc-vazio">Escolha seu nome em <b>Entrar como</b> para ver as suas corridas.</div>`;
+    return;
+  }
+  const minhas = VIAGENS.filter(v => v.motorista === motoristaLogado);
+  const hojeIso = paraDataLocalISO(new Date());
+  const novas = minhas.filter(v => v.status === "pendente" && !v.aceitaEm).sort((a,b)=> a.data - b.data);
+  const andamento = minhas.filter(v => v.status === "em_rota" || (v.status === "pendente" && v.aceitaEm))
+    .sort((a,b)=> ((b.status === "em_rota") - (a.status === "em_rota")) || (a.data - b.data));
+  const concluidas = minhas.filter(v => { if(v.status !== "concluida") return false; const d = dataConclusao(v); return !!d && paraDataLocalISO(d) === hojeIso; })
+    .sort((a,b)=> dataConclusao(b) - dataConclusao(a));
+
+  resumo.textContent = `Olá, ${motoristaLogado}. ${novas.length} nova(s) para aceitar · ${andamento.length} em andamento · ${concluidas.length} concluída(s) hoje.`;
+
+  const grupo = (titulo, lista, tipo, vazio) =>
+    `<div class="mc-grupo"><h2 class="mc-grupo-titulo">${titulo} <span class="mc-contagem">${lista.length}</span></h2>` +
+    (lista.length ? `<div class="mc-lista">${lista.map(v=> htmlCorridaMc(v, tipo)).join("")}</div>` : `<p class="mc-vazio-grupo">${vazio}</p>`) +
+    `</div>`;
+
+  cont.innerHTML =
+    grupo("Aguardando aceite", novas, "nova", "Nenhuma corrida nova para aceitar.") +
+    grupo("Em andamento", andamento, "andamento", "Nenhuma corrida em andamento.") +
+    `<details class="mc-grupo mc-concluidas" ${mcConcluidasAberto ? "open" : ""}><summary class="mc-grupo-titulo">Concluídas hoje <span class="mc-contagem">${concluidas.length}</span></summary>` +
+    (concluidas.length ? `<div class="mc-lista">${concluidas.map(v=> htmlCorridaMc(v, "concluida")).join("")}</div>` : `<p class="mc-vazio-grupo">Nenhuma corrida concluída hoje.</p>`) +
+    `</details>`;
+}
+
+// Depois de uma ação o cartão pode mudar de grupo: rola até ele para o motorista não se perder.
+function focarCartaoMc(id){
+  const card = [...document.querySelectorAll("#mcConteudo [data-card]")].find(el => el.dataset.card === id);
+  if(card && typeof card.scrollIntoView === "function") card.scrollIntoView({block:"nearest", behavior:"smooth"});
+}
+function atualizarTelasEr(){ renderTabelaEr(); renderKanbanEr(); renderRoteiroDia(); renderMinhasCorridas(); }
+function corridaDoMotorista(id){
+  const v = VIAGENS.find(x => x.id === id);
+  return (v && motoristaLogado && v.motorista === motoristaLogado) ? v : null;
+}
+function aceitarCorrida(id){
+  const v = corridaDoMotorista(id);
+  if(!v || v.aceitaEm || v.status !== "pendente") return;
+  v.aceitaEm = new Date();
+  v.aceitaPor = motoristaLogado;
+  v.historico.push({status:v.status, data:new Date(), usuario: motoristaLogado, evento:"Corrida aceita pelo motorista"});
+  atualizarTelasEr();
+}
+function iniciarRotaCorrida(id){
+  const v = corridaDoMotorista(id);
+  if(!v || v.status !== "pendente" || !v.aceitaEm) return;
+  mudarStatusEr(id, "em_rota", motoristaLogado);
+}
+function marcarChegadaParada(id, idx){
+  const v = corridaDoMotorista(id);
+  if(!v || v.status !== "em_rota") return;
+  if(!v.paradas || !v.paradas.length) v.paradas = paradasDaViagem(v);
+  if(idx !== proximaParadaIdx(v)) return; // as paradas são marcadas em ordem
+  const n = v.paradas.length;
+  v.paradas[idx].chegadaEm = new Date();
+  v.historico.push({status:v.status, data:new Date(), usuario: motoristaLogado,
+    evento:`Chegada na parada ${idx+1} de ${n} (${TIPO_PARADA_LABEL[tipoParada(idx, n)]})`});
+  atualizarTelasEr();
+}
+function desfazerChegadaParada(id, idx){
+  const v = corridaDoMotorista(id);
+  if(!v || v.status !== "em_rota" || !v.paradas || !v.paradas[idx] || !v.paradas[idx].chegadaEm) return;
+  if(v.paradas.slice(idx + 1).some(p => p.chegadaEm)) return; // só a última marcada
+  delete v.paradas[idx].chegadaEm;
+  const n = v.paradas.length;
+  v.historico.push({status:v.status, data:new Date(), usuario: motoristaLogado,
+    evento:`Chegada desfeita na parada ${idx+1} de ${n} (${TIPO_PARADA_LABEL[tipoParada(idx, n)]})`});
+  atualizarTelasEr();
+}
+function concluirCorrida(id){
+  const v = corridaDoMotorista(id);
+  if(!v || v.status !== "em_rota" || proximaParadaIdx(v) !== -1) return;
+  mudarStatusEr(id, "concluida", motoristaLogado);
+}
+
+(function iniciarMinhasCorridas(){
+  const sel = document.getElementById("mcMotorista");
+  sel.innerHTML = `<option value="">Selecione seu nome...</option>` +
+    [...MOTORISTAS_SEED].sort((a,b)=>a.localeCompare(b,"pt-BR")).map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join("");
+  sel.addEventListener("change", ()=>{
+    motoristaLogado = MOTORISTAS_SEED.includes(sel.value) ? sel.value : "";
+    salvarMotoristaLogado(motoristaLogado);
+    mcParadasAbertas.clear();
+    renderMinhasCorridas();
+  });
+  const cont = document.getElementById("mcConteudo");
+  cont.addEventListener("click", (e)=>{
+    const btn = e.target.closest("button[data-acao]");
+    if(!btn || btn.disabled) return;
+    const id = btn.dataset.id;
+    const idx = parseInt(btn.dataset.parada, 10);
+    switch(btn.dataset.acao){
+      case "aceitar": aceitarCorrida(id); break;
+      case "iniciar": iniciarRotaCorrida(id); break;
+      case "chegada": marcarChegadaParada(id, idx); break;
+      case "desfazer": desfazerChegadaParada(id, idx); break;
+      case "concluir": concluirCorrida(id); break;
+      default: return;
+    }
+    focarCartaoMc(id);
+  });
+  // "toggle" não sobe na árvore; com captura dá para ouvir todos os <details> da lista.
+  cont.addEventListener("toggle", (e)=>{
+    const d = e.target;
+    if(!d || d.tagName !== "DETAILS") return;
+    if(d.classList.contains("mc-concluidas")) mcConcluidasAberto = d.open;
+    else if(d.classList.contains("mc-paradas")){ if(d.open) mcParadasAbertas.add(d.dataset.id); else mcParadasAbertas.delete(d.dataset.id); }
+  }, true);
+})();
+
+// ---------- NAVEGAÇÃO ENTRE VISÕES (#painel / #corridas) ----------
+function definirVistaEr(vista){
+  vistaAtualEr = vista === "motorista" ? "motorista" : "painel";
+  const motorista = vistaAtualEr === "motorista";
+  document.getElementById("vistaPainel").hidden = motorista;
+  document.getElementById("vistaMotorista").hidden = !motorista;
+  document.querySelectorAll(".sidebar .nav-item[data-vista]").forEach(a=>{
+    const ativo = a.dataset.vista === vistaAtualEr;
+    a.classList.toggle("active", ativo);
+    if(ativo) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+  });
+  document.querySelectorAll(".nav-mobile a[data-vista]").forEach(a=>{
+    const ativo = a.dataset.vista === vistaAtualEr;
+    a.classList.toggle("ativo", ativo);
+    if(ativo) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+  });
+  document.getElementById("breadcrumbAtual").textContent = motorista ? "Minhas corridas" : "Entregas e Retiradas";
+  fecharDrawerEr();
+  fecharCardMenuEr();
+  if(motorista) renderMinhasCorridas();
+  else { renderTabelaEr(); renderKanbanEr(); renderRoteiroDia(); } // o mapa precisa ser desenhado com o painel visível
+}
+function aplicarVistaDoHash(){ definirVistaEr(location.hash === "#corridas" ? "motorista" : "painel"); }
+window.addEventListener("hashchange", ()=>{ aplicarVistaDoHash(); window.scrollTo(0, 0); });
 
 // ---------- TEMA (toggle) ----------
 function atualizarTema(){
@@ -1545,7 +1969,7 @@ atualizarOpcoesFiltroMotoristaEr();
 atualizarDatalistsEr();
 renderTabelaEr();
 document.getElementById("roteiroData").value = paraDataLocalISO(new Date());
-renderRoteiroDia();
+aplicarVistaDoHash(); // desenha o Roteiro do Dia (painel) ou Minhas corridas, conforme o endereço (#corridas)
 </script>
 </body>
 </html>

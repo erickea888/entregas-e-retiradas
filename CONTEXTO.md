@@ -20,6 +20,8 @@ Este repositório é um protótipo para portfólio e para mostrar a um engenheir
   3. Destino: mesmos campos. Depois do preenchimento há dois botões: **Adicionar outra parada** e **Concluir**.
 - **Paradas:** a primeira é a retirada; a última endereço informado é o **destino final**; as do meio são **intermediárias** (o motorista passa por vários locais até chegar ao destino).
 - **Roteiro do Dia:** mapa (Leaflet) com a rota entre as paradas (OSRM, serviço público de demonstração, com plano B quando falha) e os tiles do OpenStreetMap France. Geocodificação de apoio pelo Nominatim quando o CEP não traz coordenadas.
+- **Minhas corridas (visão do motorista):** aba própria (`#corridas`), "Entrar como" com os motoristas cadastrados (`MOTORISTAS_SEED`, login simulado), grupos Aguardando aceite / Em andamento / Concluídas hoje, botões Aceitar, Iniciar rota, Abrir no Google Maps/Waze, Cheguei (por parada, em ordem, com Desfazer) e Concluir. O aceite é um marcador (`v.aceitaEm`), não um status novo. O nome digitado em Responsável é ajustado para o nome do cadastro quando bate.
+- Solicitante é texto livre obrigatório (sem lista de sugestões). O mapa do Roteiro fica numa camada isolada para não passar por cima das janelas.
 - Tema claro/escuro, perfil do usuário (nome) em localStorage, dados de exemplo fixos (sem sorteio), com viagens de exemplo, inclusive uma com parada intermediária.
 - Visual igual ao da Requisição de Compras (mesmas cores, cartões, gaveta de detalhe).
 
