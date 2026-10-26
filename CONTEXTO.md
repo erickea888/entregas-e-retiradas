@@ -30,6 +30,7 @@ Funções e estados importantes: `LOCAIS_SEED`, `SETORES_ER`, `TIPO_PARADA_LABEL
 ## Decisões já tomadas
 
 - **Sem vínculo com requisição de compras.** Foi removido de propósito; a viagem não referencia uma requisição.
+- **Regras da tela do motorista (confirmadas pelo autor em 26/10/2026):** nome em Responsável que bate com o cadastro é gravado como no cadastro; nome não cadastrado é aceito, mas não aparece para nenhum motorista. Trocar o Responsável ao editar apaga o aceite. Chegadas marcadas em ordem e só depois de Iniciar rota, com Desfazer na última. Concluir só depois de todas as paradas. Recusar corrida, botão Ligar e foto/assinatura ficaram para depois.
 - Anexos funcionam como na Requisição de Compras (múltiplos, com limite de tamanho por arquivo).
 - O motorista é o usuário final no celular: toque grande (44 px), campos de 16 px (evita zoom no iPhone), layout em cartões.
 - Os sistemas de mapa e CEP são gratuitos e públicos, só para demonstração. Em produção, trocar por serviço contratado (rota e mapa com chave de API e contrato).
