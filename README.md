@@ -12,15 +12,15 @@ Pedidos de entrega e retirada costumam chegar ao motorista por mensagem, ligaç�
 
 ## O que o protótipo faz
 
-- **Nova viagem em etapas:**
-  1. **Dados da viagem:** solicitante, setor (Obras, Manutenção, Administrativo), data, nº do projeto (opcional) e responsável pela viagem. O botão "Continuar" só avança com os campos obrigatórios preenchidos.
-  2. **Retirada:** endereço completo. Ao digitar o **CEP**, endereço, bairro, cidade e estado são preenchidos sozinhos; só o número fica manual.
-  3. **Destino:** os mesmos campos, com os botões **Adicionar outra parada** e **Concluir**.
-- **Várias paradas por viagem:** a primeira é a retirada, a última é o destino final e as do meio são paradas intermediárias, para o motorista passar por vários locais na mesma corrida.
+- **Nova viagem em uma tela só:** dados da viagem (solicitante, setor, data, nº do projeto opcional e motorista responsável), **endereço de origem** (onde retirar) e **endereço de entrega** (destino). O solicitante escreve os endereços; se souber o **CEP**, rua, bairro, cidade e estado são preenchidos sozinhos. O que faltar fica marcado em vermelho.
+- **Paradas no caminho:** o botão "Adicionar parada no caminho" inclui locais entre a origem e a entrega, para o motorista passar por vários pontos na mesma corrida.
 - **Instruções e anexos em cada parada** (o que fazer, ligar antes, pedido de compra, fotos), que o motorista vê ao abrir a corrida. Anexos múltiplos, até 5 MB por arquivo.
-- **Roteiro do Dia:** escolhendo data e motorista, monta a sequência de retiradas e entregas com horário estimado a partir das 08:00, desenha a rota no mapa e avisa quando uma parada passa do expediente, com opção de mover a viagem para o dia seguinte.
-- **Fluxo de status:** Pendente → Em rota → Concluída, com histórico de quem mudou e quando.
-- **Duas visões:** tabela e Kanban com arrastar e soltar entre os status.
+- **Roteiro do Dia** (aba própria): escolhendo data e motorista, monta a sequência de retiradas e entregas com horário estimado a partir das 08:00, desenha a rota no mapa e avisa quando uma parada passa do expediente, com opção de mover a viagem para o dia seguinte.
+- **Painel de quem pede:** resumo no topo com quadros clicáveis (Aguardando motorista, Aceitas, Em rota, Concluídas), lista agrupada por data (Hoje, Próximos dias, Dias anteriores) e botão **Minhas viagens**.
+- **Andamento claro:** um status só, com barra de progresso: Aguardando motorista → Aceita → Em rota (parada X de Y) → Concluída, além do histórico de quem mudou e quando.
+- **Aviso de motorista não cadastrado:** se o responsável digitado não é um motorista cadastrado, a viagem aparece em vermelho, porque ninguém vai recebê-la.
+- **Minhas corridas (motorista):** tela própria no celular para aceitar a corrida, iniciar a rota, abrir o endereço no Google Maps ou Waze, marcar a chegada em cada parada e concluir.
+- **Duas visões:** lista e Kanban com arrastar e soltar entre os status.
 - **Detalhe da viagem** em gaveta lateral, com o percurso completo, instruções, anexos e histórico.
 - **Editar, duplicar e excluir** viagens, com confirmação, pelo menu "⋮" de cada linha ou card.
 - **Filtros** por status, setor e responsável, busca livre (solicitante, projeto, origem, destino) e tema claro/escuro.
@@ -48,11 +48,11 @@ Pedidos de entrega e retirada costumam chegar ao motorista por mensagem, ligaç�
 
 Baixe o `index.html` e abra no navegador. Não há instalação. É preciso internet para o mapa, a rota e a busca de CEP.
 
-Teste rápido: crie uma viagem (use um CEP real, por exemplo 01310-100), adicione uma parada intermediária, conclua e abra o Roteiro do Dia.
+Teste rápido: crie uma viagem (escreva os endereços ou use um CEP real, por exemplo 01310-100), adicione uma parada no caminho, crie a viagem e depois entre em "Minhas corridas" como o motorista escolhido.
 
 ## Próximos passos
 
-- Tela **"Minhas corridas"** para o motorista, com a próxima parada em destaque e botões grandes: abrir no Waze ou Google Maps, ligar, marcar chegada e concluída.
+- Botão "Ligar" e "Recusar corrida" na tela do motorista.
 - Comprovação da entrega por foto ou assinatura.
 - Notificação ao solicitante quando a viagem mudar de status.
 - Revisão de segurança, no mesmo padrão da Requisição de Compras.

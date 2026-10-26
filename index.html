@@ -333,6 +333,106 @@
     .mc-card{padding:14px 12px;}
     .mc-btn{font-size:14px;}
   }
+
+  /* ---------- Painel de quem pede: abas, resumo, status com progresso ---------- */
+  .painel-abas{display:inline-flex; margin-bottom:18px;}
+  .painel-abas button{font-size:13px; padding:8px 16px;}
+  .resumo-grid{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px; margin-bottom:16px;}
+  .resumo-card{
+    display:flex; flex-direction:column; gap:2px; text-align:left; cursor:pointer; font-family:inherit; color:var(--text);
+    background:var(--panel); border:1px solid var(--border); border-left:4px solid var(--border); border-radius:var(--radius);
+    padding:12px 14px; min-height:44px; transition:border-color .15s ease, background .15s ease;
+  }
+  .resumo-card:hover{border-color:var(--accent);}
+  .resumo-card.st-pendente{border-left-color:var(--warn);}
+  .resumo-card.st-aceita{border-left-color:var(--accent);}
+  .resumo-card.st-em_rota{border-left-color:var(--accent);}
+  .resumo-card.st-concluida{border-left-color:var(--accent-2);}
+  .resumo-card.ativo{background:rgba(59,130,246,.08); border-color:var(--accent);}
+  .resumo-titulo{font-size:10.5px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.03em;}
+  .resumo-num{font-size:24px; font-weight:800; line-height:1.15;}
+  .resumo-sub{font-size:11px; color:var(--muted);}
+  .alerta-sem-motorista{
+    border:1px solid var(--danger); background:rgba(239,68,68,.07); color:var(--text); border-radius:10px;
+    padding:10px 12px; font-size:12.5px; line-height:1.6; margin-bottom:16px;
+  }
+  .link-viagem{background:none; border:none; padding:0 2px; color:var(--danger); font-weight:700; text-decoration:underline; cursor:pointer; font-family:inherit; font-size:inherit;}
+  .txt-alerta{color:var(--danger); font-weight:600;}
+  .badge.st-aceita{background:rgba(59,130,246,.08); color:var(--accent); border:1px solid rgba(59,130,246,.45);}
+  .progresso{display:flex; gap:3px; margin-top:6px; max-width:140px;}
+  .progresso span{flex:1; height:4px; border-radius:2px; background:var(--border);}
+  .progresso.st-pendente span.feito{background:var(--warn);}
+  .progresso.st-aceita span.feito, .progresso.st-em_rota span.feito{background:var(--accent);}
+  .progresso.st-concluida span.feito{background:var(--accent-2);}
+  .kc-status{margin-top:8px;}
+  .tabela-viagens td.c-data, .tabela-viagens td.c-id{white-space:nowrap; word-break:normal;}
+  tr.linha-alerta td:first-child{box-shadow:inset 3px 0 0 var(--danger);}
+  .grupo-linha td{
+    background:var(--panel-2); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--muted);
+    padding:8px 10px;
+  }
+  .grupo-linha .contagem{display:inline-block; margin-left:6px; padding:1px 7px; border-radius:999px; background:var(--panel); border:1px solid var(--border); font-size:10.5px;}
+  .grupo-linha.recolhivel{cursor:pointer;}
+  .grupo-linha.recolhivel:hover td{color:var(--text);}
+  .grupo-seta{display:inline-block; width:14px;}
+  .rot-mobile{display:none;}
+  .filtro-minhas{align-self:flex-end;}
+  .filtro-minhas.ativo{background:rgba(59,130,246,.12); border-color:var(--accent); color:var(--accent);}
+
+  /* ---------- Formulário Nova viagem (uma tela só) ---------- */
+  .nv-secao{border:1px solid var(--border); border-radius:10px; padding:14px 14px 4px; margin-bottom:14px;}
+  .nv-secao-titulo{margin:0 0 12px; font-size:13px; font-weight:700; display:flex; align-items:center; gap:8px;}
+  .nv-secao-titulo .parada-tag{margin:0;}
+  .nv-parada.retirada{border-left:4px solid var(--accent);}
+  .nv-parada.intermediaria{border-left:4px solid var(--warn);}
+  .nv-parada.entrega{border-left:4px solid var(--accent-2);}
+  .nv-parada-topo{display:flex; justify-content:space-between; align-items:flex-start; gap:10px;}
+  .nv-parada-topo .er-btn{padding:4px 10px; font-size:12px;}
+  .nv-cidade-uf{display:grid; grid-template-columns:1fr 84px; gap:10px;}
+  .nv-adicionar{width:100%; min-height:44px; margin:0 0 14px; border-style:dashed; font-weight:700;}
+  .form-field input.invalido, .form-field select.invalido, .form-field textarea.invalido{border-color:var(--danger); box-shadow:0 0 0 2px rgba(239,68,68,.15);}
+  .form-hint.alerta{color:var(--danger); font-style:normal; font-weight:600;}
+  .nv-rodape{align-items:center;}
+  #nvCorpo{overscroll-behavior:contain;}
+  .nv-rodape .form-erro{margin:0 auto 0 0; flex:1 1 200px;}
+
+  @media (max-width:1000px){
+    .resumo-grid{grid-template-columns:repeat(2, minmax(0,1fr));}
+  }
+  /* Celular: lista vira cartões, formulário em tela cheia e campos de 16 px (sem zoom no iPhone) */
+  @media (max-width:700px){
+    .painel-abas{display:flex;}
+    .painel-abas button{flex:1; min-height:44px;}
+    .resumo-card{padding:10px 12px;}
+    .resumo-num{font-size:20px;}
+    .table-scroll{max-height:none; overflow:visible;}
+    .tabela-viagens, .tabela-viagens tbody{display:block;}
+    .tabela-viagens colgroup, .tabela-viagens thead{display:none;}
+    .tabela-viagens tr.grupo-linha{display:block;}
+    .tabela-viagens tr.grupo-linha td{display:block; border:none; border-radius:8px; margin:10px 0 8px; min-height:36px;}
+    .tabela-viagens tr.er-row{
+      display:grid; grid-template-columns:1fr auto; gap:6px 10px; padding:12px; margin-bottom:10px;
+      border:1px solid var(--border); border-radius:10px; background:var(--panel);
+    }
+    .tabela-viagens tr.er-row td{display:block; padding:0; border:none;}
+    .tabela-viagens tr.linha-alerta{border-left:4px solid var(--danger);}
+    .tabela-viagens tr.linha-alerta td:first-child{box-shadow:none;}
+    .tabela-viagens td.c-id{grid-column:1; grid-row:1; font-size:14px;}
+    .tabela-viagens td.td-menu{grid-column:2; grid-row:1 / span 2; text-align:right;}
+    .tabela-viagens td.c-data{grid-column:1; grid-row:2; color:var(--muted); font-size:12px; margin-top:-4px;}
+    .tabela-viagens td.c-rota{grid-column:1 / -1; font-size:14px; font-weight:600;}
+    .tabela-viagens td.c-status{grid-column:1 / -1;}
+    .tabela-viagens td.c-solic, .tabela-viagens td.c-mot{font-size:13px;}
+    .tabela-viagens .card-menu-btn{min-width:44px; min-height:44px; font-size:18px;}
+    .tabela-viagens .table-empty td{display:block;}
+    .rot-mobile{display:block; font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.03em;}
+    .progresso{max-width:none;}
+    .modal-backdrop#modalBackdropEr{padding:0; align-items:stretch;}
+    #modalBackdropEr .modal{width:100% !important; max-height:100dvh; height:100dvh; border-radius:0;}
+    .form-field input, .form-field select, .form-field textarea, .filtro-grupo select, .filtro-grupo input{font-size:16px;}
+    .nv-rodape{position:sticky; bottom:0; background:var(--panel);}
+    .nv-rodape .btn-primary, .nv-rodape .er-btn{min-height:44px; flex:1;}
+  }
 </style>
 </head>
 <body>
@@ -388,12 +488,90 @@
       <div class="page-header-row">
         <div>
           <h1>Entregas e Retiradas</h1>
-          <p class="sub">Roteiro de viagens — o que precisa ser retirado e entregue entre obras, fornecedores, manutenção e escritório</p>
+          <p class="sub">Peça uma retirada ou entrega e acompanhe cada viagem até a conclusão</p>
         </div>
         <button type="button" class="btn-primary" id="btnNovaViagem">+ Nova viagem</button>
       </div>
 
-      <section id="secaoRoteiroDia">
+      <div class="modo-toggle painel-abas" role="tablist" aria-label="Seções do painel">
+        <button type="button" class="ativo" data-aba="viagens" role="tab" aria-selected="true">📋 Viagens</button>
+        <button type="button" data-aba="roteiro" role="tab" aria-selected="false">🗺️ Roteiro do Dia</button>
+      </div>
+
+      <section id="secaoViagens">
+        <div class="resumo-grid" id="resumoEr"></div>
+        <div class="alerta-sem-motorista" id="alertaSemMotoristaEr" hidden></div>
+
+        <div class="page-header-row" style="margin-bottom:6px;">
+          <div>
+            <h2 style="margin-bottom:2px;">Viagens</h2>
+            <p class="sub">Clique numa viagem para ver o percurso completo, os anexos e o histórico</p>
+          </div>
+          <div class="modo-toggle" id="visaoListaToggle">
+            <button type="button" class="ativo" id="btnVisaoTabela">☰ Lista</button>
+            <button type="button" id="btnVisaoKanban">▦ Kanban</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="filtro-toolbar">
+            <button type="button" class="filtro-limpar filtro-minhas" id="btnMinhasViagens" aria-pressed="false">👤 Minhas viagens</button>
+            <div class="filtro-grupo">
+              <label for="filtroStatusEr">Status</label>
+              <select id="filtroStatusEr">
+                <option value="todas">Todos</option>
+                <option value="aguardando">Aguardando motorista</option>
+                <option value="aceita">Aceita</option>
+                <option value="em_rota">Em rota</option>
+                <option value="concluida">Concluída</option>
+              </select>
+            </div>
+            <div class="filtro-grupo">
+              <label for="filtroSetorEr">Setor</label>
+              <select id="filtroSetorEr">
+                <option value="todos">Todos</option>
+                <option value="Obras">Obras</option>
+                <option value="Manutenção">Manutenção</option>
+                <option value="Administrativo">Administrativo</option>
+              </select>
+            </div>
+            <div class="filtro-grupo">
+              <label for="filtroMotoristaEr">Motorista</label>
+              <select id="filtroMotoristaEr">
+                <option value="todos">Todos</option>
+              </select>
+            </div>
+            <div class="filtro-grupo" style="min-width:200px; flex:1;">
+              <label for="filtroBuscaEr">Buscar</label>
+              <input type="text" id="filtroBuscaEr" placeholder="Solicitante, projeto, endereço ou motorista">
+            </div>
+            <button type="button" class="filtro-limpar" id="filtroErLimpar">Limpar filtros</button>
+          </div>
+
+          <div class="table-scroll" id="tabelaWrapEr">
+            <table class="tabela-viagens">
+              <colgroup>
+                <col style="width:10%"><col style="width:11%"><col style="width:17%">
+                <col style="width:14%"><col style="width:22%"><col style="width:21%"><col style="width:5%">
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>Viagem</th>
+                  <th>Data</th>
+                  <th>Solicitante</th>
+                  <th>Motorista</th>
+                  <th>Rota</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="tabelaViagens"></tbody>
+            </table>
+          </div>
+          <div class="kanban-board" id="kanbanBoardEr" style="display:none;"></div>
+        </div>
+      </section>
+
+      <section id="secaoRoteiroDia" hidden>
         <h2>Roteiro do Dia <span style="font-weight:600; color:var(--muted); font-size:11px; text-transform:uppercase;">protótipo ilustrativo</span></h2>
         <p class="sub">Monta automaticamente a sequência de retiradas e entregas do motorista no dia, com estimativa de horário a partir das 08:00.</p>
         <div class="card">
@@ -412,74 +590,6 @@
           <div id="roteiroMapa" style="position:relative; z-index:0; isolation:isolate; height:360px; border-radius:10px; overflow:hidden; border:1px solid var(--border); margin-bottom:16px;"></div>
           <ul class="er-historico" id="roteiroTimeline"></ul>
           <div id="roteiroVazio" style="display:none; font-size:12.5px; color:var(--muted); text-align:center; padding:24px 10px;">Nenhuma viagem pendente ou em rota para esse motorista nessa data.</div>
-        </div>
-      </section>
-
-      <section>
-        <div class="page-header-row" style="margin-bottom:6px;">
-          <div>
-            <h2 style="margin-bottom:2px;">Viagens</h2>
-            <p class="sub">Clique numa viagem para ver o detalhe completo e atualizar o status</p>
-          </div>
-          <div class="modo-toggle" id="visaoListaToggle">
-            <button type="button" class="ativo" id="btnVisaoTabela">☰ Tabela</button>
-            <button type="button" id="btnVisaoKanban">▦ Kanban</button>
-          </div>
-        </div>
-        <div class="card">
-          <div class="filtro-toolbar">
-            <div class="filtro-grupo">
-              <label for="filtroStatusEr">Status</label>
-              <select id="filtroStatusEr">
-                <option value="todas">Todos</option>
-                <option value="pendente">Pendente</option>
-                <option value="em_rota">Em rota</option>
-                <option value="concluida">Concluída</option>
-              </select>
-            </div>
-            <div class="filtro-grupo">
-              <label for="filtroSetorEr">Setor</label>
-              <select id="filtroSetorEr">
-                <option value="todos">Todos</option>
-                <option value="Obras">Obras</option>
-                <option value="Manutenção">Manutenção</option>
-                <option value="Administrativo">Administrativo</option>
-              </select>
-            </div>
-            <div class="filtro-grupo">
-              <label for="filtroMotoristaEr">Responsável</label>
-              <select id="filtroMotoristaEr">
-                <option value="todos">Todos</option>
-              </select>
-            </div>
-            <div class="filtro-grupo" style="min-width:200px; flex:1;">
-              <label for="filtroBuscaEr">Buscar</label>
-              <input type="text" id="filtroBuscaEr" placeholder="Solicitante, projeto, origem, destino ou atividade">
-            </div>
-            <button type="button" class="filtro-limpar" id="filtroErLimpar">Limpar filtros</button>
-          </div>
-
-          <div class="table-scroll" id="tabelaWrapEr">
-            <table>
-              <colgroup>
-                <col style="width:10%"><col style="width:10%"><col style="width:14%">
-                <col style="width:12%"><col style="width:30%"><col style="width:16%"><col style="width:8%">
-              </colgroup>
-              <thead>
-                <tr>
-                  <th>Viagem</th>
-                  <th>Data</th>
-                  <th>Solicitante</th>
-                  <th>Setor</th>
-                  <th>Rota</th>
-                  <th>Status</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody id="tabelaViagens"></tbody>
-            </table>
-          </div>
-          <div class="kanban-board" id="kanbanBoardEr" style="display:none;"></div>
         </div>
       </section>
       </div><!-- /vistaPainel -->
@@ -594,11 +704,9 @@
       <h3 id="modalTituloEr">Nova viagem</h3>
       <button type="button" class="modal-close" id="modalCloseEr">✕</button>
     </div>
-    <div class="modal-body">
-      <div class="wiz-steps" id="wizSteps"></div>
-      <p class="form-erro" id="formErroEr"></p>
-
-      <div id="wizPassoDados">
+    <div class="modal-body" id="nvCorpo">
+      <div class="nv-secao" id="wizPassoDados">
+        <p class="nv-secao-titulo">Dados da viagem</p>
         <div class="form-grid">
           <div class="form-field">
             <label for="fSolicitanteEr">Solicitante *</label>
@@ -619,64 +727,23 @@
           </div>
           <div class="form-field">
             <label for="fProjetoEr">Nº do projeto</label>
-            <input type="text" id="fProjetoEr" placeholder="Opcional — ex.: PRJ-2200, CTR-1100...">
+            <input type="text" id="fProjetoEr" placeholder="Opcional — ex.: PRJ-2200, CTR-1100..." maxlength="40">
           </div>
           <div class="form-field full">
             <label for="fMotoristaEr">Responsável pela viagem *</label>
-            <input type="text" id="fMotoristaEr" list="listaMotoristasEr" placeholder="Digite e escolha um motorista cadastrado">
+            <input type="text" id="fMotoristaEr" list="listaMotoristasEr" placeholder="Digite e escolha um motorista cadastrado" maxlength="80">
             <datalist id="listaMotoristasEr"></datalist>
             <p class="form-hint" id="fMotoristaAviso"></p>
           </div>
         </div>
       </div>
 
-      <div id="wizPassoParada" style="display:none;">
-        <p class="wiz-aviso" id="wizAvisoParada"></p>
-        <div class="form-grid">
-          <div class="form-field">
-            <label for="pCep">CEP *</label>
-            <input type="text" id="pCep" inputmode="numeric" maxlength="9" placeholder="00000-000">
-            <span class="cep-status" id="pCepStatus"></span>
-          </div>
-          <div class="form-field">
-            <label for="pNumero">Número *</label>
-            <input type="text" id="pNumero" placeholder="Ex.: 120 ou S/N">
-          </div>
-          <div class="form-field full">
-            <label for="pEndereco">Endereço *</label>
-            <input type="text" id="pEndereco" placeholder="Rua, avenida...">
-          </div>
-          <div class="form-field">
-            <label for="pBairro">Bairro *</label>
-            <input type="text" id="pBairro">
-          </div>
-          <div class="form-field">
-            <label for="pCidade">Cidade *</label>
-            <input type="text" id="pCidade">
-          </div>
-          <div class="form-field">
-            <label for="pEstado">Estado *</label>
-            <select id="pEstado"></select>
-          </div>
-          <div class="form-field full">
-            <label for="pInstrucoes">O que deve ser feito neste local</label>
-            <textarea id="pInstrucoes" placeholder="Ex.: ligar antes de chegar, falar com fulano na portaria, retirar 3 caixas..."></textarea>
-          </div>
-          <div class="form-field full">
-            <label>Anexos</label>
-            <div><button type="button" class="er-btn" id="pAnexoBtn">📎 Anexar arquivo</button><input type="file" id="pAnexoInput" multiple style="display:none;"></div>
-            <p class="form-hint">Pedido de compras, fotos ou qualquer documento — o motorista vê ao abrir a corrida. Até 5 MB por arquivo.</p>
-            <ul class="anexo-lista" id="pAnexoLista"></ul>
-          </div>
-        </div>
-        <button type="button" class="er-btn" id="wizRemover" style="display:none;">🗑 Remover esta parada</button>
-      </div>
+      <div id="nvParadas"></div>
     </div>
-    <div class="modal-footer" style="flex-wrap:wrap;">
+    <div class="modal-footer nv-rodape">
+      <p class="form-erro" id="formErroEr"></p>
       <button type="button" class="er-btn" id="wizVoltar">Cancelar</button>
-      <button type="button" class="er-btn" id="wizAdicionar" style="display:none;">+ Adicionar parada intermediária</button>
-      <button type="button" class="btn-primary" id="wizContinuar">Continuar</button>
-      <button type="button" class="btn-primary" id="wizConcluir" style="display:none;">Concluir cadastro</button>
+      <button type="button" class="btn-primary" id="wizConcluir">Criar viagem</button>
     </div>
   </div>
 </div>
@@ -691,6 +758,7 @@ const TEMA_STORAGE_KEY = "suprimentos-demo-entregas-tema";
 })();
 // Visão atual da página: "painel" (tabela/Kanban/Roteiro) ou "motorista" (Minhas corridas).
 let vistaAtualEr = "painel";
+let abaPainelEr = "viagens"; // aba do painel: "viagens" ou "roteiro"
 function fmtData(d){ return new Date(d).toLocaleDateString("pt-BR"); }
 function fmtHora(d){ return new Date(d).toLocaleTimeString("pt-BR", {hour:"2-digit", minute:"2-digit"}); }
 function fmtDataHora(d){ const dt = new Date(d); return dt.toLocaleDateString("pt-BR") + " às " + dt.toLocaleTimeString("pt-BR", {hour:"2-digit", minute:"2-digit"}); }
@@ -715,6 +783,13 @@ document.getElementById("perfilSalvar").addEventListener("click", ()=>{
   try{ localStorage.setItem(PERFIL_NOME_KEY, document.getElementById("perfilNomeInput").value.trim()); }catch(e){}
   atualizarBadgePerfil();
   fecharPerfil();
+  // Veio do botão "Minhas viagens" sem usuário definido: agora que tem nome, liga o filtro.
+  if(filtroMinhasPendenteEr && usuarioAtualNome()) filtroAtivoEr.minhas = true;
+  filtroMinhasPendenteEr = false;
+  if(!usuarioAtualNome()) filtroAtivoEr.minhas = false;
+  atualizarBotaoMinhasEr();
+  renderTabelaEr();
+  renderKanbanEr();
 });
 atualizarBadgePerfil();
 
@@ -845,8 +920,8 @@ let mapaRoteiro = null;
 let roteiroRequestId = 0;
 async function renderRoteiroDia(){
   const minhaRequisicao = ++roteiroRequestId;
-  // Com o painel escondido (tela do motorista) não desenha o mapa: ele é refeito ao voltar para o painel.
-  if(vistaAtualEr !== "painel") return;
+  // Com o mapa escondido (tela do motorista ou aba Viagens) não desenha: ele é refeito ao abrir a aba Roteiro do Dia.
+  if(vistaAtualEr !== "painel" || abaPainelEr !== "roteiro") return;
   const dataInput = document.getElementById("roteiroData");
   const motoristaSel = document.getElementById("roteiroMotorista");
   if(!dataInput || !motoristaSel) return;
@@ -1057,17 +1132,66 @@ const DEFINICOES_SEED = [
   VIAGENS.sort((a,b)=> b.data - a.data);
 })();
 
+// ---------- ANDAMENTO DA VIAGEM (visão de quem pede) ----------
+// Um status só, na ordem em que a viagem anda: aguardando motorista → aceita → em rota → concluída.
+const ETAPA_SOLIC = {
+  aguardando:{nome:"Aguardando motorista", passo:1, cls:"st-pendente"},
+  aceita:{nome:"Aceita", passo:2, cls:"st-aceita"},
+  em_rota:{nome:"Em rota", passo:3, cls:"st-em_rota"},
+  concluida:{nome:"Concluída", passo:4, cls:"st-concluida"},
+};
+function etapaSolicitante(v){
+  if(v.status === "concluida") return "concluida";
+  if(v.status === "em_rota") return "em_rota";
+  return v.aceitaEm ? "aceita" : "aguardando";
+}
+// Viagem em aberto com responsável que não é motorista cadastrado: ninguém vai receber a corrida.
+function semMotoristaCadastrado(v){ return v.status !== "concluida" && !motoristaCanonico(v.motorista); }
+// Detalhe curto embaixo do status (sem texto de usuário).
+function detalheEtapa(v){
+  const etapa = etapaSolicitante(v);
+  if(etapa === "aguardando") return semMotoristaCadastrado(v) ? `<span class="txt-alerta">⚠ Motorista não cadastrado</span>` : "O motorista ainda não aceitou";
+  if(etapa === "aceita") return `Aceita às ${fmtHora(v.aceitaEm)} · aguardando saída`;
+  if(etapa === "em_rota"){ const n = paradasDaViagem(v).length; return `${paradasVisitadas(v)} de ${n} paradas visitadas`; }
+  const fim = dataConclusao(v);
+  return fim ? `Concluída em ${fmtData(fim)} às ${fmtHora(fim)}` : "";
+}
+function htmlStatusViagem(v){
+  const e = ETAPA_SOLIC[etapaSolicitante(v)];
+  const barras = [1,2,3,4].map(k=> `<span class="${k <= e.passo ? "feito" : ""}"></span>`).join("");
+  return `<span class="badge ${e.cls}">${e.nome}</span><div class="progresso ${e.cls}" title="Etapa ${e.passo} de 4">${barras}</div><div class="table-subtext">${detalheEtapa(v)}</div>`;
+}
+// Rota curta: bairros quando origem e destino ficam na mesma cidade; cidades quando não.
+function rotaCurta(v){
+  const ps = paradasDaViagem(v);
+  const a = ps[0], b = ps[ps.length - 1];
+  if(!a.cidade && !b.cidade) return {de: v.origem, para: v.destino};
+  const mesmaCidade = normalizarNome(a.cidade) === normalizarNome(b.cidade);
+  const nome = p => (mesmaCidade ? (p.bairro || p.cidade) : (p.cidade || p.bairro)) || p.endereco;
+  return {de: nome(a), para: nome(b)};
+}
+function htmlRotaCurta(v){
+  const r = rotaCurta(v);
+  const n = nIntermed(v);
+  return `${esc(r.de)}<span class="rota-seta">→</span>${esc(r.para)}${n ? `<div class="table-subtext">+ ${n} parada${n > 1 ? "s" : ""} no caminho</div>` : ""}`;
+}
+
 // ---------- FILTROS ----------
-let filtroAtivoEr = {status:"todas", setor:"todos", motorista:"todos", busca:""};
-function passaFiltroEr(v){
-  if(filtroAtivoEr.status !== "todas" && v.status !== filtroAtivoEr.status) return false;
+let filtroAtivoEr = {status:"todas", setor:"todos", motorista:"todos", busca:"", minhas:false};
+// Filtros que não são o status (o resumo do topo conta com eles, para os números baterem com a lista)
+function passaFiltroBaseEr(v){
+  if(filtroAtivoEr.minhas && normalizarNome(v.solicitante) !== normalizarNome(usuarioAtualNome())) return false;
   if(filtroAtivoEr.setor !== "todos" && v.setor !== filtroAtivoEr.setor) return false;
   if(filtroAtivoEr.motorista !== "todos" && v.motorista !== filtroAtivoEr.motorista) return false;
   if(filtroAtivoEr.busca){
-    const alvo = (v.solicitante+" "+v.projetoNumero+" "+v.motorista+" "+paradasDaViagem(v).map(p=>enderecoCompleto(p)+" "+(p.instrucoes||"")).join(" ")+" "+(v.atividade||"")).toLowerCase();
+    const alvo = (v.id+" "+v.solicitante+" "+v.projetoNumero+" "+v.motorista+" "+paradasDaViagem(v).map(p=>enderecoCompleto(p)+" "+(p.instrucoes||"")).join(" ")+" "+(v.atividade||"")).toLowerCase();
     if(!alvo.includes(filtroAtivoEr.busca.toLowerCase())) return false;
   }
   return true;
+}
+function passaFiltroEr(v){
+  if(filtroAtivoEr.status !== "todas" && etapaSolicitante(v) !== filtroAtivoEr.status) return false;
+  return passaFiltroBaseEr(v);
 }
 function atualizarOpcoesFiltroMotoristaEr(){
   const el = document.getElementById("filtroMotoristaEr");
@@ -1084,32 +1208,107 @@ function atualizarDatalistsEr(){
   document.getElementById("listaMotoristasEr").innerHTML = nomesMotor.map(n=>`<option value="${esc(n)}">`).join("");
 }
 
-// ---------- RENDER TABELA ----------
+// ---------- RESUMO DO TOPO (quadros clicáveis que filtram a lista) ----------
+const resumoErEl = document.getElementById("resumoEr");
+function renderResumoEr(){
+  const base = VIAGENS.filter(passaFiltroBaseEr);
+  const conta = etapa => base.filter(v=> etapaSolicitante(v) === etapa).length;
+  const hoje = paraDataLocalISO(new Date());
+  const concluidasHoje = base.filter(v=> v.status === "concluida" && dataConclusao(v) && paraDataLocalISO(dataConclusao(v)) === hoje).length;
+  const quadros = [
+    {etapa:"aguardando", titulo:"Aguardando motorista", n: conta("aguardando"), sub:"ainda não aceitas"},
+    {etapa:"aceita", titulo:"Aceitas", n: conta("aceita"), sub:"motorista confirmou"},
+    {etapa:"em_rota", titulo:"Em rota", n: conta("em_rota"), sub:"motorista a caminho"},
+    {etapa:"concluida", titulo:"Concluídas", n: conta("concluida"), sub:`${concluidasHoje} hoje`},
+  ];
+  resumoErEl.innerHTML = quadros.map(q=>
+    `<button type="button" class="resumo-card ${ETAPA_SOLIC[q.etapa].cls}${filtroAtivoEr.status === q.etapa ? " ativo" : ""}" data-etapa="${q.etapa}" aria-pressed="${filtroAtivoEr.status === q.etapa}">
+      <span class="resumo-titulo">${q.titulo}</span><span class="resumo-num">${q.n}</span><span class="resumo-sub">${q.sub}</span>
+    </button>`
+  ).join("");
+
+  const alerta = document.getElementById("alertaSemMotoristaEr");
+  const semMot = base.filter(semMotoristaCadastrado);
+  alerta.hidden = !semMot.length;
+  alerta.innerHTML = semMot.length
+    ? `⚠ <b>${semMot.length === 1 ? "1 viagem está" : semMot.length + " viagens estão"} com responsável não cadastrado</b> — nenhum motorista vai receber. Abra e corrija o responsável: ` +
+      semMot.map(v=> `<button type="button" class="link-viagem" data-abrir="${v.id}">${v.id}</button>`).join(" ")
+    : "";
+}
+resumoErEl.addEventListener("click", (e)=>{
+  const b = e.target.closest("[data-etapa]");
+  if(!b) return;
+  const etapa = filtroAtivoEr.status === b.dataset.etapa ? "todas" : b.dataset.etapa; // clicar de novo tira o filtro
+  filtroStatusErEl.value = etapa;
+  aplicarFiltrosEr();
+});
+document.getElementById("alertaSemMotoristaEr").addEventListener("click", (e)=>{
+  const b = e.target.closest("[data-abrir]");
+  if(b) abrirDrawerEr(b.dataset.abrir);
+});
+
+// ---------- RENDER LISTA (agrupada por data) ----------
 const tabelaBodyEr = document.getElementById("tabelaViagens");
+let grupoConcluidasAbertoEr = false;
+function grupoDataEr(v){
+  const iso = paraDataLocalISO(v.data), hoje = paraDataLocalISO(new Date());
+  if(iso === hoje) return "hoje";
+  if(iso > hoje) return "proximos";
+  return v.status === "concluida" ? "anteriores_concluidas" : "anteriores_abertas";
+}
+const GRUPOS_DATA_ER = [
+  {id:"hoje", titulo:"Hoje"},
+  {id:"proximos", titulo:"Próximos dias"},
+  {id:"anteriores_abertas", titulo:"Dias anteriores — ainda em aberto"},
+  {id:"anteriores_concluidas", titulo:"Dias anteriores — concluídas", recolhivel:true},
+];
+function htmlLinhaViagemEr(v){
+  const cadastrado = motoristaCanonico(v.motorista);
+  const motorista = v.motorista
+    ? `${esc(v.motorista)}${!cadastrado && v.status !== "concluida" ? `<div class="table-subtext txt-alerta">⚠ não cadastrado</div>` : ""}`
+    : `<span class="txt-alerta">—</span>`;
+  return `<tr class="er-row${semMotoristaCadastrado(v) ? " linha-alerta" : ""}" data-id="${v.id}">
+      <td class="c-id"><b>${v.id}</b></td>
+      <td class="c-data">${fmtData(v.data)}</td>
+      <td class="c-solic"><span class="rot-mobile">Solicitante</span>${esc(v.solicitante)}<div class="table-subtext">${esc(v.setor)}${v.projetoNumero ? " · " + esc(v.projetoNumero) : ""}</div></td>
+      <td class="c-mot"><span class="rot-mobile">Motorista</span>${motorista}</td>
+      <td class="c-rota">${htmlRotaCurta(v)}</td>
+      <td class="c-status">${htmlStatusViagem(v)}</td>
+      <td class="td-menu"><button type="button" class="card-menu-btn" data-id="${v.id}" title="Mais ações">⋮</button></td>
+    </tr>`;
+}
 function renderTabelaEr(){
+  renderResumoEr();
   const lista = VIAGENS.filter(passaFiltroEr);
-  tabelaBodyEr.innerHTML = "";
   if(lista.length === 0){
     tabelaBodyEr.innerHTML = `<tr class="table-empty"><td colspan="7">Nenhuma viagem encontrada para os filtros selecionados.</td></tr>`;
     return;
   }
-  lista.forEach(v=>{
-    const tr = document.createElement("tr");
-    tr.className = "er-row";
-    tr.dataset.id = v.id;
-    tr.innerHTML = `
-      <td><b>${v.id}</b></td>
-      <td>${fmtData(v.data)}</td>
-      <td>${esc(v.solicitante)}</td>
-      <td><span class="badge setor">${esc(v.setor)}</span></td>
-      <td>${esc(v.origem)}<span class="rota-seta">→</span>${esc(v.destino)}${nIntermed(v) ? `<div class="table-subtext">+ ${nIntermed(v)} parada(s) intermediária(s)</div>` : ""}</td>
-      <td><span class="badge st-${v.status}">${STATUS_LABEL[v.status]}</span>${subStatusMotorista(v) ? `<div class="table-subtext">${subStatusMotorista(v)}</div>` : ""}</td>
-      <td class="td-menu"><button type="button" class="card-menu-btn" data-id="${v.id}" title="Mais ações">⋮</button></td>
-    `;
-    tr.addEventListener("click", ()=> abrirDrawerEr(v.id));
-    tabelaBodyEr.appendChild(tr);
+  let html = "";
+  GRUPOS_DATA_ER.forEach(g=>{
+    const doGrupo = lista.filter(v=> grupoDataEr(v) === g.id)
+      .sort((a,b)=> g.id === "proximos" ? a.data - b.data : b.data - a.data);
+    if(!doGrupo.length) return;
+    // As concluídas antigas ficam recolhidas, a não ser que o filtro peça só concluídas.
+    const recolhido = g.recolhivel && !grupoConcluidasAbertoEr && filtroAtivoEr.status !== "concluida";
+    html += `<tr class="grupo-linha${g.recolhivel ? " recolhivel" : ""}"${g.recolhivel ? ` data-grupo="${g.id}" tabindex="0" aria-expanded="${!recolhido}"` : ""}>
+      <td colspan="7">${g.recolhivel ? `<span class="grupo-seta">${recolhido ? "▸" : "▾"}</span>` : ""}${g.titulo} <span class="contagem">${doGrupo.length}</span></td></tr>`;
+    if(!recolhido) html += doGrupo.map(htmlLinhaViagemEr).join("");
   });
+  tabelaBodyEr.innerHTML = html;
 }
+tabelaBodyEr.addEventListener("click", (e)=>{
+  if(e.target.closest(".card-menu-btn")) return; // o menu "⋮" tem tratamento próprio
+  const grupo = e.target.closest(".grupo-linha.recolhivel");
+  if(grupo){ grupoConcluidasAbertoEr = !grupoConcluidasAbertoEr; renderTabelaEr(); return; }
+  const tr = e.target.closest("tr.er-row");
+  if(tr) abrirDrawerEr(tr.dataset.id);
+});
+tabelaBodyEr.addEventListener("keydown", (e)=>{
+  if((e.key === "Enter" || e.key === " ") && e.target.closest(".grupo-linha.recolhivel")){
+    e.preventDefault(); grupoConcluidasAbertoEr = !grupoConcluidasAbertoEr; renderTabelaEr();
+  }
+});
 
 // ---------- RENDER KANBAN ----------
 const kanbanBoardEr = document.getElementById("kanbanBoardEr");
@@ -1143,8 +1342,9 @@ function renderKanbanEr(){
             <button type="button" class="card-menu-btn" data-id="${v.id}" title="Mais ações">⋮</button>
           </div>
           <div class="kc-sub">${esc(v.solicitante)} · ${esc(v.setor)}</div>
-          <div class="kc-rota">${esc(v.origem)}<span class="rota-seta">→</span>${esc(v.destino)}${nIntermed(v) ? `<div class="kc-sub">+ ${nIntermed(v)} parada(s) intermediária(s)</div>` : ""}</div>
-          ${subStatusMotorista(v) ? `<div class="kc-sub" style="margin-top:6px;">${subStatusMotorista(v)}</div>` : ""}
+          <div class="kc-rota">${htmlRotaCurta(v)}</div>
+          <div class="kc-sub">🚚 ${v.motorista ? esc(v.motorista) : "—"}</div>
+          <div class="kc-status">${htmlStatusViagem(v)}</div>
         `;
         card.addEventListener("click", ()=> abrirDrawerEr(v.id));
         card.addEventListener("dragstart", (e)=>{
@@ -1218,10 +1418,31 @@ document.getElementById("filtroErLimpar").addEventListener("click", ()=>{
   filtroSetorErEl.value = "todos";
   filtroMotoristaErEl.value = "todos";
   filtroBuscaErEl.value = "";
-  filtroAtivoEr = {status:"todas", setor:"todos", motorista:"todos", busca:""};
+  filtroAtivoEr = {status:"todas", setor:"todos", motorista:"todos", busca:"", minhas:false};
+  atualizarBotaoMinhasEr();
   renderTabelaEr();
   renderKanbanEr();
 });
+
+// "Minhas viagens": só as viagens pedidas pelo usuário definido em "Definir meu usuário".
+const btnMinhasViagensEl = document.getElementById("btnMinhasViagens");
+function atualizarBotaoMinhasEr(){
+  btnMinhasViagensEl.classList.toggle("ativo", filtroAtivoEr.minhas);
+  btnMinhasViagensEl.setAttribute("aria-pressed", String(filtroAtivoEr.minhas));
+}
+btnMinhasViagensEl.addEventListener("click", ()=>{
+  if(!filtroAtivoEr.minhas && !usuarioAtualNome()){
+    // Sem usuário definido não dá para saber quais são "minhas": pede o nome primeiro.
+    filtroMinhasPendenteEr = true;
+    document.getElementById("btnPerfilUsuario").click();
+    return;
+  }
+  filtroAtivoEr.minhas = !filtroAtivoEr.minhas;
+  atualizarBotaoMinhasEr();
+  renderTabelaEr();
+  renderKanbanEr();
+});
+let filtroMinhasPendenteEr = false;
 
 // ---------- DRAWER DE DETALHE ----------
 const erBackdrop = document.getElementById("erBackdrop");
@@ -1374,14 +1595,14 @@ document.getElementById("cardMenuErExcluir").addEventListener("click", (e)=>{
   abrirConfirmacaoExcluirEr(id);
 });
 
-// ---------- NOVA / EDITAR VIAGEM (assistente em etapas) ----------
+// ---------- NOVA / EDITAR VIAGEM (formulário em uma tela: dados, origem, paradas no caminho e entrega) ----------
 const ANEXO_MAX_BYTES = 5 * 1024 * 1024;
 const UFS_BR = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
 let modoEdicaoIdEr = null;
-let wiz = null; // estado do assistente: {passo, dados, paradas}; passo 0 = dados, passo k = paradas[k-1]
+let wiz = null; // estado do formulário: {dados, paradas}; paradas[0] = origem, a última = entrega, as do meio = paradas no caminho
 const modalBackdropEr = document.getElementById("modalBackdropEr");
 const wizErroEl = document.getElementById("formErroEr");
-document.getElementById("pEstado").innerHTML = `<option value="">UF</option>` + UFS_BR.map(u=>`<option value="${u}">${u}</option>`).join("");
+const nvParadasEl = document.getElementById("nvParadas");
 
 function campo(id){ return document.getElementById(id).value; }
 function dadosVaziosEr(){ return {solicitante:"", setor:"", dataViagem: paraDataLocalISO(new Date()), projetoNumero:"", motorista:""}; }
@@ -1391,116 +1612,137 @@ function lerDadosEr(){
   return {solicitante: campo("fSolicitanteEr").trim(), setor: campo("fSetorEr"), dataViagem: campo("fDataViagemEr"),
           projetoNumero: campo("fProjetoEr").trim(), motorista: campo("fMotoristaEr").trim()};
 }
-function lerParadaEr(){
-  return {cep: mascaraCep(campo("pCep")), endereco: campo("pEndereco").trim(), numero: campo("pNumero").trim(),
-          bairro: campo("pBairro").trim(), cidade: campo("pCidade").trim(), estado: campo("pEstado"), instrucoes: campo("pInstrucoes").trim()};
-}
-function dadosValidos(d){ return !!(d.solicitante && d.setor && d.dataViagem && d.motorista); }
-function paradaValida(p){ return /^\d{5}-\d{3}$/.test(p.cep) && !!(p.endereco && p.numero && p.bairro && p.cidade && p.estado); }
-function wizPassoValido(){ return wiz.passo === 0 ? dadosValidos(lerDadosEr()) : paradaValida(lerParadaEr()); }
+const CAMPOS_DADOS_OBRIG = ["fSolicitanteEr","fSetorEr","fDataViagemEr","fMotoristaEr"];
+// O solicitante escreve o endereço; o CEP é opcional e só ajuda a preencher.
+const CAMPOS_PARADA_OBRIG = ["endereco","numero","bairro","cidade","estado"];
+function cepOk(cep){ return !cep || /^\d{5}-\d{3}$/.test(cep); }
 
-function wizSalvarPasso(){
-  if(wiz.passo === 0){ wiz.dados = lerDadosEr(); return; }
-  const p = wiz.paradas[wiz.passo - 1];
-  if(!p) return;
-  const novo = lerParadaEr();
-  if(novo.cep !== p.coordCep){ p.coord = null; p.coordTentou = false; p.coordCep = ""; }
-  Object.assign(p, novo);
-}
+const NV_TITULO = {retirada:"Endereço de origem (retirada)", intermediaria:"Parada no caminho", entrega:"Endereço de entrega (destino)"};
+const NV_AVISO = {
+  retirada: "Onde o motorista vai buscar o material.",
+  intermediaria: "Local por onde o motorista passa antes da entrega.",
+  entrega: "Onde o material deve ser entregue.",
+};
 
-function wizAtualizarBotoes(){
-  if(!wiz) return;
-  const ok = wizPassoValido();
-  document.getElementById("wizContinuar").disabled = !ok;
-  document.getElementById("wizAdicionar").disabled = !ok;
-  document.getElementById("wizConcluir").disabled = !ok;
-}
-
-function renderAnexosParada(){
-  const p = wiz.paradas[wiz.passo - 1];
-  const lista = document.getElementById("pAnexoLista");
-  lista.innerHTML = (p && p.anexos ? p.anexos : []).map((a,idx)=>
-    `<li><span>📎 ${esc(a.name)} <span style="color:var(--muted); font-size:11px;">(${Math.max(1, Math.round(a.size/1024))} KB)</span></span><button type="button" data-rm-anexo="${idx}">Remover</button></li>`
+function htmlParadaForm(p, i, n){
+  const tipo = tipoParada(i, n);
+  const id = c => `p${i}_${c}`;
+  const titulo = tipo === "intermediaria" ? `${NV_TITULO[tipo]} ${i}` : NV_TITULO[tipo];
+  const ufs = `<option value="">UF</option>` + UFS_BR.map(u=>`<option value="${u}"${p.estado === u ? " selected" : ""}>${u}</option>`).join("");
+  const anexos = (p.anexos||[]).map((a,k)=>
+    `<li><span>📎 ${esc(a.name)} <span style="color:var(--muted); font-size:11px;">(${Math.max(1, Math.round(a.size/1024))} KB)</span></span><button type="button" data-rm-anexo="${k}">Remover</button></li>`
   ).join("");
+  return `<div class="nv-secao nv-parada ${tipo}" data-idx="${i}">
+    <div class="nv-parada-topo">
+      <p class="nv-secao-titulo"><span class="parada-tag ${tipo}">${ETAPA_UI[tipo].icone}</span> ${titulo}</p>
+      ${tipo === "intermediaria" ? `<button type="button" class="er-btn" data-remover="${i}">🗑 Remover</button>` : ""}
+    </div>
+    <p class="form-hint" style="margin:-4px 0 10px;">${NV_AVISO[tipo]}</p>
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="${id("cep")}">CEP (opcional)</label>
+        <input type="text" id="${id("cep")}" data-campo="cep" inputmode="numeric" maxlength="9" placeholder="00000-000" value="${esc(p.cep)}">
+        <span class="cep-status" data-cep-status>${p.cep ? "" : "Se souber o CEP, o endereço é preenchido sozinho."}</span>
+      </div>
+      <div class="form-field">
+        <label for="${id("numero")}">Número *</label>
+        <input type="text" id="${id("numero")}" data-campo="numero" maxlength="10" placeholder="Ex.: 120 ou S/N" value="${esc(p.numero)}">
+      </div>
+      <div class="form-field full">
+        <label for="${id("endereco")}">Endereço (rua, avenida) *</label>
+        <input type="text" id="${id("endereco")}" data-campo="endereco" maxlength="120" placeholder="Ex.: Av. Paulista" value="${esc(p.endereco)}">
+      </div>
+      <div class="form-field">
+        <label for="${id("bairro")}">Bairro *</label>
+        <input type="text" id="${id("bairro")}" data-campo="bairro" maxlength="60" value="${esc(p.bairro)}">
+      </div>
+      <div class="form-field nv-cidade-uf">
+        <div class="form-field">
+          <label for="${id("cidade")}">Cidade *</label>
+          <input type="text" id="${id("cidade")}" data-campo="cidade" maxlength="60" value="${esc(p.cidade)}">
+        </div>
+        <div class="form-field">
+          <label for="${id("estado")}">UF *</label>
+          <select id="${id("estado")}" data-campo="estado">${ufs}</select>
+        </div>
+      </div>
+      <div class="form-field full">
+        <label for="${id("instrucoes")}">O que fazer neste local</label>
+        <textarea id="${id("instrucoes")}" data-campo="instrucoes" maxlength="500" placeholder="Ex.: ligar antes de chegar, falar com fulano na portaria, retirar 3 caixas...">${esc(p.instrucoes)}</textarea>
+      </div>
+      <div class="form-field full">
+        <label>Anexos</label>
+        <div><button type="button" class="er-btn" data-anexar>📎 Anexar arquivo</button><input type="file" data-anexo-input multiple style="display:none;"></div>
+        <p class="form-hint">Pedido de compras, fotos ou qualquer documento — o motorista vê ao abrir a corrida. Até 5 MB por arquivo.</p>
+        <ul class="anexo-lista">${anexos}</ul>
+      </div>
+    </div>
+  </div>`;
 }
 
-function wizMostrarPasso(){
+function renderParadasForm(){
   const n = wiz.paradas.length;
-  const noDados = wiz.passo === 0;
-  const nomes = ["Dados"].concat(wiz.paradas.map((_,k)=> TIPO_PARADA_LABEL[tipoParada(k, n)]));
-  if(n === 1) nomes.push("Destino");
-  document.getElementById("wizSteps").innerHTML = nomes.map((nm,k)=>
-    `<span class="wiz-step ${k === wiz.passo ? "atual" : (k < wiz.passo ? "feito" : "")}">${k+1}. ${nm}</span>`
+  nvParadasEl.innerHTML = wiz.paradas.map((p,i)=>
+    (i === n - 1 ? `<button type="button" class="er-btn nv-adicionar" id="wizAdicionar">+ Adicionar parada no caminho</button>` : "") + htmlParadaForm(p, i, n)
   ).join("");
-  wizErroEl.classList.remove("show");
-  document.getElementById("wizPassoDados").style.display = noDados ? "" : "none";
-  document.getElementById("wizPassoParada").style.display = noDados ? "none" : "";
-
-  if(noDados){
-    const d = wiz.dados;
-    document.getElementById("fSolicitanteEr").value = d.solicitante;
-    document.getElementById("fSetorEr").value = d.setor;
-    document.getElementById("fDataViagemEr").value = d.dataViagem;
-    document.getElementById("fProjetoEr").value = d.projetoNumero;
-    document.getElementById("fMotoristaEr").value = d.motorista;
-    atualizarAvisoMotoristaEr();
-  } else {
-    const i = wiz.passo - 1;
-    const p = wiz.paradas[i];
-    const tipo = tipoParada(i, n);
-    const avisos = {
-      retirada: "Onde o motorista deve retirar. Informe o CEP que o endereço é preenchido sozinho — falta só o número.",
-      intermediaria: "Local onde o motorista passa antes de chegar ao destino final.",
-      entrega: "Destino final da viagem. Se houver mais locais no caminho, use \"Adicionar parada intermediária\" — o último endereço informado é sempre o destino.",
-    };
-    document.getElementById("wizAvisoParada").textContent = `${TIPO_PARADA_LABEL[tipo]}: ${avisos[tipo]}`;
-    document.getElementById("pCep").value = p.cep;
-    document.getElementById("pNumero").value = p.numero;
-    document.getElementById("pEndereco").value = p.endereco;
-    document.getElementById("pBairro").value = p.bairro;
-    document.getElementById("pCidade").value = p.cidade;
-    document.getElementById("pEstado").value = p.estado;
-    document.getElementById("pInstrucoes").value = p.instrucoes;
-    document.getElementById("pCepStatus").textContent = "";
-    renderAnexosParada();
-  }
-
-  const ultima = !noDados && wiz.passo === n && n >= 2;
-  document.getElementById("wizVoltar").textContent = noDados ? "Cancelar" : "Voltar";
-  document.getElementById("wizContinuar").style.display = ultima ? "none" : "";
-  document.getElementById("wizAdicionar").style.display = ultima ? "" : "none";
-  document.getElementById("wizConcluir").style.display = ultima ? "" : "none";
-  document.getElementById("wizConcluir").textContent = modoEdicaoIdEr ? "Salvar alterações" : "Concluir cadastro";
-  document.getElementById("wizRemover").style.display = (!noDados && wiz.passo >= 2 && n > 2) ? "" : "none";
-  wizAtualizarBotoes();
 }
+function cardParada(i){ return nvParadasEl.querySelector(`.nv-parada[data-idx="${i}"]`); }
 
+function preencherDadosForm(){
+  const d = wiz.dados;
+  document.getElementById("fSolicitanteEr").value = d.solicitante;
+  document.getElementById("fSetorEr").value = d.setor;
+  document.getElementById("fDataViagemEr").value = d.dataViagem;
+  document.getElementById("fProjetoEr").value = d.projetoNumero;
+  document.getElementById("fMotoristaEr").value = d.motorista;
+  CAMPOS_DADOS_OBRIG.forEach(id=> document.getElementById(id).classList.remove("invalido"));
+  atualizarAvisoMotoristaEr();
+}
+function abrirFormularioEr(titulo){
+  atualizarDatalistsEr();
+  document.getElementById("modalTituloEr").textContent = titulo;
+  document.getElementById("wizConcluir").textContent = modoEdicaoIdEr ? "Salvar alterações" : "Criar viagem";
+  wizErroEl.classList.remove("show");
+  preencherDadosForm();
+  renderParadasForm();
+  modalBackdropEr.classList.add("open");
+  travarRolagemFundoEr(true);
+  document.getElementById("nvCorpo").scrollTop = 0;
+}
 function abrirModalNovaViagem(){
   modoEdicaoIdEr = null;
-  wiz = {passo: 0, dados: dadosVaziosEr(), paradas: []};
-  atualizarDatalistsEr();
-  document.getElementById("modalTituloEr").textContent = "Nova viagem";
-  wizMostrarPasso();
-  modalBackdropEr.classList.add("open");
+  wiz = {dados: dadosVaziosEr(), paradas: [paradaVazia(), paradaVazia()]};
+  abrirFormularioEr("Nova viagem");
 }
 function abrirModalEdicaoEr(id){
   const v = VIAGENS.find(x=>x.id===id);
   if(!v) return;
   modoEdicaoIdEr = id;
+  const paradas = JSON.parse(JSON.stringify(paradasDaViagem(v))).map(p=> Object.assign(paradaVazia(), p));
+  while(paradas.length < 2) paradas.push(paradaVazia());
   wiz = {
-    passo: 0,
     dados: {
       solicitante: v.solicitante, setor: SETORES_ER.includes(v.setor) ? v.setor : "Administrativo",
       dataViagem: paraDataLocalISO(v.data), projetoNumero: v.projetoNumero || "", motorista: v.motorista || "",
     },
-    paradas: JSON.parse(JSON.stringify(paradasDaViagem(v))).map(p=> Object.assign(paradaVazia(), p)),
+    paradas,
   };
-  atualizarDatalistsEr();
-  document.getElementById("modalTituloEr").textContent = "Editar viagem";
-  wizMostrarPasso();
-  modalBackdropEr.classList.add("open");
+  abrirFormularioEr("Editar viagem");
 }
-function fecharModalEr(){ modalBackdropEr.classList.remove("open"); }
+// Trava a rolagem da página de trás enquanto o formulário está aberto (no iPhone só funciona com position:fixed).
+let rolagemSalvaEr = null;
+function travarRolagemFundoEr(travar){
+  const b = document.body;
+  if(travar && rolagemSalvaEr === null){
+    rolagemSalvaEr = window.scrollY;
+    Object.assign(b.style, {position:"fixed", top:`-${rolagemSalvaEr}px`, left:"0", right:"0"});
+  } else if(!travar && rolagemSalvaEr !== null){
+    Object.assign(b.style, {position:"", top:"", left:"", right:""});
+    window.scrollTo(0, rolagemSalvaEr);
+    rolagemSalvaEr = null;
+  }
+}
+function fecharModalEr(){ modalBackdropEr.classList.remove("open"); travarRolagemFundoEr(false); }
 function cancelarModalEr(){
   const idEditando = modoEdicaoIdEr;
   modoEdicaoIdEr = null;
@@ -1515,6 +1757,7 @@ document.getElementById("btnEditarViagem").addEventListener("click", ()=>{
   abrirModalEdicaoEr(id);
 });
 document.getElementById("modalCloseEr").addEventListener("click", cancelarModalEr);
+document.getElementById("wizVoltar").addEventListener("click", cancelarModalEr);
 
 // Aviso abaixo do "Responsável pela viagem": diz se o nome é de um motorista cadastrado
 // (só nesse caso a corrida aparece na tela Minhas corridas dele). Não bloqueia o cadastro.
@@ -1522,87 +1765,108 @@ function atualizarAvisoMotoristaEr(){
   const el = document.getElementById("fMotoristaAviso");
   const nome = campo("fMotoristaEr").trim();
   const cadastrado = motoristaCanonico(nome);
+  el.classList.toggle("alerta", !!nome && !cadastrado);
   if(!nome) el.textContent = "";
   else if(cadastrado) el.textContent = `✓ Motorista cadastrado — a corrida vai aparecer em "Minhas corridas" de ${cadastrado}.`;
-  else el.textContent = "Nome não cadastrado: a viagem será criada, mas não vai aparecer em \"Minhas corridas\" de nenhum motorista.";
+  else el.textContent = "⚠ Nome não cadastrado: a viagem será criada, mas não vai aparecer em \"Minhas corridas\" de nenhum motorista.";
 }
 document.getElementById("fMotoristaEr").addEventListener("input", atualizarAvisoMotoristaEr);
+document.getElementById("wizPassoDados").addEventListener("input", (e)=> e.target.classList.remove("invalido"));
+document.getElementById("wizPassoDados").addEventListener("change", (e)=> e.target.classList.remove("invalido"));
 
-// Validação em tempo real: os botões só habilitam com os obrigatórios preenchidos.
-modalBackdropEr.addEventListener("input", wizAtualizarBotoes);
-modalBackdropEr.addEventListener("change", wizAtualizarBotoes);
-
-// Navegação entre as etapas
-document.getElementById("wizVoltar").addEventListener("click", ()=>{
-  if(!wiz) return;
-  if(wiz.passo === 0){ cancelarModalEr(); return; }
-  wizSalvarPasso();
-  wiz.passo--;
-  wizMostrarPasso();
-});
-document.getElementById("wizContinuar").addEventListener("click", ()=>{
-  if(!wiz || !wizPassoValido()) return;
-  wizSalvarPasso();
-  if(wiz.passo === 0 && wiz.paradas.length === 0) wiz.paradas.push(paradaVazia());
-  else if(wiz.passo === wiz.paradas.length && wiz.paradas.length === 1) wiz.paradas.push(paradaVazia());
-  wiz.passo++;
-  wizMostrarPasso();
-});
-document.getElementById("wizAdicionar").addEventListener("click", ()=>{
-  if(!wiz || !wizPassoValido()) return;
-  wizSalvarPasso();
-  wiz.paradas.push(paradaVazia()); // o que estava como destino vira intermediária; a nova é o destino final
-  wiz.passo = wiz.paradas.length;
-  wizMostrarPasso();
-});
-document.getElementById("wizRemover").addEventListener("click", ()=>{
-  if(!wiz || wiz.passo < 1 || wiz.paradas.length <= 2) return;
-  wiz.paradas.splice(wiz.passo - 1, 1);
-  wiz.passo = Math.min(wiz.passo, wiz.paradas.length);
-  wizMostrarPasso();
-});
+// Digitação nos endereços: guarda no estado da parada (sem redesenhar, para não perder o foco)
+function aoEditarCampoParada(e){
+  const el = e.target.closest("[data-campo]");
+  if(!el || !wiz) return;
+  const p = wiz.paradas[parseInt(el.closest(".nv-parada").dataset.idx, 10)];
+  if(!p) return;
+  el.classList.remove("invalido");
+  if(el.dataset.campo === "cep"){
+    el.value = mascaraCep(el.value);
+    if(el.value === p.cep) return;
+    p.cep = el.value;
+    if(p.cep !== p.coordCep){ p.coord = null; p.coordTentou = false; p.coordCep = ""; }
+    buscarCepParada(p);
+    return;
+  }
+  p[el.dataset.campo] = el.value;
+}
+nvParadasEl.addEventListener("input", aoEditarCampoParada);
+nvParadasEl.addEventListener("change", aoEditarCampoParada);
 
 // CEP: preenche rua, bairro, cidade e estado (o número fica por conta do usuário)
-let cepReqId = 0;
-document.getElementById("pCep").addEventListener("input", async (e)=>{
-  e.target.value = mascaraCep(e.target.value);
-  const cep = e.target.value;
-  const statusEl = document.getElementById("pCepStatus");
-  if(!/^\d{5}-\d{3}$/.test(cep)){ statusEl.textContent = ""; return; }
-  const meu = ++cepReqId;
-  const p = wiz ? wiz.paradas[wiz.passo - 1] : null;
-  statusEl.textContent = "Buscando endereço...";
+const cepReqParada = new WeakMap();
+async function buscarCepParada(p){
+  const card = ()=> wiz && wiz.paradas.includes(p) ? cardParada(wiz.paradas.indexOf(p)) : null;
+  const statusEl = card() && card().querySelector("[data-cep-status]");
+  const cep = p.cep;
+  if(!/^\d{5}-\d{3}$/.test(cep)){ if(statusEl) statusEl.textContent = ""; return; }
+  const meu = (cepReqParada.get(p) || 0) + 1;
+  cepReqParada.set(p, meu);
+  if(statusEl) statusEl.textContent = "Buscando endereço...";
+  const atual = ()=> cepReqParada.get(p) === meu && card();
   try{
     const r = await fetch(`https://viacep.com.br/ws/${cep.replace("-","")}/json/`);
     const j = await r.json();
-    if(meu !== cepReqId) return;
-    if(j.erro){ statusEl.textContent = "CEP não encontrado — preencha o endereço manualmente."; wizAtualizarBotoes(); return; }
-    document.getElementById("pEndereco").value = j.logradouro || "";
-    document.getElementById("pBairro").value = j.bairro || "";
-    document.getElementById("pCidade").value = j.localidade || "";
-    document.getElementById("pEstado").value = j.uf || "";
-    statusEl.textContent = "Endereço preenchido pelo CEP — informe o número.";
-    document.getElementById("pNumero").focus();
-    wizAtualizarBotoes();
+    if(!atual()) return;
+    const c = card();
+    if(j.erro){ c.querySelector("[data-cep-status]").textContent = "CEP não encontrado — escreva o endereço abaixo."; return; }
+    const novos = {endereco: j.logradouro || "", bairro: j.bairro || "", cidade: j.localidade || "", estado: j.uf || ""};
+    Object.entries(novos).forEach(([k,val])=>{
+      if(!val) return;
+      p[k] = val;
+      const inp = c.querySelector(`[data-campo="${k}"]`);
+      inp.value = val; inp.classList.remove("invalido");
+    });
+    c.querySelector("[data-cep-status]").textContent = "Endereço preenchido pelo CEP — confira e informe o número.";
+    c.querySelector('[data-campo="numero"]').focus();
   }catch(err){
-    if(meu === cepReqId) statusEl.textContent = "Não foi possível consultar o CEP agora — preencha manualmente.";
+    if(atual()) card().querySelector("[data-cep-status]").textContent = "Não foi possível consultar o CEP agora — escreva o endereço abaixo.";
     return;
   }
   // Coordenadas aproximadas pelo CEP (usadas no mapa do Roteiro do Dia)
   try{
     const r2 = await fetch(`https://cep.awesomeapi.com.br/json/${cep.replace("-","")}`);
     const j2 = await r2.json();
-    if(meu === cepReqId && p && j2 && j2.lat && j2.lng){ p.coord = [parseFloat(j2.lat), parseFloat(j2.lng)]; p.coordCep = cep; }
+    if(cepReqParada.get(p) === meu && p.cep === cep && j2 && j2.lat && j2.lng){ p.coord = [parseFloat(j2.lat), parseFloat(j2.lng)]; p.coordCep = cep; }
   }catch(err){}
-});
+}
 
+// Botões dentro do formulário: adicionar/remover parada no caminho e anexos
+nvParadasEl.addEventListener("click", (e)=>{
+  if(!wiz) return;
+  if(e.target.closest("#wizAdicionar")){
+    // A nova parada entra antes da entrega: a entrega continua sendo o último endereço.
+    const n = wiz.paradas.length;
+    wiz.paradas.splice(n - 1, 0, paradaVazia());
+    renderParadasForm();
+    const nova = cardParada(n - 1);
+    nova.scrollIntoView({block:"start", behavior:"smooth"});
+    nova.querySelector('[data-campo="cep"]').focus({preventScroll:true});
+    return;
+  }
+  const rm = e.target.closest("[data-remover]");
+  if(rm){
+    wiz.paradas.splice(parseInt(rm.dataset.remover, 10), 1);
+    renderParadasForm();
+    return;
+  }
+  const card = e.target.closest(".nv-parada");
+  if(!card) return;
+  const p = wiz.paradas[parseInt(card.dataset.idx, 10)];
+  if(e.target.closest("[data-anexar]")){ card.querySelector("[data-anexo-input]").click(); return; }
+  const rmAnexo = e.target.closest("[data-rm-anexo]");
+  if(rmAnexo && p){ p.anexos.splice(parseInt(rmAnexo.dataset.rmAnexo, 10), 1); renderParadasForm(); }
+});
 // Anexos da parada (ficam só em memória neste protótipo)
-document.getElementById("pAnexoBtn").addEventListener("click", ()=> document.getElementById("pAnexoInput").click());
-document.getElementById("pAnexoInput").addEventListener("change", async (e)=>{
-  const arquivos = [...e.target.files];
-  e.target.value = "";
-  const p = wiz ? wiz.paradas[wiz.passo - 1] : null;
+nvParadasEl.addEventListener("change", async (e)=>{
+  const input = e.target.closest("[data-anexo-input]");
+  if(!input || !wiz) return;
+  const p = wiz.paradas[parseInt(input.closest(".nv-parada").dataset.idx, 10)];
+  const arquivos = [...input.files];
+  input.value = "";
   if(!p) return;
+  wizErroEl.classList.remove("show");
   for(const f of arquivos){
     if(f.size > ANEXO_MAX_BYTES){
       wizErroEl.textContent = `"${f.name}" passa de 5 MB e não foi anexado.`; wizErroEl.classList.add("show"); continue;
@@ -1610,32 +1874,56 @@ document.getElementById("pAnexoInput").addEventListener("change", async (e)=>{
     const dataUrl = await new Promise(res=>{ const fr = new FileReader(); fr.onload = ()=>res(fr.result); fr.onerror = ()=>res(null); fr.readAsDataURL(f); });
     if(dataUrl) p.anexos.push({name: f.name, size: f.size, type: f.type, dataUrl});
   }
-  renderAnexosParada();
+  if(wiz) renderParadasForm();
 });
-document.getElementById("pAnexoLista").addEventListener("click", (e)=>{
-  const btn = e.target.closest("[data-rm-anexo]");
-  if(!btn || !wiz) return;
-  const p = wiz.paradas[wiz.passo - 1];
-  if(p){ p.anexos.splice(parseInt(btn.dataset.rmAnexo, 10), 1); renderAnexosParada(); }
-});
+
+// Marca em vermelho o que falta e devolve a lista de campos com problema (na ordem da tela)
+function validarFormularioEr(){
+  const faltas = [];
+  CAMPOS_DADOS_OBRIG.forEach(id=>{
+    const el = document.getElementById(id);
+    const ok = !!el.value.trim();
+    el.classList.toggle("invalido", !ok);
+    if(!ok) faltas.push(el);
+  });
+  wiz.paradas.forEach((p,i)=>{
+    const card = cardParada(i);
+    const cepEl = card.querySelector('[data-campo="cep"]');
+    cepEl.classList.toggle("invalido", !cepOk(p.cep));
+    if(!cepOk(p.cep)) faltas.push(cepEl);
+    CAMPOS_PARADA_OBRIG.forEach(c=>{
+      const el = card.querySelector(`[data-campo="${c}"]`);
+      const ok = !!String(p[c]||"").trim();
+      el.classList.toggle("invalido", !ok);
+      if(!ok) faltas.push(el);
+    });
+  });
+  return faltas;
+}
 
 // Conclusão: valida tudo e cria (ou atualiza) a viagem
 document.getElementById("wizConcluir").addEventListener("click", ()=>{
-  if(!wiz || !wizPassoValido()) return;
-  wizSalvarPasso();
-  let erro = null;
-  if(!dadosValidos(wiz.dados)){ wiz.passo = 0; erro = "Complete os dados da viagem."; }
-  else {
-    for(let k = 0; k < wiz.paradas.length; k++){
-      if(!paradaValida(wiz.paradas[k])){ wiz.passo = k + 1; erro = `Complete os dados da etapa ${k + 2}.`; break; }
-    }
+  if(!wiz) return;
+  wiz.dados = lerDadosEr();
+  const faltas = validarFormularioEr();
+  if(faltas.length){
+    const cepRuim = faltas.some(el=> el.dataset.campo === "cep");
+    wizErroEl.textContent = `Preencha os ${faltas.length === 1 ? "campo marcado" : faltas.length + " campos marcados"} em vermelho${cepRuim ? " (CEP incompleto: complete ou apague)" : ""}.`;
+    wizErroEl.classList.add("show");
+    faltas[0].scrollIntoView({block:"center", behavior:"smooth"});
+    faltas[0].focus({preventScroll:true});
+    return;
   }
-  if(erro){ wizMostrarPasso(); wizErroEl.textContent = erro; wizErroEl.classList.add("show"); return; }
+  wizErroEl.classList.remove("show");
 
   const d = wiz.dados;
   // Se o nome bate com um motorista cadastrado (ignorando maiúsculas/acentos), grava o nome exato do cadastro.
   d.motorista = motoristaCanonico(d.motorista) || d.motorista;
-  const paradas = wiz.paradas.map(p=> ({...p, anexos: [...p.anexos]}));
+  const paradas = wiz.paradas.map(p=>{
+    const limpo = {...p, anexos: [...p.anexos]};
+    ["endereco","numero","bairro","cidade","instrucoes"].forEach(c=> limpo[c] = String(limpo[c]||"").trim());
+    return limpo;
+  });
   const [ano, mes, dia] = d.dataViagem.split("-").map(Number);
   const dataViagem = new Date(ano, mes - 1, dia, 12, 0, 0);
   const origem = rotuloParada(paradas[0]);
@@ -1661,7 +1949,7 @@ document.getElementById("wizConcluir").addEventListener("click", ()=>{
   modoEdicaoIdEr = null;
   wiz = null;
   fecharModalEr();
-  renderTabelaEr(); renderKanbanEr(); atualizarOpcoesFiltroMotoristaEr(); atualizarDatalistsEr(); renderRoteiroDia();
+  atualizarOpcoesFiltroMotoristaEr(); atualizarDatalistsEr(); atualizarTelasEr();
   abrirDrawerEr(idAbrir);
 });
 
@@ -1693,12 +1981,6 @@ function dataConclusao(v){
     if(h.status === "concluida" && !h.evento) return new Date(h.data);
   }
   return null;
-}
-// Texto curto mostrado na tabela/Kanban sobre o andamento do motorista (sem texto de usuário).
-function subStatusMotorista(v){
-  if(v.status === "pendente") return v.aceitaEm ? "✓ Aceita pelo motorista" : "Aguardando aceite";
-  if(v.status === "em_rota"){ const n = paradasDaViagem(v).length; return `${paradasVisitadas(v)}/${n} paradas visitadas`; }
-  return "";
 }
 function rotuloDiaCorrida(d){
   const iso = paraDataLocalISO(d), agora = new Date();
@@ -1959,6 +2241,23 @@ document.getElementById("temaToggle").addEventListener("click", ()=>{
   atualizarTema();
 });
 atualizarTema();
+
+// ---------- ABAS DO PAINEL (Viagens | Roteiro do Dia) ----------
+function definirAbaPainelEr(aba){
+  abaPainelEr = aba === "roteiro" ? "roteiro" : "viagens";
+  document.getElementById("secaoViagens").hidden = abaPainelEr !== "viagens";
+  document.getElementById("secaoRoteiroDia").hidden = abaPainelEr !== "roteiro";
+  document.querySelectorAll(".painel-abas [data-aba]").forEach(b=>{
+    const ativo = b.dataset.aba === abaPainelEr;
+    b.classList.toggle("ativo", ativo);
+    b.setAttribute("aria-selected", String(ativo));
+  });
+  if(abaPainelEr === "roteiro") renderRoteiroDia();
+}
+document.querySelector(".painel-abas").addEventListener("click", (e)=>{
+  const b = e.target.closest("[data-aba]");
+  if(b) definirAbaPainelEr(b.dataset.aba);
+});
 
 // ---------- ROTEIRO DO DIA: eventos ----------
 document.getElementById("roteiroData").addEventListener("change", renderRoteiroDia);
