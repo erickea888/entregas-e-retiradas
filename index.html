@@ -388,6 +388,22 @@
   .nv-parada.entrega{border-left:4px solid var(--accent-2);}
   .nv-parada-topo{display:flex; justify-content:space-between; align-items:flex-start; gap:10px;}
   .nv-parada-topo .er-btn{padding:4px 10px; font-size:12px;}
+  .nv-toggle{
+    display:flex; align-items:center; flex-wrap:wrap; gap:4px 8px; width:100%; min-width:0; min-height:32px; margin:0 0 12px; padding:0;
+    background:none; border:none; color:var(--text); font-family:inherit; text-align:left; cursor:pointer;
+  }
+  .nv-parada-topo .nv-toggle{flex:1;}
+  .nv-toggle .nv-secao-titulo{margin:0;}
+  .nv-seta{
+    display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; flex:none; border-radius:7px;
+    border:1px solid var(--border); background:var(--panel-2); color:var(--muted); font-size:16px; line-height:1; transition:transform .15s ease;
+  }
+  .nv-toggle:hover .nv-seta, .nv-toggle:focus-visible .nv-seta{border-color:var(--accent); color:var(--accent);}
+  .nv-resumo{display:none; flex-basis:100%; padding-left:34px; font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .nv-recolhida .nv-seta{transform:rotate(-90deg);}
+  .nv-recolhida .nv-resumo{display:block;}
+  .nv-recolhida .nv-conteudo{display:none;}
+  .nv-recolhida .nv-toggle{margin-bottom:10px;}
   .nv-cidade-uf{display:grid; grid-template-columns:1fr 84px; gap:10px;}
   .nv-adicionar{width:100%; min-height:44px; margin:0 0 14px; border-style:dashed; font-weight:700;}
   .form-field input.invalido, .form-field select.invalido, .form-field textarea.invalido{border-color:var(--danger); box-shadow:0 0 0 2px rgba(239,68,68,.15);}
@@ -431,6 +447,9 @@
     #modalBackdropEr .modal{width:100% !important; max-height:100dvh; height:100dvh; border-radius:0;}
     .form-field input, .form-field select, .form-field textarea, .filtro-grupo select, .filtro-grupo input{font-size:16px;}
     .nv-rodape{position:sticky; bottom:0; background:var(--panel);}
+    .nv-toggle{min-height:44px;}
+    .nv-seta{width:32px; height:32px;}
+    .nv-resumo{padding-left:40px;}
     .nv-rodape .btn-primary, .nv-rodape .er-btn{min-height:44px; flex:1;}
   }
 </style>
@@ -706,7 +725,10 @@
     </div>
     <div class="modal-body" id="nvCorpo">
       <div class="nv-secao" id="wizPassoDados">
-        <p class="nv-secao-titulo">Dados da viagem</p>
+        <button type="button" class="nv-toggle" data-toggle aria-expanded="true" title="Recolher ou abrir">
+          <span class="nv-seta" aria-hidden="true">▾</span><span class="nv-secao-titulo">Dados da viagem</span><span class="nv-resumo" data-resumo></span>
+        </button>
+        <div class="nv-conteudo">
         <div class="form-grid">
           <div class="form-field">
             <label for="fSolicitanteEr">Solicitante *</label>
@@ -735,6 +757,7 @@
             <datalist id="listaMotoristasEr"></datalist>
             <p class="form-hint" id="fMotoristaAviso"></p>
           </div>
+        </div>
         </div>
       </div>
 
@@ -1632,11 +1655,15 @@ function htmlParadaForm(p, i, n){
   const anexos = (p.anexos||[]).map((a,k)=>
     `<li><span>📎 ${esc(a.name)} <span style="color:var(--muted); font-size:11px;">(${Math.max(1, Math.round(a.size/1024))} KB)</span></span><button type="button" data-rm-anexo="${k}">Remover</button></li>`
   ).join("");
-  return `<div class="nv-secao nv-parada ${tipo}" data-idx="${i}">
+  const recolhida = wiz.recolhidas.has(p);
+  return `<div class="nv-secao nv-parada ${tipo}${recolhida ? " nv-recolhida" : ""}" data-idx="${i}">
     <div class="nv-parada-topo">
-      <p class="nv-secao-titulo"><span class="parada-tag ${tipo}">${ETAPA_UI[tipo].icone}</span> ${titulo}</p>
+      <button type="button" class="nv-toggle" data-toggle aria-expanded="${!recolhida}" title="Recolher ou abrir">
+        <span class="nv-seta" aria-hidden="true">▾</span><span class="nv-secao-titulo"><span class="parada-tag ${tipo}">${ETAPA_UI[tipo].icone}</span> ${titulo}</span><span class="nv-resumo" data-resumo>${esc(resumoParadaNv(p))}</span>
+      </button>
       ${tipo === "intermediaria" ? `<button type="button" class="er-btn" data-remover="${i}">🗑 Remover</button>` : ""}
     </div>
+    <div class="nv-conteudo">
     <p class="form-hint" style="margin:-4px 0 10px;">${NV_AVISO[tipo]}</p>
     <div class="form-grid">
       <div class="form-field">
@@ -1677,6 +1704,7 @@ function htmlParadaForm(p, i, n){
         <ul class="anexo-lista">${anexos}</ul>
       </div>
     </div>
+    </div>
   </div>`;
 }
 
@@ -1687,6 +1715,35 @@ function renderParadasForm(){
   ).join("");
 }
 function cardParada(i){ return nvParadasEl.querySelector(`.nv-parada[data-idx="${i}"]`); }
+
+// ---- Recolher / abrir cada bloco do formulário (seta ao lado do título) ----
+function resumoParadaNv(p){ return p.endereco || p.cidade ? enderecoCompleto(p) : "Ainda não preenchido"; }
+function resumoDadosNv(){
+  const d = lerDadosEr();
+  const data = d.dataViagem ? d.dataViagem.split("-").reverse().join("/") : "";
+  return [d.solicitante, d.setor, data, d.motorista ? "Motorista: " + d.motorista : ""].filter(Boolean).join(" · ") || "Ainda não preenchido";
+}
+function definirRecolhidaNv(secao, recolher){
+  if(!wiz || !secao) return;
+  if(secao.id === "wizPassoDados") wiz.dadosRecolhido = recolher;
+  else {
+    const p = wiz.paradas[parseInt(secao.dataset.idx, 10)];
+    if(p){ if(recolher) wiz.recolhidas.add(p); else wiz.recolhidas.delete(p); }
+  }
+  secao.classList.toggle("nv-recolhida", recolher);
+  const toggle = secao.querySelector("[data-toggle]");
+  toggle.setAttribute("aria-expanded", String(!recolher));
+  if(recolher){
+    const p = secao.id === "wizPassoDados" ? null : wiz.paradas[parseInt(secao.dataset.idx, 10)];
+    toggle.querySelector("[data-resumo]").textContent = p ? resumoParadaNv(p) : resumoDadosNv();
+  }
+}
+document.getElementById("nvCorpo").addEventListener("click", (e)=>{
+  const t = e.target.closest("[data-toggle]");
+  if(!t) return;
+  const secao = t.closest(".nv-secao");
+  definirRecolhidaNv(secao, !secao.classList.contains("nv-recolhida"));
+});
 
 function preencherDadosForm(){
   const d = wiz.dados;
@@ -1703,6 +1760,10 @@ function abrirFormularioEr(titulo){
   document.getElementById("modalTituloEr").textContent = titulo;
   document.getElementById("wizConcluir").textContent = modoEdicaoIdEr ? "Salvar alterações" : "Criar viagem";
   wizErroEl.classList.remove("show");
+  wiz.recolhidas = new Set();
+  wiz.dadosRecolhido = false;
+  document.getElementById("wizPassoDados").classList.remove("nv-recolhida");
+  document.querySelector("#wizPassoDados [data-toggle]").setAttribute("aria-expanded", "true");
   preencherDadosForm();
   renderParadasForm();
   modalBackdropEr.classList.add("open");
@@ -1910,6 +1971,8 @@ document.getElementById("wizConcluir").addEventListener("click", ()=>{
     const cepRuim = faltas.some(el=> el.dataset.campo === "cep");
     wizErroEl.textContent = `Preencha os ${faltas.length === 1 ? "campo marcado" : faltas.length + " campos marcados"} em vermelho${cepRuim ? " (CEP incompleto: complete ou apague)" : ""}.`;
     wizErroEl.classList.add("show");
+    // Abre os blocos recolhidos que têm campo faltando
+    faltas.forEach(el=>{ const secao = el.closest(".nv-secao"); if(secao && secao.classList.contains("nv-recolhida")) definirRecolhidaNv(secao, false); });
     faltas[0].scrollIntoView({block:"center", behavior:"smooth"});
     faltas[0].focus({preventScroll:true});
     return;
