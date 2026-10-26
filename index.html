@@ -338,6 +338,7 @@
   }
   .mc-barra-btn:hover{border-color:var(--accent); color:var(--accent);}
   .mc-resumo{margin:0 0 14px; font-size:13px; color:var(--muted);}
+  .mc-ordem{display:inline-block; margin-top:4px; font-size:12px; font-weight:700; color:var(--accent);}
   .mc-resumo:empty{display:none;}
   .mc-card.mc-atual{border:2px solid var(--accent); border-left-width:6px; box-shadow:0 6px 20px rgba(59,130,246,.12);}
   .mc-atual-rot{font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); margin-bottom:-6px;}
@@ -1110,6 +1111,48 @@ function popularMotoristaRoteiro(){
 
 let mapaRoteiro = null;
 let roteiroRequestId = 0;
+// Viagens que entram no roteiro de um motorista num dia: pendentes (aceitas ou não) e em rota.
+function viagensDoRoteiro(motorista, dataStr){
+  return VIAGENS.filter(v =>
+    v.motorista === motorista && (v.status === "pendente" || v.status === "em_rota") && paraDataLocalISO(v.data) === dataStr
+  );
+}
+// Ordem do Roteiro do Dia: heurística simples de "vizinho mais próximo" saindo da base do motorista,
+// respeitando que a retirada acontece antes da entrega da mesma viagem. Não é um otimizador de rota
+// de verdade, é só ilustrativo. É a mesma ordem no mapa do painel e na tela Minhas corridas.
+function ordenarEtapasRoteiro(viagensDia){
+  const etapas = [];
+  viagensDia.forEach(v=>{
+    const ps = paradasDaViagem(v);
+    ps.forEach((p, k)=>{
+      etapas.push({viagemId:v.id, tipo:tipoParada(k, ps.length), ordem:k, local:rotuloParada(p), coord: p.coord || obterCoordEndereco(enderecoCompleto(p))});
+    });
+  });
+  const restantes = etapas.slice();
+  const ordenadas = [];
+  let ponto = BASE_MOTORISTA_COORD;
+  while(restantes.length){
+    // cada parada só fica disponível depois da anterior da mesma viagem (retirada → intermediárias → destino)
+    const candidatos = restantes.filter(e => e.ordem === 0 || ordenadas.some(o => o.viagemId === e.viagemId && o.ordem === e.ordem - 1));
+    candidatos.sort((a,b)=> distanciaKm(ponto,a.coord) - distanciaKm(ponto,b.coord));
+    const proxima = candidatos[0];
+    ordenadas.push(proxima);
+    restantes.splice(restantes.indexOf(proxima),1);
+    ponto = proxima.coord;
+  }
+  return ordenadas;
+}
+// Posição de cada viagem no roteiro do dia dela (1 = primeira), pela primeira parada que aparece na sequência.
+function posicoesNoRoteiro(motorista){
+  const pos = new Map();
+  const dias = [...new Set(VIAGENS.filter(v => v.motorista === motorista).map(v => paraDataLocalISO(v.data)))];
+  dias.forEach(dia=>{
+    let n = 0;
+    ordenarEtapasRoteiro(viagensDoRoteiro(motorista, dia)).forEach(e=>{ if(!pos.has(e.viagemId)) pos.set(e.viagemId, ++n); });
+  });
+  return pos;
+}
+
 async function renderRoteiroDia(){
   const minhaRequisicao = ++roteiroRequestId;
   // Com o mapa escondido (tela do motorista ou aba Viagens) não desenha: ele é refeito ao abrir a aba Roteiro do Dia.
@@ -1131,9 +1174,7 @@ async function renderRoteiroDia(){
     vazioEl.style.display = ""; return;
   }
 
-  const viagensDia = VIAGENS.filter(v =>
-    v.motorista === motorista && (v.status === "pendente" || v.status === "em_rota") && paraDataLocalISO(v.data) === dataStr
-  );
+  const viagensDia = viagensDoRoteiro(motorista, dataStr);
 
   if(viagensDia.length === 0){
     mapaEl.style.display = "none"; timelineEl.innerHTML = ""; resumoEl.textContent = "";
@@ -1142,31 +1183,10 @@ async function renderRoteiroDia(){
   vazioEl.style.display = "none";
   mapaEl.style.display = "";
 
-  // Monta as paradas do dia (retirada + entrega de cada viagem) e ordena com uma heurística
-  // simples de "vizinho mais próximo", respeitando que a retirada precisa acontecer antes da
-  // entrega da mesma viagem. Não é um otimizador de rota de verdade, é só ilustrativo.
   // Garante coordenadas: o CEP já traz; senão tenta geocodificar; por último usa posição aproximada.
   for(const v of viagensDia){ for(const p of paradasDaViagem(v)){ if(!p.coord) await geocodificarParada(p); } }
   if(minhaRequisicao !== roteiroRequestId) return;
-  const etapas = [];
-  viagensDia.forEach(v=>{
-    const ps = paradasDaViagem(v);
-    ps.forEach((p, k)=>{
-      etapas.push({viagemId:v.id, tipo:tipoParada(k, ps.length), ordem:k, local:rotuloParada(p), coord: p.coord || obterCoordEndereco(enderecoCompleto(p))});
-    });
-  });
-  const restantes = etapas.slice();
-  const ordenadas = [];
-  let ponto = BASE_MOTORISTA_COORD;
-  while(restantes.length){
-    // cada parada só fica disponível depois da anterior da mesma viagem (retirada → intermediárias → destino)
-    const candidatos = restantes.filter(e => e.ordem === 0 || ordenadas.some(o => o.viagemId === e.viagemId && o.ordem === e.ordem - 1));
-    candidatos.sort((a,b)=> distanciaKm(ponto,a.coord) - distanciaKm(ponto,b.coord));
-    const proxima = candidatos[0];
-    ordenadas.push(proxima);
-    restantes.splice(restantes.indexOf(proxima),1);
-    ponto = proxima.coord;
-  }
+  const ordenadas = ordenarEtapasRoteiro(viagensDia);
 
   // ---- Rota real pelas ruas, via OSRM (serviço público e gratuito do OpenStreetMap) ----
   // Enquanto calcula, mostra uma mensagem e mantém o mapa anterior visível pra não "piscar".
@@ -2273,7 +2293,8 @@ function salvarMotoristaLogado(nome){
   try{ if(nome) localStorage.setItem(MOTORISTA_LOGADO_KEY, nome); else localStorage.removeItem(MOTORISTA_LOGADO_KEY); }catch(e){}
 }
 let motoristaLogado = lerMotoristaLogado();
-let mcConcluidasAberto = false;       // grupo "Concluídas hoje" aberto/fechado
+let mcConcluidasAberto = false;
+let mcPosRoteiro = new Map();         // posição de cada corrida no roteiro do dia dela (ver posicoesNoRoteiro)       // grupo "Concluídas hoje" aberto/fechado
 const mcParadasAbertas = new Set();   // cartões com a lista de paradas aberta (mantém entre re-renders)
 
 function normalizarNome(s){ return String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().trim().replace(/\s+/g," "); }
@@ -2406,7 +2427,7 @@ function htmlCorridaMc(v, grupo, atual){
   return `<article class="mc-card ${grupo}${atual ? " mc-atual" : ""}" data-card="${idAttr}">
     ${atual ? `<div class="mc-atual-rot">Corrida atual</div>` : ""}
     <div class="mc-head">
-      <div><div class="mc-id">${idAttr}</div><div class="mc-data">${dia ? `<b>${dia}</b> · ` : ""}${fmtData(v.data)}${v.projetoNumero ? ` · ${esc(v.projetoNumero)}` : ""}</div></div>
+      <div><div class="mc-id">${idAttr}</div><div class="mc-data">${dia ? `<b>${dia}</b> · ` : ""}${fmtData(v.data)}${v.projetoNumero ? ` · ${esc(v.projetoNumero)}` : ""}</div>${grupo !== "concluida" && mcPosRoteiro.has(v.id) ? `<div class="mc-ordem">🧭 ${mcPosRoteiro.get(v.id)}ª no roteiro ${dia === "Hoje" ? "de hoje" : "do dia"}</div>` : ""}</div>
       ${badge}
     </div>
     ${passos}
@@ -2422,9 +2443,14 @@ function htmlCorridaMc(v, grupo, atual){
 function corridasSeparadasMc(){
   const minhas = VIAGENS.filter(v => v.motorista === motoristaLogado);
   const hojeIso = paraDataLocalISO(new Date());
-  const novas = minhas.filter(v => v.status === "pendente" && !v.aceitaEm).sort((a,b)=> a.data - b.data);
+  // Mesma sequência do Roteiro do Dia: dias mais antigos primeiro (atrasadas) e, no mesmo dia, a ordem da rota.
+  mcPosRoteiro = posicoesNoRoteiro(motoristaLogado);
+  const pos = v => mcPosRoteiro.get(v.id) || 999;
+  const porRoteiro = (a,b)=> paraDataLocalISO(a.data).localeCompare(paraDataLocalISO(b.data)) || (pos(a) - pos(b));
+  const novas = minhas.filter(v => v.status === "pendente" && !v.aceitaEm).sort(porRoteiro);
+  // A corrida em rota continua sendo a atual até terminar (não troca no meio do caminho).
   const aceitas = minhas.filter(v => v.status === "em_rota" || (v.status === "pendente" && v.aceitaEm))
-    .sort((a,b)=> ((b.status === "em_rota") - (a.status === "em_rota")) || (a.data - b.data));
+    .sort((a,b)=> ((b.status === "em_rota") - (a.status === "em_rota")) || porRoteiro(a,b));
   const concluidas = minhas.filter(v => { if(v.status !== "concluida") return false; const d = dataConclusao(v); return !!d && paraDataLocalISO(d) === hojeIso; })
     .sort((a,b)=> dataConclusao(b) - dataConclusao(a));
   // Canceladas hoje: o motorista vê o aviso com o motivo (a corrida sai das listas dele)
