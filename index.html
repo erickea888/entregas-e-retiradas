@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Entregas e Retiradas — protótipo</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+  :root{
+    --bg:#f4f6f8;
+    --panel:#ffffff;
+    --panel-2:#f9fafb;
+    --border:#e2e8f0;
+    --text:#1f2937;
+    --muted:#8a94a3;
+    --accent:#3b82f6;
+    --accent-2:#22c55e;
+    --warn:#f59e0b;
+    --danger:#ef4444;
+    --roxo:#8b5cf6;
+    --radius:12px;
+  }
+  [data-theme="dark"]{
+    --bg:#0f1720;
+    --panel:#16212c;
+    --panel-2:#1c2a37;
+    --border:#263544;
+    --text:#e7edf3;
+    --muted:#8b9baa;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    transition:background .2s ease, color .2s ease;
+  }
+
+  /* ---------- Shell: sidebar + topbar ---------- */
+  .app-shell{display:flex; min-height:100vh;}
+  .sidebar{
+    width:200px; flex:none; background:var(--panel); border-right:1px solid var(--border);
+    padding:18px 12px; display:flex; flex-direction:column; gap:22px;
+  }
+  .sidebar-brand{display:flex; align-items:center; gap:10px; padding:0 6px;}
+  .brand-badge{
+    width:34px; height:34px; border-radius:9px; background:var(--accent); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex:none;
+  }
+  .brand-text{display:flex; flex-direction:column; line-height:1.25;}
+  .brand-text b{font-size:13.5px;}
+  .brand-text span{font-size:10.5px; color:var(--muted);}
+  .nav-group-label{
+    font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.05em;
+    padding:0 10px; margin-bottom:6px;
+  }
+  .nav-item{
+    display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:8px;
+    font-size:13px; font-weight:600; color:var(--muted); text-decoration:none; margin-bottom:2px;
+  }
+  .nav-item:hover{background:var(--panel-2); color:var(--text);}
+  .nav-item.active{background:rgba(59,130,246,.1); color:var(--accent);}
+  .nav-icon{font-size:15px; width:18px; text-align:center; flex:none;}
+  .sidebar-footer{margin-top:auto; padding:0 6px; font-size:10.5px; color:var(--muted);}
+
+  .app-main{flex:1; min-width:0; display:flex; flex-direction:column;}
+  .topbar{display:flex; align-items:center; gap:12px; padding:14px 24px; border-bottom:1px solid var(--border); background:var(--panel);}
+  .breadcrumb{font-size:12.5px; color:var(--muted);}
+  .breadcrumb b{color:var(--text); font-weight:600;}
+  .breadcrumb span{margin:0 4px;}
+  .topbar-spacer{flex:1;}
+  .theme-toggle{
+    display:flex; align-items:center; gap:7px; padding:8px 12px; border-radius:999px; border:1px solid var(--border);
+    background:var(--panel-2); color:var(--text); font-size:12.5px; font-weight:600; cursor:pointer; flex:none;
+  }
+  .theme-toggle:hover{border-color:var(--accent);}
+  .usuario-toggle{
+    display:flex; align-items:center; gap:7px; padding:8px 12px; border-radius:999px; border:1px solid var(--border);
+    background:var(--panel-2); color:var(--text); font-size:12.5px; font-weight:600; cursor:pointer; flex:none; margin-right:8px;
+  }
+  .usuario-toggle:hover{border-color:var(--accent);}
+  .page-content{padding:26px 22px 56px; flex:1;}
+
+  @media (max-width:900px){ .sidebar{display:none;} }
+
+  /* ---------- Conteúdo ---------- */
+  .page-header-row{display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:22px;}
+  .page-content h1{margin:0 0 4px; font-size:21px; font-weight:700; letter-spacing:-0.02em;}
+  .page-header-row .sub{margin:0; color:var(--muted); font-size:13px;}
+  .btn-primary{
+    display:flex; align-items:center; gap:6px; padding:10px 16px; border-radius:9px; border:none;
+    background:var(--accent); color:#fff; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; flex:none;
+  }
+  .btn-primary:hover{filter:brightness(1.08);}
+
+  section{margin-bottom:30px;}
+  section h2{margin:0 0 3px; font-size:16px; font-weight:700;}
+  section > .sub{margin:0 0 14px; font-size:12.5px; color:var(--muted);}
+  .card{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:18px;}
+
+  .filtro-toolbar{display:flex; align-items:flex-end; gap:14px; flex-wrap:wrap; margin-bottom:16px;}
+  .filtro-grupo{display:flex; flex-direction:column; gap:4px;}
+  .filtro-grupo label{font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.03em;}
+  .filtro-grupo select, .filtro-grupo input{
+    padding:7px 9px; border-radius:8px; border:1px solid var(--border);
+    background:var(--panel-2); color:var(--text); font-size:12px; font-family:inherit; min-width:160px;
+  }
+  .filtro-limpar{
+    padding:7px 12px; border-radius:8px; border:1px solid var(--border); background:transparent;
+    color:var(--muted); font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; font-family:inherit;
+  }
+  .filtro-limpar:hover{border-color:var(--accent); color:var(--accent);}
+
+  table{width:100%; border-collapse:collapse; font-size:12.5px; table-layout:fixed;}
+  thead th{
+    text-align:left; color:var(--muted); font-weight:600; font-size:10.5px;
+    text-transform:uppercase; letter-spacing:.03em; padding:9px 10px; border-bottom:1px solid var(--border);
+    white-space:normal; overflow-wrap:break-word;
+  }
+  tbody td{padding:10px 10px; border-bottom:1px solid var(--border); vertical-align:middle; overflow-wrap:break-word; word-break:break-word;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr.er-row{cursor:pointer;}
+  tbody tr.er-row:hover{background:var(--panel-2);}
+  .table-scroll{max-height:560px; overflow-y:auto; overflow-x:hidden;}
+  .table-scroll thead th{position:sticky; top:0; background:var(--panel); z-index:1;}
+  .table-subtext{font-size:10.5px; color:var(--muted); margin-top:2px; overflow-wrap:break-word;}
+  .table-empty td{padding:30px 10px; text-align:center; color:var(--muted); font-size:12.5px;}
+  .rota-seta{color:var(--muted); margin:0 4px;}
+  .roteiro-nota{font-size:10.5px; color:var(--muted); font-style:italic; margin:-6px 0 14px;}
+  .er-historico li.excede-expediente{border-color:var(--danger); background:rgba(239,68,68,.06);}
+  .badge.excede{background:rgba(239,68,68,.15); color:var(--danger);}
+  .btn-mover-amanha{padding:3px 9px; font-size:10.5px; margin-left:8px;}
+  .wiz-steps{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px;}
+  .wiz-step{font-size:10.5px; font-weight:700; padding:4px 10px; border-radius:999px; border:1px solid var(--border); color:var(--muted); background:var(--panel-2);}
+  .wiz-step.atual{background:rgba(59,130,246,.12); color:var(--accent); border-color:var(--accent);}
+  .wiz-step.feito{color:var(--accent-2);}
+  .wiz-aviso{font-size:11.5px; background:var(--panel-2); border:1px solid var(--border); border-radius:8px; padding:8px 10px; margin:0 0 12px; color:var(--muted);}
+  .anexo-lista{list-style:none; margin:8px 0 0; padding:0; display:flex; flex-direction:column; gap:6px;}
+  .anexo-lista li{display:flex; justify-content:space-between; align-items:center; gap:8px; padding:6px 9px; border:1px solid var(--border); border-radius:8px; background:var(--panel); font-size:12px;}
+  .anexo-lista li a{color:var(--accent); text-decoration:none; overflow-wrap:anywhere;}
+  .anexo-lista li button{border:none; background:none; color:var(--danger); cursor:pointer; font-size:12px; font-family:inherit;}
+  .parada-card{border:1px solid var(--border); border-radius:10px; padding:10px 12px; margin-bottom:10px; background:var(--panel-2);}
+  .parada-tag{display:inline-block; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; padding:2px 8px; border-radius:999px; margin-bottom:6px;}
+  .parada-tag.retirada{background:rgba(59,130,246,.15); color:var(--accent);}
+  .parada-tag.intermediaria{background:rgba(245,158,11,.15); color:var(--warn);}
+  .parada-tag.entrega{background:rgba(34,197,94,.15); color:var(--accent-2);}
+  .btn-primary:disabled, .er-btn:disabled{opacity:.45; cursor:not-allowed; filter:none;}
+  .cep-status{font-size:10.5px; color:var(--muted); font-style:italic; min-height:13px;}
+
+
+  .badge{display:inline-block; padding:3px 9px; border-radius:999px; font-size:10.5px; font-weight:600; white-space:nowrap;}
+  .badge.st-pendente{background:rgba(245,158,11,.15); color:var(--warn);}
+  .badge.st-em_rota{background:rgba(59,130,246,.15); color:var(--accent);}
+  .badge.st-concluida{background:rgba(34,197,94,.15); color:var(--accent-2);}
+  .badge.setor{background:var(--panel-2); color:var(--text); border:1px solid var(--border);}
+
+  .modo-toggle{display:flex; gap:4px; background:var(--panel-2); border:1px solid var(--border); border-radius:10px; padding:3px; flex:none;}
+  .modo-toggle button{background:none; border:none; color:var(--muted); font-size:12px; font-weight:600; padding:6px 12px; border-radius:8px; cursor:pointer; font-family:inherit; white-space:nowrap;}
+  .modo-toggle button.ativo{background:var(--panel); color:var(--accent); box-shadow:0 1px 2px rgba(0,0,0,.08);}
+  .modo-toggle button:hover:not(.ativo){color:var(--text);}
+
+  .kanban-board{display:flex; gap:12px; padding:14px 16px; overflow-x:auto;}
+  .kanban-coluna{background:var(--panel-2); border:1px solid var(--border); border-radius:10px; padding:10px; flex:0 0 270px; display:flex; flex-direction:column; gap:8px; min-height:140px;}
+  .kanban-coluna.arrasto-sobre{border-color:var(--accent); background:rgba(59,130,246,.08);}
+  .kanban-coluna-titulo{display:flex; justify-content:space-between; align-items:center; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:var(--muted); padding:0 2px 8px; border-bottom:1px solid var(--border); margin-bottom:2px;}
+  .kanban-coluna-titulo .contagem{background:var(--panel); border:1px solid var(--border); border-radius:999px; padding:1px 7px; font-size:10.5px; color:var(--text); font-weight:700;}
+  .kanban-card{background:var(--panel); border:1px solid var(--border); border-radius:9px; padding:9px 10px; cursor:grab; font-size:12px;}
+  .kanban-card:hover{border-color:var(--accent);}
+  .kanban-card:active{cursor:grabbing;}
+  .kanban-card.dragging{opacity:.4;}
+  .kanban-card .kc-top{display:flex; align-items:flex-start; justify-content:space-between; gap:6px;}
+  .kanban-card .kc-id{font-weight:700; font-size:12.5px;}
+  .kanban-card .kc-sub{color:var(--muted); font-size:10.5px; margin-top:2px;}
+  .kanban-card .kc-rota{font-size:11px; margin-top:6px; line-height:1.4;}
+  .kanban-card .kc-badges{display:flex; gap:4px; flex-wrap:wrap; margin-top:7px;}
+  .kanban-vazio{font-size:11px; color:var(--muted); text-align:center; padding:16px 4px; font-style:italic;}
+
+  .card-menu-btn{background:none; border:none; color:var(--muted); cursor:pointer; font-size:15px; line-height:1; padding:2px 6px; border-radius:6px; flex:none; font-family:inherit;}
+  .card-menu-btn:hover{background:var(--panel-2); color:var(--text);}
+  .td-menu{text-align:right; padding-left:2px !important; padding-right:6px !important;}
+  .card-menu{
+    position:fixed; z-index:200; background:var(--panel); border:1px solid var(--border); border-radius:9px;
+    box-shadow:0 10px 28px rgba(0,0,0,.2); min-width:150px; padding:4px; display:none; flex-direction:column; gap:1px;
+  }
+  .card-menu.open{display:flex;}
+  .card-menu-item{background:none; border:none; text-align:left; padding:8px 10px; border-radius:6px; font-size:12.5px; font-weight:600; color:var(--text); cursor:pointer; font-family:inherit;}
+  .card-menu-item:hover{background:var(--panel-2);}
+  .card-menu-item.perigo{color:var(--danger);}
+  .card-menu-item.perigo:hover{background:rgba(239,68,68,.1);}
+
+  /* ---------- Drawer de detalhe ---------- */
+  .er-backdrop{position:fixed; inset:0; background:rgba(15,23,32,.4); opacity:0; pointer-events:none; transition:opacity .2s ease; z-index:40;}
+  .er-backdrop.open{opacity:1; pointer-events:auto;}
+  .er-drawer{
+    position:fixed; top:0; right:-620px; width:600px; max-width:94vw; height:100vh;
+    background:var(--panel); border-left:1px solid var(--border); box-shadow:-8px 0 24px rgba(0,0,0,.14);
+    z-index:41; transition:right .25s ease; display:flex; flex-direction:column;
+  }
+  .er-drawer.open{right:0;}
+  .er-drawer-head{display:flex; align-items:flex-start; justify-content:space-between; gap:10px; padding:18px 20px; border-bottom:1px solid var(--border);}
+  .er-drawer-head h3{margin:0 0 4px; font-size:15px; font-weight:700;}
+  .er-drawer-head .sub{margin:0; font-size:11.5px; color:var(--muted);}
+  .er-close{border:none; background:var(--panel-2); color:var(--muted); width:28px; height:28px; border-radius:8px; cursor:pointer; font-size:13px; flex:none;}
+  .er-close:hover{color:var(--text);}
+  .er-drawer-body{padding:18px 20px; overflow-y:auto; flex:1;}
+  .er-info-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px 20px; margin-bottom:18px;}
+  .er-info-item .rot{font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; margin-bottom:3px;}
+  .er-info-item .val{font-size:13px; font-weight:600;}
+  .er-obs{background:var(--panel-2); border-radius:8px; padding:10px 12px; font-size:12.5px; margin-bottom:18px; white-space:pre-wrap;}
+  .er-section-title{font-size:12.5px; font-weight:700; margin:0 0 8px;}
+  .er-status-row{display:flex; align-items:center; gap:10px; margin-top:18px; padding-top:16px; border-top:1px solid var(--border); flex-wrap:wrap;}
+  .er-status-row select{
+    padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--panel-2); color:var(--text);
+    font-size:12.5px; font-family:inherit;
+  }
+  .er-btn{
+    padding:8px 14px; border-radius:8px; border:1px solid var(--border); background:var(--panel-2); color:var(--text);
+    font-size:12.5px; font-weight:600; cursor:pointer; font-family:inherit;
+  }
+  .er-btn:hover{border-color:var(--accent); color:var(--accent);}
+  .er-historico{list-style:none; margin:10px 0 0; padding:0; font-size:12px; color:var(--muted); display:flex; flex-direction:column; gap:6px;}
+  .er-historico li{padding:7px 9px; border:1px solid var(--border); border-radius:8px; background:var(--panel-2); display:flex; justify-content:space-between; gap:10px;}
+
+  /* ---------- Modal "Nova viagem" ---------- */
+  .modal-backdrop{
+    position:fixed; inset:0; background:rgba(5,9,14,.55); opacity:0; pointer-events:none;
+    transition:opacity .2s ease; z-index:120; display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  .modal-backdrop.open{opacity:1; pointer-events:auto;}
+  .modal{
+    width:min(620px,94vw); max-height:88vh; background:var(--panel); border:1px solid var(--border);
+    border-radius:var(--radius); box-shadow:0 20px 60px rgba(0,0,0,.4); display:flex; flex-direction:column;
+    transform:translateY(12px) scale(.98); opacity:0; transition:transform .2s ease, opacity .2s ease;
+  }
+  .modal-backdrop.open .modal{transform:translateY(0) scale(1); opacity:1;}
+  .modal-header{display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid var(--border); flex:none;}
+  .modal-header h3{margin:0; font-size:15px; font-weight:700;}
+  .modal-close{background:var(--panel-2); border:1px solid var(--border); color:var(--text); border-radius:8px; width:28px; height:28px; font-size:14px; cursor:pointer; flex:none;}
+  .modal-close:hover{border-color:var(--accent);}
+  .modal-body{padding:18px 20px; overflow-y:auto; overflow-x:hidden;}
+  .modal-footer{display:flex; justify-content:flex-end; gap:10px; padding:14px 20px; border-top:1px solid var(--border); flex:none;}
+
+  .form-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px 14px; margin-bottom:14px;}
+  .form-field{display:flex; flex-direction:column; gap:5px; min-width:0;}
+  .form-field.full{grid-column:1 / -1;}
+  .form-field label{font-size:10.5px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.03em;}
+  .form-field input, .form-field select, .form-field textarea{
+    padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--panel-2); color:var(--text);
+    font-size:12.5px; font-family:inherit; width:100%; max-width:100%; min-width:0;
+  }
+  .form-field textarea{resize:vertical; min-height:56px;}
+  .form-hint{margin:2px 0 0; font-size:10.5px; font-style:italic; color:var(--muted); font-weight:400; text-transform:none; letter-spacing:0;}
+  .form-erro{color:var(--danger); font-size:12px; margin:0 0 10px; display:none;}
+  .form-erro.show{display:block;}
+  .btn-perigo{background:var(--danger) !important;}
+
+  @media (max-width:1000px){
+    .form-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-badge">ER</div>
+      <div class="brand-text"><b>Entregas</b><span>Protótipo de portfólio</span></div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Logística</div>
+      <a class="nav-item active" href="index.html"><span class="nav-icon">🚚</span>Entregas e Retiradas</a>
+    </div>
+    <div class="sidebar-footer">Dados de exemplo (ilustrativo)</div>
+  </aside>
+
+  <div class="app-main">
+    <div class="topbar">
+      <div class="breadcrumb">Logística <span>/</span> <b>Entregas e Retiradas</b></div>
+      <div class="topbar-spacer"></div>
+      <button type="button" class="usuario-toggle" id="btnPerfilUsuario">
+        <span>👤</span><span id="perfilUsuarioLabel">Definir meu usuário</span>
+      </button>
+      <button type="button" class="theme-toggle" id="temaToggle">
+        <span id="temaIcon">🌙</span><span id="temaLabel">Tema escuro</span>
+      </button>
+    </div>
+
+    <div class="page-content">
+
+      <div class="page-header-row">
+        <div>
+          <h1>Entregas e Retiradas</h1>
+          <p class="sub">Roteiro de viagens — o que precisa ser retirado e entregue entre obras, fornecedores, manutenção e escritório</p>
+        </div>
+        <button type="button" class="btn-primary" id="btnNovaViagem">+ Nova viagem</button>
+      </div>
+
+      <section id="secaoRoteiroDia">
+        <h2>Roteiro do Dia <span style="font-weight:600; color:var(--muted); font-size:11px; text-transform:uppercase;">protótipo ilustrativo</span></h2>
+        <p class="sub">Monta automaticamente a sequência de retiradas e entregas do motorista no dia, com estimativa de horário a partir das 08:00.</p>
+        <div class="card">
+          <div class="filtro-toolbar">
+            <div class="filtro-grupo">
+              <label for="roteiroData">Data</label>
+              <input type="date" id="roteiroData">
+            </div>
+            <div class="filtro-grupo">
+              <label for="roteiroMotorista">Motorista</label>
+              <select id="roteiroMotorista"></select>
+            </div>
+          </div>
+          <p class="roteiro-nota">Rota calculada pelas ruas de verdade usando o OSRM, um serviço público e gratuito de roteirização (sem trânsito em tempo real) — se ele estiver indisponível no momento, cai automaticamente para uma estimativa em linha reta. Base de partida: Osasco, 08:00.</p>
+          <div id="roteiroResumo" class="form-hint" style="margin-bottom:12px;"></div>
+          <div id="roteiroMapa" style="height:360px; border-radius:10px; overflow:hidden; border:1px solid var(--border); margin-bottom:16px;"></div>
+          <ul class="er-historico" id="roteiroTimeline"></ul>
+          <div id="roteiroVazio" style="display:none; font-size:12.5px; color:var(--muted); text-align:center; padding:24px 10px;">Nenhuma viagem pendente ou em rota para esse motorista nessa data.</div>
+        </div>
+      </section>
+
+      <section>
+        <div class="page-header-row" style="margin-bottom:6px;">
+          <div>
+            <h2 style="margin-bottom:2px;">Viagens</h2>
+            <p class="sub">Clique numa viagem para ver o detalhe completo e atualizar o status</p>
+          </div>
+          <div class="modo-toggle" id="visaoListaToggle">
+            <button type="button" class="ativo" id="btnVisaoTabela">☰ Tabela</button>
+            <button type="button" id="btnVisaoKanban">▦ Kanban</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="filtro-toolbar">
+            <div class="filtro-grupo">
+              <label for="filtroStatusEr">Status</label>
+              <select id="filtroStatusEr">
+                <option value="todas">Todos</option>
+                <option value="pendente">Pendente</option>
+                <option value="em_rota">Em rota</option>
+                <option value="concluida">Concluída</option>
+              </select>
+            </div>
+            <div class="filtro-grupo">
+              <label for="filtroSetorEr">Setor</label>
+              <select id="filtroSetorEr">
+                <option value="todos">Todos</option>
+                <option value="Obras">Obras</option>
+                <option value="Manutenção">Manutenção</option>
+                <option value="Administrativo">Administrativo</option>
+              </select>
+            </div>
+            <div class="filtro-grupo">
+              <label for="filtroMotoristaEr">Responsável</label>
+              <select id="filtroMotoristaEr">
+                <option value="todos">Todos</option>
+              </select>
+            </div>
+            <div class="filtro-grupo" style="min-width:200px; flex:1;">
+              <label for="filtroBuscaEr">Buscar</label>
+              <input type="text" id="filtroBuscaEr" placeholder="Solicitante, projeto, origem, destino ou atividade">
+            </div>
+            <button type="button" class="filtro-limpar" id="filtroErLimpar">Limpar filtros</button>
+          </div>
+
+          <div class="table-scroll" id="tabelaWrapEr">
+            <table>
+              <colgroup>
+                <col style="width:10%"><col style="width:10%"><col style="width:14%">
+                <col style="width:12%"><col style="width:30%"><col style="width:16%"><col style="width:8%">
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>Viagem</th>
+                  <th>Data</th>
+                  <th>Solicitante</th>
+                  <th>Setor</th>
+                  <th>Rota</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="tabelaViagens"></tbody>
+            </table>
+          </div>
+          <div class="kanban-board" id="kanbanBoardEr" style="display:none;"></div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<div class="er-backdrop" id="erBackdrop"></div>
+<div class="er-drawer" id="erDrawer">
+  <div class="er-drawer-head">
+    <div>
+      <h3 id="erDrawerTitulo"></h3>
+      <p class="sub" id="erDrawerSub"></p>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <button type="button" class="er-btn" id="btnDuplicarViagem">⧉ Duplicar</button>
+      <button type="button" class="er-btn" id="btnEditarViagem">✎ Editar viagem</button>
+      <button type="button" class="er-close" id="erDrawerClose">✕</button>
+    </div>
+  </div>
+  <div class="er-drawer-body">
+    <div class="er-info-grid">
+      <div class="er-info-item"><div class="rot">Solicitante</div><div class="val" id="erInfoSolicitante"></div></div>
+      <div class="er-info-item"><div class="rot">Setor</div><div class="val" id="erInfoSetor"></div></div>
+      <div class="er-info-item"><div class="rot">Nº do projeto</div><div class="val" id="erInfoProjeto"></div></div>
+      <div class="er-info-item"><div class="rot">Responsável pela viagem</div><div class="val" id="erInfoMotorista"></div></div>
+      <div class="er-info-item"><div class="rot">Data da viagem</div><div class="val" id="erInfoDataViagem"></div></div>
+    </div>
+    <div style="margin-bottom:18px;">
+      <p class="er-section-title">Percurso</p>
+      <div id="erInfoPercurso"></div>
+    </div>
+    <div id="erInfoAtividadeWrap" style="display:none;">
+      <p class="er-section-title">Atividade</p>
+      <div class="er-obs" id="erInfoAtividade"></div>
+    </div>
+    <div id="erInfoObsWrap" style="display:none;">
+      <p class="er-section-title">Observação</p>
+      <div class="er-obs" id="erInfoObs"></div>
+    </div>
+
+    <div class="er-status-row">
+      <select id="erStatusSelect"></select>
+      <button type="button" class="er-btn" id="erStatusSalvar">Salvar status</button>
+    </div>
+    <p class="er-section-title" style="margin-top:16px;">Histórico</p>
+    <ul class="er-historico" id="erHistorico"></ul>
+  </div>
+</div>
+
+<div class="card-menu" id="cardMenuEr">
+  <button type="button" class="card-menu-item" id="cardMenuErDuplicar">⧉ Duplicar</button>
+  <button type="button" class="card-menu-item perigo" id="cardMenuErExcluir">🗑 Excluir</button>
+</div>
+
+<div class="modal-backdrop" id="excluirBackdropEr">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <h3>Excluir viagem?</h3>
+      <button type="button" class="modal-close" id="excluirCloseEr">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="excluirTextoEr" style="margin:0; font-size:13px; line-height:1.5;"></p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="er-btn" id="excluirCancelarEr">Cancelar</button>
+      <button type="button" class="btn-primary btn-perigo" id="excluirConfirmarEr">Excluir</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="duplicarBackdropEr">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <h3>Duplicar viagem?</h3>
+      <button type="button" class="modal-close" id="duplicarCloseEr">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="duplicarTextoEr" style="margin:0; font-size:13px; line-height:1.5;"></p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="er-btn" id="duplicarNaoEr">Não</button>
+      <button type="button" class="btn-primary" id="duplicarSimEr">Sim, duplicar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="perfilBackdrop">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <h3>Seu usuário nesta página</h3>
+      <button type="button" class="modal-close" id="perfilClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="form-hint" style="margin-bottom:10px;">O mesmo nome definido aqui é usado na Requisição de Compras (fica salvo no navegador) — é só pra identificar quem fez cada alteração no histórico, ainda não é um login de verdade.</p>
+      <div class="form-field full">
+        <label for="perfilNomeInput">Seu nome</label>
+        <input type="text" id="perfilNomeInput" placeholder="Ex.: Jailson Souza">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="er-btn" id="perfilVoltar">Fechar</button>
+      <button type="button" class="btn-primary" id="perfilSalvar">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modalBackdropEr">
+  <div class="modal" style="width:min(680px,94vw);">
+    <div class="modal-header">
+      <h3 id="modalTituloEr">Nova viagem</h3>
+      <button type="button" class="modal-close" id="modalCloseEr">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="wiz-steps" id="wizSteps"></div>
+      <p class="form-erro" id="formErroEr"></p>
+
+      <div id="wizPassoDados">
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="fSolicitanteEr">Solicitante *</label>
+            <input type="text" id="fSolicitanteEr" list="listaSolicitantesEr" placeholder="Quem está pedindo a viagem">
+            <datalist id="listaSolicitantesEr"></datalist>
+          </div>
+          <div class="form-field">
+            <label for="fSetorEr">Setor *</label>
+            <select id="fSetorEr">
+              <option value="" disabled selected>Selecione...</option>
+              <option value="Obras">Obras</option>
+              <option value="Manutenção">Manutenção</option>
+              <option value="Administrativo">Administrativo</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="fDataViagemEr">Data da viagem *</label>
+            <input type="date" id="fDataViagemEr">
+          </div>
+          <div class="form-field">
+            <label for="fProjetoEr">Nº do projeto</label>
+            <input type="text" id="fProjetoEr" placeholder="Opcional — ex.: PRJ-2200, CTR-1100...">
+          </div>
+          <div class="form-field full">
+            <label for="fMotoristaEr">Responsável pela viagem *</label>
+            <input type="text" id="fMotoristaEr" list="listaMotoristasEr" placeholder="Digite o nome de quem vai fazer a corrida">
+            <datalist id="listaMotoristasEr"></datalist>
+          </div>
+        </div>
+      </div>
+
+      <div id="wizPassoParada" style="display:none;">
+        <p class="wiz-aviso" id="wizAvisoParada"></p>
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="pCep">CEP *</label>
+            <input type="text" id="pCep" inputmode="numeric" maxlength="9" placeholder="00000-000">
+            <span class="cep-status" id="pCepStatus"></span>
+          </div>
+          <div class="form-field">
+            <label for="pNumero">Número *</label>
+            <input type="text" id="pNumero" placeholder="Ex.: 120 ou S/N">
+          </div>
+          <div class="form-field full">
+            <label for="pEndereco">Endereço *</label>
+            <input type="text" id="pEndereco" placeholder="Rua, avenida...">
+          </div>
+          <div class="form-field">
+            <label for="pBairro">Bairro *</label>
+            <input type="text" id="pBairro">
+          </div>
+          <div class="form-field">
+            <label for="pCidade">Cidade *</label>
+            <input type="text" id="pCidade">
+          </div>
+          <div class="form-field">
+            <label for="pEstado">Estado *</label>
+            <select id="pEstado"></select>
+          </div>
+          <div class="form-field full">
+            <label for="pInstrucoes">O que deve ser feito neste local</label>
+            <textarea id="pInstrucoes" placeholder="Ex.: ligar antes de chegar, falar com fulano na portaria, retirar 3 caixas..."></textarea>
+          </div>
+          <div class="form-field full">
+            <label>Anexos</label>
+            <div><button type="button" class="er-btn" id="pAnexoBtn">📎 Anexar arquivo</button><input type="file" id="pAnexoInput" multiple style="display:none;"></div>
+            <p class="form-hint">Pedido de compras, fotos ou qualquer documento — o motorista vê ao abrir a corrida. Até 5 MB por arquivo.</p>
+            <ul class="anexo-lista" id="pAnexoLista"></ul>
+          </div>
+        </div>
+        <button type="button" class="er-btn" id="wizRemover" style="display:none;">🗑 Remover esta parada</button>
+      </div>
+    </div>
+    <div class="modal-footer" style="flex-wrap:wrap;">
+      <button type="button" class="er-btn" id="wizVoltar">Cancelar</button>
+      <button type="button" class="er-btn" id="wizAdicionar" style="display:none;">+ Adicionar parada intermediária</button>
+      <button type="button" class="btn-primary" id="wizContinuar">Continuar</button>
+      <button type="button" class="btn-primary" id="wizConcluir" style="display:none;">Concluir cadastro</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+// ---------- TEMA (claro/escuro) — mesma chave usada na Requisição de Compras, pra manter a preferência ----------
+const TEMA_STORAGE_KEY = "suprimentos-demo-entregas-tema";
+(function(){
+  const salvo = localStorage.getItem(TEMA_STORAGE_KEY);
+  if(salvo === "dark"){ document.documentElement.setAttribute("data-theme","dark"); }
+})();
+function fmtData(d){ return new Date(d).toLocaleDateString("pt-BR"); }
+function fmtDataHora(d){ const dt = new Date(d); return dt.toLocaleDateString("pt-BR") + " às " + dt.toLocaleTimeString("pt-BR", {hour:"2-digit", minute:"2-digit"}); }
+
+// ---------- PERFIL DO USUÁRIO (mesma chave da Requisição de Compras — identidade carrega entre as páginas) ----------
+const PERFIL_NOME_KEY = "suprimentos-demo-entregas-usuario-nome";
+function usuarioAtualNome(){ try{ return localStorage.getItem(PERFIL_NOME_KEY) || ""; }catch(e){ return ""; } }
+function atualizarBadgePerfil(){
+  const nome = usuarioAtualNome();
+  document.getElementById("perfilUsuarioLabel").textContent = nome || "Definir meu usuário";
+}
+const perfilBackdrop = document.getElementById("perfilBackdrop");
+document.getElementById("btnPerfilUsuario").addEventListener("click", ()=>{
+  document.getElementById("perfilNomeInput").value = usuarioAtualNome();
+  perfilBackdrop.classList.add("open");
+});
+function fecharPerfil(){ perfilBackdrop.classList.remove("open"); }
+document.getElementById("perfilClose").addEventListener("click", fecharPerfil);
+document.getElementById("perfilVoltar").addEventListener("click", fecharPerfil);
+perfilBackdrop.addEventListener("click", (e)=>{ if(e.target === perfilBackdrop) fecharPerfil(); });
+document.getElementById("perfilSalvar").addEventListener("click", ()=>{
+  try{ localStorage.setItem(PERFIL_NOME_KEY, document.getElementById("perfilNomeInput").value.trim()); }catch(e){}
+  atualizarBadgePerfil();
+  fecharPerfil();
+});
+atualizarBadgePerfil();
+
+// ---------- DADOS BASE ----------
+const STATUS_LABEL = {pendente:"Pendente", em_rota:"Em rota", concluida:"Concluída"};
+const STATUS_ORDEM = ["pendente","em_rota","concluida"];
+
+const SOLICITANTES_SEED = ["Marcos Aurélio","Fernanda Lima","Ricardo Nunes","Juliana Prado","Bruno Castilho","Patrícia Gomes","André Salles","Camila Duarte"];
+const MOTORISTAS_SEED = ["Jailson Souza","Manoel Pereira","Aline Costa"];
+// Locais de exemplo (fictícios) com endereço estruturado — a mesma estrutura que o cadastro por CEP gera.
+const LOCAIS_SEED = [
+  {nome:"Depósito Vila Prudente", cep:"03155-000", endereco:"Av. Prof. Luiz Ignácio Anhaia Mello", numero:"1000", bairro:"Vila Prudente", cidade:"São Paulo", estado:"SP"},
+  {nome:"Escritório central", cep:"01310-100", endereco:"Av. Paulista", numero:"1000", bairro:"Bela Vista", cidade:"São Paulo", estado:"SP"},
+  {nome:"Shopping Boulevard Tatuapé", cep:"03081-000", endereco:"Rua Tuiuti", numero:"1500", bairro:"Tatuapé", cidade:"São Paulo", estado:"SP"},
+  {nome:"Shopping Jardim das Palmeiras", cep:"05582-000", endereco:"Av. Corifeu de Azevedo Marques", numero:"3000", bairro:"Butantã", cidade:"São Paulo", estado:"SP"},
+  {nome:"Fornecedor Alfa Materiais Elétricos", cep:"06090-000", endereco:"Av. dos Autonomistas", numero:"1000", bairro:"Centro", cidade:"Osasco", estado:"SP"},
+  {nome:"Fornecedor Beta Tubos e Conexões", cep:"06454-000", endereco:"Alameda Rio Negro", numero:"500", bairro:"Alphaville", cidade:"Barueri", estado:"SP"},
+  {nome:"Obra Residencial Bela Vista", cep:"04101-300", endereco:"Rua Vergueiro", numero:"3000", bairro:"Vila Mariana", cidade:"São Paulo", estado:"SP"},
+  {nome:"Contrato Shopping Vitrine Sul", cep:"04661-100", endereco:"Av. Interlagos", numero:"2000", bairro:"Interlagos", cidade:"São Paulo", estado:"SP"},
+  {nome:"Depósito Guarulhos", cep:"07090-000", endereco:"Av. Tiradentes", numero:"1000", bairro:"Centro", cidade:"Guarulhos", estado:"SP"},
+];
+const SETORES_ER = ["Obras","Manutenção","Administrativo"];
+const TIPO_PARADA_LABEL = {retirada:"Retirada", intermediaria:"Parada intermediária", entrega:"Destino"};
+const ETAPA_UI = {
+  retirada:{icone:"🔼", nome:"Retirada", cor:"#3b82f6"},
+  intermediaria:{icone:"🔸", nome:"Parada", cor:"#f59e0b"},
+  entrega:{icone:"🔽", nome:"Entrega", cor:"#22c55e"},
+};
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function tipoParada(i, n){ return i === 0 ? "retirada" : (i === n-1 ? "entrega" : "intermediaria"); }
+function rotuloParada(p){
+  const rua = [p.endereco, p.numero].filter(Boolean).join(", ");
+  return [rua, p.cidade].filter(Boolean).join(" – ");
+}
+function enderecoCompleto(p){
+  const rua = [p.endereco, p.numero].filter(Boolean).join(", ");
+  const local = [p.bairro, [p.cidade, p.estado].filter(Boolean).join("/")].filter(Boolean).join(", ");
+  return [rua, local, p.cep ? "CEP " + p.cep : ""].filter(Boolean).join(" — ");
+}
+// Percurso da viagem: retirada, paradas intermediárias e destino final (o último é sempre o destino).
+function paradasDaViagem(v){
+  if(v.paradas && v.paradas.length) return v.paradas;
+  return [{endereco:v.origem||""}, {endereco:v.destino||""}];
+}
+function nIntermed(v){ return Math.max(0, paradasDaViagem(v).length - 2); }
+function renderPercursoDrawer(v){
+  const ps = paradasDaViagem(v);
+  document.getElementById("erInfoPercurso").innerHTML = ps.map((p,i)=>{
+    const tipo = tipoParada(i, ps.length);
+    const anexos = (p.anexos||[]).length
+      ? `<ul class="anexo-lista">${p.anexos.map(a=>`<li><a href="${esc(a.dataUrl)}" download="${esc(a.name)}">📎 ${esc(a.name)}</a><span style="color:var(--muted); font-size:11px;">${Math.max(1, Math.round((a.size||0)/1024))} KB</span></li>`).join("")}</ul>`
+      : "";
+    return `<div class="parada-card"><span class="parada-tag ${tipo}">${TIPO_PARADA_LABEL[tipo]}</span><div style="font-weight:600; font-size:13px;">${esc(enderecoCompleto(p))}</div>${p.instrucoes ? `<div class="er-obs" style="margin:8px 0 0;">${esc(p.instrucoes)}</div>` : ""}${anexos}</div>`;
+  }).join("");
+}
+// Geocodificação de apoio: o CEP já traz coordenadas aproximadas; se faltar, tenta o Nominatim (gratuito).
+async function geocodificarParada(p){
+  if(p.coord || p.coordTentou) return;
+  p.coordTentou = true;
+  try{
+    const q = encodeURIComponent([p.endereco, p.numero, p.cidade, p.estado, "Brasil"].filter(Boolean).join(", "));
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${q}`);
+    const j = await r.json();
+    if(j && j[0]) p.coord = [parseFloat(j[0].lat), parseFloat(j[0].lon)];
+  }catch(err){}
+}
+
+const ATIVIDADES_SEED = [
+  "Retirar material no depósito e levar para a obra",
+  "Entregar equipamento emprestado e retirar o nosso de volta",
+  "Buscar correspondência e levar para o escritório",
+  "Retirar peça de reposição no fornecedor para manutenção urgente",
+  "Levar ferramentas para a equipe em campo",
+  "Retirar material comprado e levar direto para o contrato",
+];
+
+// ---------- ROTEIRO DO DIA (protótipo ilustrativo) ----------
+// Coordenadas fixas e fictícias (não vêm de geocodificação real) só pra dar posição no mapa
+// aos endereços de exemplo. Numa versão real isso viria de uma API de mapas (ex.: Google Maps).
+const ENDERECOS_COORDS = {
+  "Depósito Vila Prudente": [-23.5820, -46.5833],
+  "Escritório central (Av. Central)": [-23.5505, -46.6333],
+  "Shopping Boulevard Tatuapé": [-23.5400, -46.5760],
+  "Shopping Jardim das Palmeiras": [-23.5300, -46.7200],
+  "Fornecedor Alfa Materiais Elétricos": [-23.5329, -46.7916],
+  "Fornecedor Beta Tubos e Conexões": [-23.5100, -46.8761],
+  "Obra Residencial Bela Vista": [-23.6200, -46.6400],
+  "Contrato Shopping Vitrine Sul": [-23.6600, -46.7000],
+  "Depósito Guarulhos": [-23.4538, -46.5333],
+};
+// Base de partida do motorista no início do dia — ele mora em Osasco.
+const BASE_MOTORISTA_COORD = [-23.5329, -46.7916];
+
+function obterCoordEndereco(nome){
+  if(ENDERECOS_COORDS[nome]) return ENDERECOS_COORDS[nome];
+  // Endereço digitado manualmente (fora da lista de exemplo): gera uma posição aproximada e
+  // determinística na região metropolitana de SP, só pra não quebrar o mapa — ilustrativo.
+  let hash = 0;
+  for(let i=0;i<nome.length;i++) hash = (hash*31 + nome.charCodeAt(i)) >>> 0;
+  const lat = -23.55 + (((hash % 1000)/1000) - 0.5) * 0.3;
+  const lng = -46.65 + ((((hash>>10) % 1000)/1000) - 0.5) * 0.3;
+  return [lat, lng];
+}
+function distanciaKm(a,b){
+  const R = 6371;
+  const dLat = (b[0]-a[0]) * Math.PI/180;
+  const dLng = (b[1]-a[1]) * Math.PI/180;
+  const la1 = a[0]*Math.PI/180, la2 = b[0]*Math.PI/180;
+  const h = Math.sin(dLat/2)**2 + Math.cos(la1)*Math.cos(la2)*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h));
+}
+function paraDataLocalISO(d){
+  const dt = new Date(d);
+  return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;
+}
+function popularMotoristaRoteiro(){
+  const sel = document.getElementById("roteiroMotorista");
+  if(!sel) return;
+  const atual = sel.value;
+  const nomes = [...new Set([...MOTORISTAS_SEED, ...VIAGENS.map(v=>v.motorista).filter(Boolean)])].sort((a,b)=>a.localeCompare(b,"pt-BR"));
+  sel.innerHTML = nomes.map(n=>`<option value="${n}">${n}</option>`).join("");
+  if(nomes.includes(atual)) sel.value = atual;
+  else if(nomes.includes("Jailson Souza")) sel.value = "Jailson Souza";
+}
+
+let mapaRoteiro = null;
+let roteiroRequestId = 0;
+async function renderRoteiroDia(){
+  const minhaRequisicao = ++roteiroRequestId;
+  const dataInput = document.getElementById("roteiroData");
+  const motoristaSel = document.getElementById("roteiroMotorista");
+  if(!dataInput || !motoristaSel) return;
+  const dataStr = dataInput.value;
+  const motorista = motoristaSel.value;
+  const mapaEl = document.getElementById("roteiroMapa");
+  const timelineEl = document.getElementById("roteiroTimeline");
+  const resumoEl = document.getElementById("roteiroResumo");
+  const vazioEl = document.getElementById("roteiroVazio");
+
+  if(mapaRoteiro){ mapaRoteiro.remove(); mapaRoteiro = null; }
+
+  if(!dataStr || !motorista){
+    mapaEl.style.display = "none"; timelineEl.innerHTML = ""; resumoEl.textContent = "";
+    vazioEl.style.display = ""; return;
+  }
+
+  const viagensDia = VIAGENS.filter(v =>
+    v.motorista === motorista && (v.status === "pendente" || v.status === "em_rota") && paraDataLocalISO(v.data) === dataStr
+  );
+
+  if(viagensDia.length === 0){
+    mapaEl.style.display = "none"; timelineEl.innerHTML = ""; resumoEl.textContent = "";
+    vazioEl.style.display = ""; return;
+  }
+  vazioEl.style.display = "none";
+  mapaEl.style.display = "";
+
+  // Monta as paradas do dia (retirada + entrega de cada viagem) e ordena com uma heurística
+  // simples de "vizinho mais próximo", respeitando que a retirada precisa acontecer antes da
+  // entrega da mesma viagem. Não é um otimizador de rota de verdade, é só ilustrativo.
+  // Garante coordenadas: o CEP já traz; senão tenta geocodificar; por último usa posição aproximada.
+  for(const v of viagensDia){ for(const p of paradasDaViagem(v)){ if(!p.coord) await geocodificarParada(p); } }
+  if(minhaRequisicao !== roteiroRequestId) return;
+  const etapas = [];
+  viagensDia.forEach(v=>{
+    const ps = paradasDaViagem(v);
+    ps.forEach((p, k)=>{
+      etapas.push({viagemId:v.id, tipo:tipoParada(k, ps.length), ordem:k, local:rotuloParada(p), coord: p.coord || obterCoordEndereco(enderecoCompleto(p))});
+    });
+  });
+  const restantes = etapas.slice();
+  const ordenadas = [];
+  let ponto = BASE_MOTORISTA_COORD;
+  while(restantes.length){
+    // cada parada só fica disponível depois da anterior da mesma viagem (retirada → intermediárias → destino)
+    const candidatos = restantes.filter(e => e.ordem === 0 || ordenadas.some(o => o.viagemId === e.viagemId && o.ordem === e.ordem - 1));
+    candidatos.sort((a,b)=> distanciaKm(ponto,a.coord) - distanciaKm(ponto,b.coord));
+    const proxima = candidatos[0];
+    ordenadas.push(proxima);
+    restantes.splice(restantes.indexOf(proxima),1);
+    ponto = proxima.coord;
+  }
+
+  // ---- Rota real pelas ruas, via OSRM (serviço público e gratuito do OpenStreetMap) ----
+  // Enquanto calcula, mostra uma mensagem e mantém o mapa anterior visível pra não "piscar".
+  resumoEl.textContent = "Calculando rota pelas ruas...";
+  const pontosOrdem = [BASE_MOTORISTA_COORD, ...ordenadas.map(e=>e.coord)];
+  let legsInfo = null;      // [{distanciaKm, duracaoMin}] por trecho, na ordem de ordenadas
+  let geometriaRuas = null; // [[lat,lng], ...] do traçado real devolvido pelo OSRM
+
+  try{
+    const coordsStr = pontosOrdem.map(c => `${c[1]},${c[0]}`).join(";");
+    const resp = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordsStr}?overview=full&geometries=geojson`);
+    if(!resp.ok) throw new Error("OSRM HTTP " + resp.status);
+    const json = await resp.json();
+    if(json.code !== "Ok" || !json.routes || !json.routes[0]) throw new Error("Sem rota retornada pelo OSRM");
+    const rota = json.routes[0];
+    legsInfo = rota.legs.map(l => ({ distanciaKm: l.distance/1000, duracaoMin: l.duration/60 }));
+    geometriaRuas = rota.geometry.coordinates.map(([lon,lat]) => [lat,lon]);
+  }catch(err){
+    legsInfo = null; geometriaRuas = null; // cai no fallback de linha reta abaixo
+  }
+
+  if(minhaRequisicao !== roteiroRequestId) return; // usuário já trocou data/motorista — descarta essa resposta
+
+  const rotaReal = !!legsInfo;
+  if(!rotaReal){
+    legsInfo = ordenadas.map((e, idx)=>{
+      const d = distanciaKm(pontosOrdem[idx], pontosOrdem[idx+1]);
+      return { distanciaKm: d, duracaoMin: (d/28)*60 };
+    });
+  }
+
+  // Linha do tempo estimada a partir das 08:00 (tempo de parada ilustrativo em cada ponto).
+  const SERVICO_MIN = 20;
+  const [ano,mes,dia] = dataStr.split("-").map(Number);
+  let relogio = new Date(ano, mes-1, dia, 8, 0, 0);
+  const fimExpediente = new Date(ano, mes-1, dia, 18, 0, 0);
+  let distanciaTotalKm = 0;
+  let htmlTimeline = "";
+  ordenadas.forEach((e, idx)=>{
+    const leg = legsInfo[idx];
+    distanciaTotalKm += leg.distanciaKm;
+    relogio = new Date(relogio.getTime() + leg.duracaoMin*60000);
+    const chegada = new Date(relogio);
+    const excede = chegada > fimExpediente;
+    relogio = new Date(relogio.getTime() + SERVICO_MIN*60000);
+    const v = VIAGENS.find(x=>x.id===e.viagemId);
+    const horaFmt = chegada.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+    htmlTimeline += `<li class="${excede?'excede-expediente':''}">
+      <span><b>${idx+1}.</b> ${ETAPA_UI[e.tipo].icone} ${ETAPA_UI[e.tipo].nome} — ${esc(e.local)} <span style="color:var(--muted);">(${e.viagemId} · ${v?esc(v.solicitante):""})</span>${excede?' <span class="badge excede">excede expediente</span>':''}</span>
+      <span style="display:flex; align-items:center;">${horaFmt}${excede?`<button type="button" class="er-btn btn-mover-amanha" data-mover-amanha="${e.viagemId}">Mover p/ amanhã</button>`:''}</span>
+    </li>`;
+  });
+  timelineEl.innerHTML = htmlTimeline;
+  resumoEl.textContent = `${viagensDia.length} viagem(ns) no dia · ${ordenadas.length} paradas · ~${distanciaTotalKm.toFixed(0)} km · início às 08:00 em Osasco` +
+    (rotaReal ? " · rota real calculada pelas ruas (OSRM)" : " · ⚠ não foi possível calcular a rota real agora — mostrando estimativa em linha reta");
+
+  // Mapa (OpenStreetMap, sem chave de API)
+  if(mapaRoteiro){ mapaRoteiro.remove(); mapaRoteiro = null; }
+  mapaRoteiro = L.map(mapaEl).setView(BASE_MOTORISTA_COORD, 11);
+  L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors', maxZoom: 19,
+    errorTileUrl: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBTAA7',
+  }).addTo(mapaRoteiro);
+  setTimeout(()=>{ try{ mapaRoteiro.invalidateSize(); }catch(err){} }, 50);
+  const baseIcon = L.divIcon({className:"", html:`<div style="background:#1f2937;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:13px;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4);">🏠</div>`, iconSize:[26,26], iconAnchor:[13,13]});
+  L.marker(BASE_MOTORISTA_COORD, {icon: baseIcon}).addTo(mapaRoteiro).bindPopup("Início do dia — base do motorista (Osasco)");
+  ordenadas.forEach((e, idx)=>{
+    const cor = ETAPA_UI[e.tipo].cor;
+    const icon = L.divIcon({className:"", html:`<div style="background:${cor};color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4);">${idx+1}</div>`, iconSize:[24,24], iconAnchor:[12,12]});
+    L.marker(e.coord, {icon}).addTo(mapaRoteiro).bindPopup(`${idx+1}. ${ETAPA_UI[e.tipo].nome} — ${esc(e.local)}<br>${e.viagemId}`);
+  });
+  const tracado = rotaReal ? geometriaRuas : pontosOrdem;
+  L.polyline(tracado, rotaReal
+    ? {color:"#3b82f6", weight:4, opacity:.8}
+    : {color:"#8b5cf6", weight:3, dashArray:"6,8", opacity:.8}
+  ).addTo(mapaRoteiro);
+  try{ mapaRoteiro.fitBounds(L.latLngBounds(pontosOrdem).pad(0.2)); }catch(err){}
+
+  timelineEl.querySelectorAll("[data-mover-amanha]").forEach(btn=>{
+    btn.addEventListener("click", ()=> moverViagemParaAmanha(btn.dataset.moverAmanha));
+  });
+}
+
+function moverViagemParaAmanha(viagemId){
+  const v = VIAGENS.find(x=>x.id===viagemId);
+  if(!v) return;
+  v.data = new Date(v.data.getTime() + 86400000);
+  v.historico.push({status:v.status, data:new Date(), usuario:"Sistema (roteirização automática)"});
+  renderTabelaEr(); renderKanbanEr(); renderRoteiroDia();
+}
+
+const VIAGENS = [];
+let PROX_ID = 1;
+function novoId(){ return "ER-" + String(PROX_ID++).padStart(4,"0"); }
+
+// Conjunto fixo de exemplo (sem sorteio) — mesma lógica usada nas outras páginas, pra não mudar
+// a cada vez que a página recarrega. Dados fictícios/ilustrativos.
+const DEFINICOES_SEED = [
+  {diasCriacao:6, solicitanteIdx:0, setor:"Obras", projeto:"PRJ-2192", motoristaIdx:0, origemIdx:4, destinoIdx:6, atividadeIdx:3, status:"concluida"},
+  {diasCriacao:5, solicitanteIdx:2, setor:"Manutenção", projeto:"CTR-1100", motoristaIdx:1, origemIdx:1, destinoIdx:7, atividadeIdx:2, status:"concluida"},
+  {diasCriacao:4, solicitanteIdx:4, setor:"Obras", projeto:"PRJ-2184", motoristaIdx:0, origemIdx:5, destinoIdx:6, atividadeIdx:0, status:"concluida"},
+  {diasCriacao:3, solicitanteIdx:6, setor:"Obras", projeto:"", motoristaIdx:0, origemIdx:2, destinoIdx:8, atividadeIdx:4, status:"em_rota"},
+  {diasCriacao:2, solicitanteIdx:1, setor:"Administrativo", projeto:"", motoristaIdx:2, origemIdx:1, destinoIdx:1, atividadeIdx:2, status:"em_rota"},
+  {diasCriacao:1, solicitanteIdx:3, setor:"Administrativo", projeto:"ADM-3002", motoristaIdx:1, origemIdx:3, destinoIdx:1, atividadeIdx:1, status:"pendente"},
+  {diasCriacao:0, solicitanteIdx:5, setor:"Manutenção", projeto:"CTR-1088", motoristaIdx:0, origemIdx:4, destinoIdx:7, atividadeIdx:3, status:"pendente"},
+  {diasCriacao:0, solicitanteIdx:7, setor:"Obras", projeto:"PRJ-2192", motoristaIdx:0, origemIdx:6, destinoIdx:2, atividadeIdx:5, status:"pendente", intermediariasIdx:[8]},
+];
+
+(function gerarSeed(){
+  const hoje = new Date();
+  DEFINICOES_SEED.forEach(def=>{
+    const data = new Date(hoje.getTime() - def.diasCriacao*86400000);
+    const solicitante = SOLICITANTES_SEED[def.solicitanteIdx % SOLICITANTES_SEED.length];
+    const motorista = MOTORISTAS_SEED[def.motoristaIdx % MOTORISTAS_SEED.length];
+    const historico = [{status:"pendente", data, usuario: solicitante}];
+    if(def.status !== "pendente"){
+      historico.push({status:"em_rota", data:new Date(data.getTime() + 86400000), usuario: motorista});
+    }
+    if(def.status === "concluida"){
+      historico.push({status:"concluida", data:new Date(data.getTime() + 2*86400000), usuario: motorista});
+    }
+    const idxs = [def.origemIdx, ...(def.intermediariasIdx || []), def.destinoIdx];
+    const paradas = idxs.map((li, k)=>{
+      const l = LOCAIS_SEED[li % LOCAIS_SEED.length];
+      const instr = k === 0 ? ATIVIDADES_SEED[def.atividadeIdx % ATIVIDADES_SEED.length]
+        : (k === idxs.length - 1 ? "Entregar e colher o ciente no recebimento." : "Parada no caminho — deixar/retirar o material combinado.");
+      return {cep:l.cep, endereco:l.endereco, numero:l.numero, bairro:l.bairro, cidade:l.cidade, estado:l.estado,
+              instrucoes:`${l.nome} — ${instr}`, anexos:[], coord: ENDERECOS_COORDS[l.nome] || null, coordCep:l.cep};
+    });
+    VIAGENS.push({
+      id: novoId(), data, solicitante, setor: def.setor, projetoNumero: def.projeto || "",
+      motorista, origem: rotuloParada(paradas[0]), destino: rotuloParada(paradas[paradas.length - 1]),
+      atividade: "", observacao: "", paradas, status: def.status, historico,
+    });
+  });
+  VIAGENS.sort((a,b)=> b.data - a.data);
+})();
+
+// ---------- FILTROS ----------
+let filtroAtivoEr = {status:"todas", setor:"todos", motorista:"todos", busca:""};
+function passaFiltroEr(v){
+  if(filtroAtivoEr.status !== "todas" && v.status !== filtroAtivoEr.status) return false;
+  if(filtroAtivoEr.setor !== "todos" && v.setor !== filtroAtivoEr.setor) return false;
+  if(filtroAtivoEr.motorista !== "todos" && v.motorista !== filtroAtivoEr.motorista) return false;
+  if(filtroAtivoEr.busca){
+    const alvo = (v.solicitante+" "+v.projetoNumero+" "+v.motorista+" "+paradasDaViagem(v).map(p=>enderecoCompleto(p)+" "+(p.instrucoes||"")).join(" ")+" "+(v.atividade||"")).toLowerCase();
+    if(!alvo.includes(filtroAtivoEr.busca.toLowerCase())) return false;
+  }
+  return true;
+}
+function atualizarOpcoesFiltroMotoristaEr(){
+  const el = document.getElementById("filtroMotoristaEr");
+  const atual = el.value || "todos";
+  const nomes = [...new Set(VIAGENS.map(v=>v.motorista).filter(Boolean))].sort((a,b)=> a.localeCompare(b,"pt-BR"));
+  el.innerHTML = `<option value="todos">Todos</option>` + nomes.map(n=>`<option value="${n}">${n}</option>`).join("");
+  el.value = nomes.includes(atual) ? atual : "todos";
+  filtroAtivoEr.motorista = el.value;
+  popularMotoristaRoteiro();
+}
+function atualizarDatalistsEr(){
+  const nomesSolic = [...new Set([...SOLICITANTES_SEED, ...VIAGENS.map(v=>v.solicitante)])].sort((a,b)=>a.localeCompare(b,"pt-BR"));
+  document.getElementById("listaSolicitantesEr").innerHTML = nomesSolic.map(n=>`<option value="${n}">`).join("");
+  const nomesMotor = [...new Set([...MOTORISTAS_SEED, ...VIAGENS.map(v=>v.motorista).filter(Boolean)])].sort((a,b)=>a.localeCompare(b,"pt-BR"));
+  document.getElementById("listaMotoristasEr").innerHTML = nomesMotor.map(n=>`<option value="${n}">`).join("");
+}
+
+// ---------- RENDER TABELA ----------
+const tabelaBodyEr = document.getElementById("tabelaViagens");
+function renderTabelaEr(){
+  const lista = VIAGENS.filter(passaFiltroEr);
+  tabelaBodyEr.innerHTML = "";
+  if(lista.length === 0){
+    tabelaBodyEr.innerHTML = `<tr class="table-empty"><td colspan="7">Nenhuma viagem encontrada para os filtros selecionados.</td></tr>`;
+    return;
+  }
+  lista.forEach(v=>{
+    const tr = document.createElement("tr");
+    tr.className = "er-row";
+    tr.dataset.id = v.id;
+    tr.innerHTML = `
+      <td><b>${v.id}</b></td>
+      <td>${fmtData(v.data)}</td>
+      <td>${v.solicitante}</td>
+      <td><span class="badge setor">${v.setor}</span></td>
+      <td>${esc(v.origem)}<span class="rota-seta">→</span>${esc(v.destino)}${nIntermed(v) ? `<div class="table-subtext">+ ${nIntermed(v)} parada(s) intermediária(s)</div>` : ""}</td>
+      <td><span class="badge st-${v.status}">${STATUS_LABEL[v.status]}</span></td>
+      <td class="td-menu"><button type="button" class="card-menu-btn" data-id="${v.id}" title="Mais ações">⋮</button></td>
+    `;
+    tr.addEventListener("click", ()=> abrirDrawerEr(v.id));
+    tabelaBodyEr.appendChild(tr);
+  });
+}
+
+// ---------- RENDER KANBAN ----------
+const kanbanBoardEr = document.getElementById("kanbanBoardEr");
+let cardArrastadoIdEr = null;
+function renderKanbanEr(){
+  const lista = VIAGENS.filter(passaFiltroEr);
+  kanbanBoardEr.innerHTML = "";
+  STATUS_ORDEM.forEach(status=>{
+    const col = document.createElement("div");
+    col.className = "kanban-coluna";
+    col.dataset.status = status;
+    const doStatus = lista.filter(v=>v.status===status);
+    const titulo = document.createElement("div");
+    titulo.className = "kanban-coluna-titulo";
+    titulo.innerHTML = `<span>${STATUS_LABEL[status]}</span><span class="contagem">${doStatus.length}</span>`;
+    col.appendChild(titulo);
+    if(!doStatus.length){
+      const vazio = document.createElement("div");
+      vazio.className = "kanban-vazio";
+      vazio.textContent = "Nenhuma viagem aqui";
+      col.appendChild(vazio);
+    } else {
+      doStatus.forEach(v=>{
+        const card = document.createElement("div");
+        card.className = "kanban-card";
+        card.draggable = true;
+        card.dataset.id = v.id;
+        card.innerHTML = `
+          <div class="kc-top">
+            <div class="kc-id">${v.id}</div>
+            <button type="button" class="card-menu-btn" data-id="${v.id}" title="Mais ações">⋮</button>
+          </div>
+          <div class="kc-sub">${v.solicitante} · ${v.setor}</div>
+          <div class="kc-rota">${esc(v.origem)}<span class="rota-seta">→</span>${esc(v.destino)}${nIntermed(v) ? `<div class="kc-sub">+ ${nIntermed(v)} parada(s) intermediária(s)</div>` : ""}</div>
+        `;
+        card.addEventListener("click", ()=> abrirDrawerEr(v.id));
+        card.addEventListener("dragstart", (e)=>{
+          cardArrastadoIdEr = v.id;
+          card.classList.add("dragging");
+          if(e.dataTransfer){ e.dataTransfer.effectAllowed = "move"; try{ e.dataTransfer.setData("text/plain", v.id); }catch(err){} }
+        });
+        card.addEventListener("dragend", ()=>{ card.classList.remove("dragging"); cardArrastadoIdEr = null; });
+        col.appendChild(card);
+      });
+    }
+    col.addEventListener("dragover", (e)=>{ e.preventDefault(); col.classList.add("arrasto-sobre"); });
+    col.addEventListener("dragleave", ()=> col.classList.remove("arrasto-sobre"));
+    col.addEventListener("drop", (e)=>{
+      e.preventDefault();
+      col.classList.remove("arrasto-sobre");
+      const idSolto = cardArrastadoIdEr || (e.dataTransfer && e.dataTransfer.getData("text/plain"));
+      if(!idSolto) return;
+      mudarStatusEr(idSolto, status);
+    });
+    kanbanBoardEr.appendChild(col);
+  });
+}
+
+function mudarStatusEr(id, novoStatus){
+  const v = VIAGENS.find(x=>x.id===id);
+  if(!v || v.status === novoStatus) return;
+  v.status = novoStatus;
+  v.historico.push({status:novoStatus, data:new Date(), usuario: usuarioAtualNome() || "Não identificado"});
+  renderTabelaEr();
+  renderKanbanEr();
+  renderRoteiroDia();
+}
+
+// ---------- ALTERNÂNCIA DE VISÃO ----------
+const btnVisaoTabelaEr = document.getElementById("btnVisaoTabela");
+const btnVisaoKanbanEr = document.getElementById("btnVisaoKanban");
+const tabelaWrapEr = document.getElementById("tabelaWrapEr");
+function definirVisaoEr(visao){
+  const isKanban = visao === "kanban";
+  tabelaWrapEr.style.display = isKanban ? "none" : "";
+  kanbanBoardEr.style.display = isKanban ? "flex" : "none";
+  btnVisaoTabelaEr.classList.toggle("ativo", !isKanban);
+  btnVisaoKanbanEr.classList.toggle("ativo", isKanban);
+  if(isKanban) renderKanbanEr();
+}
+btnVisaoTabelaEr.addEventListener("click", ()=> definirVisaoEr("tabela"));
+btnVisaoKanbanEr.addEventListener("click", ()=> definirVisaoEr("kanban"));
+
+// ---------- FILTROS: EVENTOS ----------
+const filtroStatusErEl = document.getElementById("filtroStatusEr");
+const filtroSetorErEl = document.getElementById("filtroSetorEr");
+const filtroMotoristaErEl = document.getElementById("filtroMotoristaEr");
+const filtroBuscaErEl = document.getElementById("filtroBuscaEr");
+function aplicarFiltrosEr(){
+  filtroAtivoEr.status = filtroStatusErEl.value;
+  filtroAtivoEr.setor = filtroSetorErEl.value;
+  filtroAtivoEr.motorista = filtroMotoristaErEl.value;
+  filtroAtivoEr.busca = filtroBuscaErEl.value.trim();
+  renderTabelaEr();
+  renderKanbanEr();
+}
+filtroStatusErEl.addEventListener("change", aplicarFiltrosEr);
+filtroSetorErEl.addEventListener("change", aplicarFiltrosEr);
+filtroMotoristaErEl.addEventListener("change", aplicarFiltrosEr);
+filtroBuscaErEl.addEventListener("input", aplicarFiltrosEr);
+document.getElementById("filtroErLimpar").addEventListener("click", ()=>{
+  filtroStatusErEl.value = "todas";
+  filtroSetorErEl.value = "todos";
+  filtroMotoristaErEl.value = "todos";
+  filtroBuscaErEl.value = "";
+  filtroAtivoEr = {status:"todas", setor:"todos", motorista:"todos", busca:""};
+  renderTabelaEr();
+  renderKanbanEr();
+});
+
+// ---------- DRAWER DE DETALHE ----------
+const erBackdrop = document.getElementById("erBackdrop");
+const erDrawer = document.getElementById("erDrawer");
+let viagemAtualId = null;
+function fecharDrawerEr(){
+  erBackdrop.classList.remove("open");
+  erDrawer.classList.remove("open");
+  viagemAtualId = null;
+}
+document.getElementById("erDrawerClose").addEventListener("click", fecharDrawerEr);
+erBackdrop.addEventListener("click", fecharDrawerEr);
+document.addEventListener("keydown", (e)=>{ if(e.key === "Escape") fecharDrawerEr(); });
+
+function abrirDrawerEr(id){
+  const v = VIAGENS.find(x=>x.id===id);
+  if(!v) return;
+  viagemAtualId = id;
+  document.getElementById("erDrawerTitulo").textContent = `${v.id} — ${v.solicitante}`;
+  document.getElementById("erDrawerSub").textContent = `Criada em ${fmtData(v.historico && v.historico[0] ? v.historico[0].data : v.data)}`;
+  document.getElementById("erInfoSolicitante").textContent = v.solicitante;
+  document.getElementById("erInfoSetor").innerHTML = `<span class="badge setor">${v.setor}</span>`;
+  document.getElementById("erInfoProjeto").textContent = v.projetoNumero || "—";
+  document.getElementById("erInfoMotorista").textContent = v.motorista || "—";
+  document.getElementById("erInfoDataViagem").textContent = fmtData(v.data);
+  renderPercursoDrawer(v);
+  const atvWrap = document.getElementById("erInfoAtividadeWrap");
+  if(v.atividade){ atvWrap.style.display = ""; document.getElementById("erInfoAtividade").textContent = v.atividade; }
+  else { atvWrap.style.display = "none"; }
+
+  const obsWrap = document.getElementById("erInfoObsWrap");
+  if(v.observacao){ obsWrap.style.display = ""; document.getElementById("erInfoObs").textContent = v.observacao; }
+  else { obsWrap.style.display = "none"; }
+
+
+  const statusSelect = document.getElementById("erStatusSelect");
+  statusSelect.innerHTML = STATUS_ORDEM.map(s=> `<option value="${s}" ${s===v.status?'selected':''}>${STATUS_LABEL[s]}</option>`).join("");
+
+  const historicoEl = document.getElementById("erHistorico");
+  historicoEl.innerHTML = [...v.historico].reverse().map(h=>
+    `<li><span>${STATUS_LABEL[h.status]} — ${h.usuario || "Não identificado"}</span><span>${fmtDataHora(h.data)}</span></li>`
+  ).join("");
+
+  erBackdrop.classList.add("open");
+  erDrawer.classList.add("open");
+}
+
+document.getElementById("erStatusSalvar").addEventListener("click", ()=>{
+  if(!viagemAtualId) return;
+  mudarStatusEr(viagemAtualId, document.getElementById("erStatusSelect").value);
+  abrirDrawerEr(viagemAtualId);
+});
+
+// ---------- MENU RÁPIDO "⋮" (duplicar/excluir sem abrir o detalhe) ----------
+const cardMenuEr = document.getElementById("cardMenuEr");
+let cardMenuErAlvoId = null;
+function fecharCardMenuEr(){ cardMenuEr.classList.remove("open"); cardMenuErAlvoId = null; }
+function abrirCardMenuEr(id, btnEl){
+  cardMenuErAlvoId = id;
+  cardMenuEr.classList.add("open");
+  const rect = btnEl.getBoundingClientRect();
+  const largura = cardMenuEr.offsetWidth || 150;
+  const altura = cardMenuEr.offsetHeight || 84;
+  let left = rect.right - largura;
+  let top = rect.bottom + 4;
+  if(left < 8) left = 8;
+  if(left + largura > window.innerWidth - 8) left = window.innerWidth - largura - 8;
+  if(top + altura > window.innerHeight - 8) top = rect.top - altura - 4;
+  cardMenuEr.style.left = left + "px";
+  cardMenuEr.style.top = top + "px";
+}
+document.addEventListener("click", (e)=>{
+  const btn = e.target.closest(".card-menu-btn");
+  if(btn){
+    e.stopPropagation();
+    const id = btn.dataset.id;
+    if(cardMenuErAlvoId === id && cardMenuEr.classList.contains("open")) fecharCardMenuEr();
+    else abrirCardMenuEr(id, btn);
+    return;
+  }
+  if(cardMenuEr.classList.contains("open") && !cardMenuEr.contains(e.target)) fecharCardMenuEr();
+}, true);
+
+// ---------- DUPLICAR VIAGEM ----------
+const duplicarBackdropEr = document.getElementById("duplicarBackdropEr");
+let idPendenteDuplicarEr = null;
+function abrirConfirmacaoDuplicarEr(id){
+  const v = VIAGENS.find(x=>x.id===id);
+  if(!v) return;
+  idPendenteDuplicarEr = id;
+  document.getElementById("duplicarTextoEr").textContent = `Tem certeza que deseja duplicar a viagem ${v.id}? A cópia entra como Pendente, com os mesmos dados, pra revisar e ajustar o que for preciso (bom pra rotas recorrentes).`;
+  duplicarBackdropEr.classList.add("open");
+}
+function fecharDuplicarEr(){ duplicarBackdropEr.classList.remove("open"); idPendenteDuplicarEr = null; }
+document.getElementById("btnDuplicarViagem").addEventListener("click", ()=> abrirConfirmacaoDuplicarEr(viagemAtualId));
+document.getElementById("duplicarCloseEr").addEventListener("click", fecharDuplicarEr);
+document.getElementById("duplicarNaoEr").addEventListener("click", fecharDuplicarEr);
+duplicarBackdropEr.addEventListener("click", (e)=>{ if(e.target === duplicarBackdropEr) fecharDuplicarEr(); });
+document.getElementById("duplicarSimEr").addEventListener("click", ()=>{
+  const original = VIAGENS.find(x=>x.id===idPendenteDuplicarEr);
+  fecharDuplicarEr();
+  if(!original) return;
+  const copia = {
+    id: novoId(), data: new Date(), solicitante: original.solicitante, setor: original.setor,
+    projetoNumero: original.projetoNumero, motorista: original.motorista,
+    origem: original.origem, destino: original.destino, atividade: original.atividade || "", paradas: JSON.parse(JSON.stringify(paradasDaViagem(original))),
+    observacao: original.observacao,
+    status: "pendente", historico: [{status:"pendente", data:new Date(), usuario: usuarioAtualNome() || original.solicitante}],
+  };
+  VIAGENS.unshift(copia);
+  renderTabelaEr(); renderKanbanEr(); atualizarOpcoesFiltroMotoristaEr(); atualizarDatalistsEr(); renderRoteiroDia();
+  abrirDrawerEr(copia.id);
+});
+document.getElementById("cardMenuErDuplicar").addEventListener("click", (e)=>{
+  e.stopPropagation();
+  const id = cardMenuErAlvoId;
+  fecharCardMenuEr();
+  abrirConfirmacaoDuplicarEr(id);
+});
+
+// ---------- EXCLUIR VIAGEM ----------
+const excluirBackdropEr = document.getElementById("excluirBackdropEr");
+let idPendenteExcluirEr = null;
+function abrirConfirmacaoExcluirEr(id){
+  const v = VIAGENS.find(x=>x.id===id);
+  if(!v) return;
+  idPendenteExcluirEr = id;
+  document.getElementById("excluirTextoEr").textContent = `Tem certeza que deseja excluir a viagem ${v.id} (${v.solicitante})? Essa ação não pode ser desfeita.`;
+  excluirBackdropEr.classList.add("open");
+}
+function fecharExcluirEr(){ excluirBackdropEr.classList.remove("open"); idPendenteExcluirEr = null; }
+document.getElementById("excluirCloseEr").addEventListener("click", fecharExcluirEr);
+document.getElementById("excluirCancelarEr").addEventListener("click", fecharExcluirEr);
+excluirBackdropEr.addEventListener("click", (e)=>{ if(e.target === excluirBackdropEr) fecharExcluirEr(); });
+document.getElementById("excluirConfirmarEr").addEventListener("click", ()=>{
+  const id = idPendenteExcluirEr;
+  fecharExcluirEr();
+  const idx = VIAGENS.findIndex(x=>x.id===id);
+  if(idx === -1) return;
+  VIAGENS.splice(idx, 1);
+  if(viagemAtualId === id) fecharDrawerEr();
+  renderTabelaEr(); renderKanbanEr(); atualizarOpcoesFiltroMotoristaEr(); renderRoteiroDia();
+});
+document.getElementById("cardMenuErExcluir").addEventListener("click", (e)=>{
+  e.stopPropagation();
+  const id = cardMenuErAlvoId;
+  fecharCardMenuEr();
+  abrirConfirmacaoExcluirEr(id);
+});
+
+// ---------- NOVA / EDITAR VIAGEM (assistente em etapas) ----------
+const ANEXO_MAX_BYTES = 5 * 1024 * 1024;
+const UFS_BR = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
+let modoEdicaoIdEr = null;
+let wiz = null; // estado do assistente: {passo, dados, paradas}; passo 0 = dados, passo k = paradas[k-1]
+const modalBackdropEr = document.getElementById("modalBackdropEr");
+const wizErroEl = document.getElementById("formErroEr");
+document.getElementById("pEstado").innerHTML = `<option value="">UF</option>` + UFS_BR.map(u=>`<option value="${u}">${u}</option>`).join("");
+
+function campo(id){ return document.getElementById(id).value; }
+function dadosVaziosEr(){ return {solicitante:"", setor:"", dataViagem: paraDataLocalISO(new Date()), projetoNumero:"", motorista:""}; }
+function paradaVazia(){ return {cep:"", endereco:"", numero:"", bairro:"", cidade:"", estado:"", instrucoes:"", anexos:[], coord:null, coordCep:""}; }
+function mascaraCep(v){ const d = String(v).replace(/\D/g,"").slice(0,8); return d.length > 5 ? d.slice(0,5) + "-" + d.slice(5) : d; }
+function lerDadosEr(){
+  return {solicitante: campo("fSolicitanteEr").trim(), setor: campo("fSetorEr"), dataViagem: campo("fDataViagemEr"),
+          projetoNumero: campo("fProjetoEr").trim(), motorista: campo("fMotoristaEr").trim()};
+}
+function lerParadaEr(){
+  return {cep: mascaraCep(campo("pCep")), endereco: campo("pEndereco").trim(), numero: campo("pNumero").trim(),
+          bairro: campo("pBairro").trim(), cidade: campo("pCidade").trim(), estado: campo("pEstado"), instrucoes: campo("pInstrucoes").trim()};
+}
+function dadosValidos(d){ return !!(d.solicitante && d.setor && d.dataViagem && d.motorista); }
+function paradaValida(p){ return /^\d{5}-\d{3}$/.test(p.cep) && !!(p.endereco && p.numero && p.bairro && p.cidade && p.estado); }
+function wizPassoValido(){ return wiz.passo === 0 ? dadosValidos(lerDadosEr()) : paradaValida(lerParadaEr()); }
+
+function wizSalvarPasso(){
+  if(wiz.passo === 0){ wiz.dados = lerDadosEr(); return; }
+  const p = wiz.paradas[wiz.passo - 1];
+  if(!p) return;
+  const novo = lerParadaEr();
+  if(novo.cep !== p.coordCep){ p.coord = null; p.coordTentou = false; p.coordCep = ""; }
+  Object.assign(p, novo);
+}
+
+function wizAtualizarBotoes(){
+  if(!wiz) return;
+  const ok = wizPassoValido();
+  document.getElementById("wizContinuar").disabled = !ok;
+  document.getElementById("wizAdicionar").disabled = !ok;
+  document.getElementById("wizConcluir").disabled = !ok;
+}
+
+function renderAnexosParada(){
+  const p = wiz.paradas[wiz.passo - 1];
+  const lista = document.getElementById("pAnexoLista");
+  lista.innerHTML = (p && p.anexos ? p.anexos : []).map((a,idx)=>
+    `<li><span>📎 ${esc(a.name)} <span style="color:var(--muted); font-size:11px;">(${Math.max(1, Math.round(a.size/1024))} KB)</span></span><button type="button" data-rm-anexo="${idx}">Remover</button></li>`
+  ).join("");
+}
+
+function wizMostrarPasso(){
+  const n = wiz.paradas.length;
+  const noDados = wiz.passo === 0;
+  const nomes = ["Dados"].concat(wiz.paradas.map((_,k)=> TIPO_PARADA_LABEL[tipoParada(k, n)]));
+  if(n === 1) nomes.push("Destino");
+  document.getElementById("wizSteps").innerHTML = nomes.map((nm,k)=>
+    `<span class="wiz-step ${k === wiz.passo ? "atual" : (k < wiz.passo ? "feito" : "")}">${k+1}. ${nm}</span>`
+  ).join("");
+  wizErroEl.classList.remove("show");
+  document.getElementById("wizPassoDados").style.display = noDados ? "" : "none";
+  document.getElementById("wizPassoParada").style.display = noDados ? "none" : "";
+
+  if(noDados){
+    const d = wiz.dados;
+    document.getElementById("fSolicitanteEr").value = d.solicitante;
+    document.getElementById("fSetorEr").value = d.setor;
+    document.getElementById("fDataViagemEr").value = d.dataViagem;
+    document.getElementById("fProjetoEr").value = d.projetoNumero;
+    document.getElementById("fMotoristaEr").value = d.motorista;
+  } else {
+    const i = wiz.passo - 1;
+    const p = wiz.paradas[i];
+    const tipo = tipoParada(i, n);
+    const avisos = {
+      retirada: "Onde o motorista deve retirar. Informe o CEP que o endereço é preenchido sozinho — falta só o número.",
+      intermediaria: "Local onde o motorista passa antes de chegar ao destino final.",
+      entrega: "Destino final da viagem. Se houver mais locais no caminho, use \"Adicionar parada intermediária\" — o último endereço informado é sempre o destino.",
+    };
+    document.getElementById("wizAvisoParada").textContent = `${TIPO_PARADA_LABEL[tipo]}: ${avisos[tipo]}`;
+    document.getElementById("pCep").value = p.cep;
+    document.getElementById("pNumero").value = p.numero;
+    document.getElementById("pEndereco").value = p.endereco;
+    document.getElementById("pBairro").value = p.bairro;
+    document.getElementById("pCidade").value = p.cidade;
+    document.getElementById("pEstado").value = p.estado;
+    document.getElementById("pInstrucoes").value = p.instrucoes;
+    document.getElementById("pCepStatus").textContent = "";
+    renderAnexosParada();
+  }
+
+  const ultima = !noDados && wiz.passo === n && n >= 2;
+  document.getElementById("wizVoltar").textContent = noDados ? "Cancelar" : "Voltar";
+  document.getElementById("wizContinuar").style.display = ultima ? "none" : "";
+  document.getElementById("wizAdicionar").style.display = ultima ? "" : "none";
+  document.getElementById("wizConcluir").style.display = ultima ? "" : "none";
+  document.getElementById("wizConcluir").textContent = modoEdicaoIdEr ? "Salvar alterações" : "Concluir cadastro";
+  document.getElementById("wizRemover").style.display = (!noDados && wiz.passo >= 2 && n > 2) ? "" : "none";
+  wizAtualizarBotoes();
+}
+
+function abrirModalNovaViagem(){
+  modoEdicaoIdEr = null;
+  wiz = {passo: 0, dados: dadosVaziosEr(), paradas: []};
+  atualizarDatalistsEr();
+  document.getElementById("modalTituloEr").textContent = "Nova viagem";
+  wizMostrarPasso();
+  modalBackdropEr.classList.add("open");
+}
+function abrirModalEdicaoEr(id){
+  const v = VIAGENS.find(x=>x.id===id);
+  if(!v) return;
+  modoEdicaoIdEr = id;
+  wiz = {
+    passo: 0,
+    dados: {
+      solicitante: v.solicitante, setor: SETORES_ER.includes(v.setor) ? v.setor : "Administrativo",
+      dataViagem: paraDataLocalISO(v.data), projetoNumero: v.projetoNumero || "", motorista: v.motorista || "",
+    },
+    paradas: JSON.parse(JSON.stringify(paradasDaViagem(v))).map(p=> Object.assign(paradaVazia(), p)),
+  };
+  atualizarDatalistsEr();
+  document.getElementById("modalTituloEr").textContent = "Editar viagem";
+  wizMostrarPasso();
+  modalBackdropEr.classList.add("open");
+}
+function fecharModalEr(){ modalBackdropEr.classList.remove("open"); }
+function cancelarModalEr(){
+  const idEditando = modoEdicaoIdEr;
+  modoEdicaoIdEr = null;
+  wiz = null;
+  fecharModalEr();
+  if(idEditando) abrirDrawerEr(idEditando);
+}
+document.getElementById("btnNovaViagem").addEventListener("click", abrirModalNovaViagem);
+document.getElementById("btnEditarViagem").addEventListener("click", ()=>{
+  const id = viagemAtualId;
+  fecharDrawerEr();
+  abrirModalEdicaoEr(id);
+});
+document.getElementById("modalCloseEr").addEventListener("click", cancelarModalEr);
+
+// Validação em tempo real: os botões só habilitam com os obrigatórios preenchidos.
+modalBackdropEr.addEventListener("input", wizAtualizarBotoes);
+modalBackdropEr.addEventListener("change", wizAtualizarBotoes);
+
+// Navegação entre as etapas
+document.getElementById("wizVoltar").addEventListener("click", ()=>{
+  if(!wiz) return;
+  if(wiz.passo === 0){ cancelarModalEr(); return; }
+  wizSalvarPasso();
+  wiz.passo--;
+  wizMostrarPasso();
+});
+document.getElementById("wizContinuar").addEventListener("click", ()=>{
+  if(!wiz || !wizPassoValido()) return;
+  wizSalvarPasso();
+  if(wiz.passo === 0 && wiz.paradas.length === 0) wiz.paradas.push(paradaVazia());
+  else if(wiz.passo === wiz.paradas.length && wiz.paradas.length === 1) wiz.paradas.push(paradaVazia());
+  wiz.passo++;
+  wizMostrarPasso();
+});
+document.getElementById("wizAdicionar").addEventListener("click", ()=>{
+  if(!wiz || !wizPassoValido()) return;
+  wizSalvarPasso();
+  wiz.paradas.push(paradaVazia()); // o que estava como destino vira intermediária; a nova é o destino final
+  wiz.passo = wiz.paradas.length;
+  wizMostrarPasso();
+});
+document.getElementById("wizRemover").addEventListener("click", ()=>{
+  if(!wiz || wiz.passo < 1 || wiz.paradas.length <= 2) return;
+  wiz.paradas.splice(wiz.passo - 1, 1);
+  wiz.passo = Math.min(wiz.passo, wiz.paradas.length);
+  wizMostrarPasso();
+});
+
+// CEP: preenche rua, bairro, cidade e estado (o número fica por conta do usuário)
+let cepReqId = 0;
+document.getElementById("pCep").addEventListener("input", async (e)=>{
+  e.target.value = mascaraCep(e.target.value);
+  const cep = e.target.value;
+  const statusEl = document.getElementById("pCepStatus");
+  if(!/^\d{5}-\d{3}$/.test(cep)){ statusEl.textContent = ""; return; }
+  const meu = ++cepReqId;
+  const p = wiz ? wiz.paradas[wiz.passo - 1] : null;
+  statusEl.textContent = "Buscando endereço...";
+  try{
+    const r = await fetch(`https://viacep.com.br/ws/${cep.replace("-","")}/json/`);
+    const j = await r.json();
+    if(meu !== cepReqId) return;
+    if(j.erro){ statusEl.textContent = "CEP não encontrado — preencha o endereço manualmente."; wizAtualizarBotoes(); return; }
+    document.getElementById("pEndereco").value = j.logradouro || "";
+    document.getElementById("pBairro").value = j.bairro || "";
+    document.getElementById("pCidade").value = j.localidade || "";
+    document.getElementById("pEstado").value = j.uf || "";
+    statusEl.textContent = "Endereço preenchido pelo CEP — informe o número.";
+    document.getElementById("pNumero").focus();
+    wizAtualizarBotoes();
+  }catch(err){
+    if(meu === cepReqId) statusEl.textContent = "Não foi possível consultar o CEP agora — preencha manualmente.";
+    return;
+  }
+  // Coordenadas aproximadas pelo CEP (usadas no mapa do Roteiro do Dia)
+  try{
+    const r2 = await fetch(`https://cep.awesomeapi.com.br/json/${cep.replace("-","")}`);
+    const j2 = await r2.json();
+    if(meu === cepReqId && p && j2 && j2.lat && j2.lng){ p.coord = [parseFloat(j2.lat), parseFloat(j2.lng)]; p.coordCep = cep; }
+  }catch(err){}
+});
+
+// Anexos da parada (ficam só em memória neste protótipo)
+document.getElementById("pAnexoBtn").addEventListener("click", ()=> document.getElementById("pAnexoInput").click());
+document.getElementById("pAnexoInput").addEventListener("change", async (e)=>{
+  const arquivos = [...e.target.files];
+  e.target.value = "";
+  const p = wiz ? wiz.paradas[wiz.passo - 1] : null;
+  if(!p) return;
+  for(const f of arquivos){
+    if(f.size > ANEXO_MAX_BYTES){
+      wizErroEl.textContent = `"${f.name}" passa de 5 MB e não foi anexado.`; wizErroEl.classList.add("show"); continue;
+    }
+    const dataUrl = await new Promise(res=>{ const fr = new FileReader(); fr.onload = ()=>res(fr.result); fr.onerror = ()=>res(null); fr.readAsDataURL(f); });
+    if(dataUrl) p.anexos.push({name: f.name, size: f.size, type: f.type, dataUrl});
+  }
+  renderAnexosParada();
+});
+document.getElementById("pAnexoLista").addEventListener("click", (e)=>{
+  const btn = e.target.closest("[data-rm-anexo]");
+  if(!btn || !wiz) return;
+  const p = wiz.paradas[wiz.passo - 1];
+  if(p){ p.anexos.splice(parseInt(btn.dataset.rmAnexo, 10), 1); renderAnexosParada(); }
+});
+
+// Conclusão: valida tudo e cria (ou atualiza) a viagem
+document.getElementById("wizConcluir").addEventListener("click", ()=>{
+  if(!wiz || !wizPassoValido()) return;
+  wizSalvarPasso();
+  let erro = null;
+  if(!dadosValidos(wiz.dados)){ wiz.passo = 0; erro = "Complete os dados da viagem."; }
+  else {
+    for(let k = 0; k < wiz.paradas.length; k++){
+      if(!paradaValida(wiz.paradas[k])){ wiz.passo = k + 1; erro = `Complete os dados da etapa ${k + 2}.`; break; }
+    }
+  }
+  if(erro){ wizMostrarPasso(); wizErroEl.textContent = erro; wizErroEl.classList.add("show"); return; }
+
+  const d = wiz.dados;
+  const paradas = wiz.paradas.map(p=> ({...p, anexos: [...p.anexos]}));
+  const [ano, mes, dia] = d.dataViagem.split("-").map(Number);
+  const dataViagem = new Date(ano, mes - 1, dia, 12, 0, 0);
+  const origem = rotuloParada(paradas[0]);
+  const destino = rotuloParada(paradas[paradas.length - 1]);
+
+  let idAbrir;
+  if(modoEdicaoIdEr){
+    const v = VIAGENS.find(x=>x.id===modoEdicaoIdEr);
+    if(v) Object.assign(v, {data: dataViagem, solicitante: d.solicitante, setor: d.setor, projetoNumero: d.projetoNumero,
+      motorista: d.motorista, origem, destino, paradas});
+    idAbrir = modoEdicaoIdEr;
+  } else {
+    const nova = {
+      id: novoId(), data: dataViagem, solicitante: d.solicitante, setor: d.setor, projetoNumero: d.projetoNumero,
+      motorista: d.motorista, origem, destino, atividade: "", observacao: "", paradas,
+      status: "pendente", historico: [{status:"pendente", data:new Date(), usuario: usuarioAtualNome() || d.solicitante}],
+    };
+    VIAGENS.unshift(nova);
+    idAbrir = nova.id;
+  }
+  modoEdicaoIdEr = null;
+  wiz = null;
+  fecharModalEr();
+  renderTabelaEr(); renderKanbanEr(); atualizarOpcoesFiltroMotoristaEr(); atualizarDatalistsEr(); renderRoteiroDia();
+  abrirDrawerEr(idAbrir);
+});
+
+// ---------- TEMA (toggle) ----------
+function atualizarTema(){
+  const dark = document.documentElement.getAttribute("data-theme") === "dark";
+  document.getElementById("temaIcon").textContent = dark ? "☀️" : "🌙";
+  document.getElementById("temaLabel").textContent = dark ? "Tema claro" : "Tema escuro";
+}
+document.getElementById("temaToggle").addEventListener("click", ()=>{
+  const dark = document.documentElement.getAttribute("data-theme") === "dark";
+  if(dark){ document.documentElement.removeAttribute("data-theme"); localStorage.setItem(TEMA_STORAGE_KEY,"light"); }
+  else{ document.documentElement.setAttribute("data-theme","dark"); localStorage.setItem(TEMA_STORAGE_KEY,"dark"); }
+  atualizarTema();
+});
+atualizarTema();
+
+// ---------- ROTEIRO DO DIA: eventos ----------
+document.getElementById("roteiroData").addEventListener("change", renderRoteiroDia);
+document.getElementById("roteiroMotorista").addEventListener("change", renderRoteiroDia);
+
+// ---------- INIT ----------
+atualizarOpcoesFiltroMotoristaEr();
+atualizarDatalistsEr();
+renderTabelaEr();
+document.getElementById("roteiroData").value = paraDataLocalISO(new Date());
+renderRoteiroDia();
+</script>
+</body>
+</html>
