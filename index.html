@@ -339,6 +339,20 @@
   .mc-barra-btn:hover{border-color:var(--accent); color:var(--accent);}
   .mc-resumo{margin:0 0 14px; font-size:13px; color:var(--muted);}
   .mc-ordem{display:inline-block; margin-top:4px; font-size:12px; font-weight:700; color:var(--accent);}
+  .mc-selos{display:flex; flex-wrap:wrap; gap:6px;}
+  .mc-selo{display:inline-block; padding:4px 10px; border-radius:999px; font-size:12.5px; font-weight:600; background:var(--panel-2); border:1px solid var(--border); overflow-wrap:anywhere;}
+  .mc-selo.forte{background:rgba(245,158,11,.12); border-color:rgba(245,158,11,.5); color:var(--text);}
+  .mc-selo.local{background:rgba(59,130,246,.08); border-color:rgba(59,130,246,.4);}
+  .mc-btn-nao{color:var(--danger); border-color:rgba(239,68,68,.45);}
+  .mc-motivos{display:grid; gap:8px;}
+  .mc-motivo.ativo{border-color:var(--danger); color:var(--danger); background:rgba(239,68,68,.07);}
+  .mc-card.recem{box-shadow:0 0 0 3px rgba(245,158,11,.35);}
+  .mc-recem-rot{font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--warn); margin-bottom:-6px;}
+  .mc-aviso-nova{
+    display:flex; align-items:center; gap:12px; justify-content:space-between; border:1px solid var(--warn); background:rgba(245,158,11,.1);
+    border-radius:10px; padding:12px; font-size:14px; line-height:1.5; margin-bottom:14px; overflow-wrap:anywhere;
+  }
+  .mc-aviso-nova .mc-btn{width:auto; min-width:80px; flex:none;}
   .mc-resumo:empty{display:none;}
   .mc-card.mc-atual{border:2px solid var(--accent); border-left-width:6px; box-shadow:0 6px 20px rgba(59,130,246,.12);}
   .mc-atual-rot{font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); margin-bottom:-6px;}
@@ -440,6 +454,14 @@
   .aviso-permissao{margin:10px 0 0; padding:8px 10px; border-radius:8px; background:var(--panel-2); border:1px solid var(--border); font-size:12px; color:var(--muted); line-height:1.5;}
   #kanbanAvisoEr{margin:0 0 12px;}
   .kanban-card.travado{cursor:pointer;}
+  .agenda-motorista{margin-top:8px; padding:10px 12px; border-radius:8px; border:1px solid var(--border); background:var(--panel-2); font-size:12.5px; line-height:1.55;}
+  .agenda-motorista.alerta{border-color:var(--danger); background:rgba(239,68,68,.07);}
+  .nv-mesmo-local{margin:0 0 12px; padding:8px 10px; border-radius:8px; border:1px solid rgba(59,130,246,.45); background:rgba(59,130,246,.07); font-size:12.5px; line-height:1.5;}
+  .txt-aviso{color:var(--warn); font-weight:600;}
+  .alerta-sem-motorista ul{margin:6px 0 0; padding-left:18px;}
+  .er-aviso-motorista{border:1px solid var(--warn); background:rgba(245,158,11,.08); border-radius:10px; padding:10px 12px; font-size:12.5px; line-height:1.5; margin-bottom:12px; overflow-wrap:anywhere;}
+  .er-aviso-motorista.recusa{border-color:var(--danger); background:rgba(239,68,68,.07);}
+  .er-aviso-motorista.recusa b{color:var(--danger);}
   .badge.st-cancelada{background:rgba(239,68,68,.12); color:var(--danger);}
   .progresso.st-cancelada span{background:rgba(239,68,68,.25);}
   .resumo-card.st-cancelada{border-left-color:var(--danger);}
@@ -724,6 +746,7 @@
       <div class="er-info-item"><div class="rot">Nº do projeto</div><div class="val" id="erInfoProjeto"></div></div>
       <div class="er-info-item"><div class="rot">Responsável pela viagem</div><div class="val" id="erInfoMotorista"></div></div>
       <div class="er-info-item"><div class="rot">Data da viagem</div><div class="val" id="erInfoDataViagem"></div></div>
+      <div class="er-info-item"><div class="rot">Tamanho da carga</div><div class="val" id="erInfoCarga"></div></div>
     </div>
     <div style="margin-bottom:18px;">
       <p class="er-section-title">Percurso</p>
@@ -739,6 +762,7 @@
     </div>
 
     <div class="er-cancelada" id="erCanceladaInfo" hidden></div>
+    <div class="er-aviso-motorista" id="erAvisoMotorista" hidden></div>
     <div class="er-status-row">
       <select id="erStatusSelect"></select>
       <button type="button" class="er-btn" id="erStatusSalvar">Salvar status</button>
@@ -880,10 +904,22 @@
             <input type="text" id="fProjetoEr" placeholder="Opcional — ex.: PRJ-2200, CTR-1100..." maxlength="40">
           </div>
           <div class="form-field full">
+            <label for="fCargaEr">Tamanho da carga</label>
+            <select id="fCargaEr">
+              <option value="">Não informado</option>
+              <option value="pequena">Pequena — cabe no banco do carro</option>
+              <option value="media">Média — ocupa o porta-malas</option>
+              <option value="grande">Grande — ocupa boa parte do veículo</option>
+              <option value="duas_pessoas">Precisa de 2 pessoas para carregar</option>
+            </select>
+            <p class="form-hint">Ajuda o motorista a decidir se consegue levar (ou se precisa de ajudante).</p>
+          </div>
+          <div class="form-field full">
             <label for="fMotoristaEr">Responsável pela viagem *</label>
             <input type="text" id="fMotoristaEr" list="listaMotoristasEr" placeholder="Digite e escolha um motorista cadastrado" maxlength="80">
             <datalist id="listaMotoristasEr"></datalist>
             <p class="form-hint" id="fMotoristaAviso"></p>
+            <div class="agenda-motorista" id="fAgendaMotorista" hidden></div>
           </div>
         </div>
         </div>
@@ -994,6 +1030,21 @@ const LOCAIS_SEED = [
   {nome:"Depósito Guarulhos", cep:"07090-000", endereco:"Av. Tiradentes", numero:"1000", bairro:"Centro", cidade:"Guarulhos", estado:"SP"},
 ];
 const SETORES_ER = ["Obras","Manutenção","Administrativo"];
+const CARGA_LABEL = {pequena:"Pequena (cabe no banco)", media:"Média (porta-malas)", grande:"Grande (ocupa o veículo)", duas_pessoas:"Precisa de 2 pessoas"};
+// Motivos prontos do "Não consigo" do motorista (sem precisar digitar na rua)
+const MOTIVOS_NAO_CONSIGO = ["Veículo cheio", "Muito peso ou volume para uma pessoa", "Fora da minha rota hoje"];
+// Estimativa do dia (mesmos números do Roteiro do Dia): velocidade média e tempo parado em cada ponto
+const ROTEIRO_VEL_KMH = 28;
+const ROTEIRO_SERVICO_MIN = 20;
+// Motorista disse "não consigo" e a viagem ainda não foi ajustada (troca de motorista, data ou outro ajuste).
+function recusaAtiva(v){
+  return v && v.recusa && v.status === "pendente" && !v.aceitaEm && v.recusa.motorista === v.motorista ? v.recusa : null;
+}
+// Endereço comparável (rua + número + cidade, sem acento/maiúscula) para achar "mesmo local".
+function chaveEnderecoEr(p){
+  if(!p || !p.endereco || !p.numero) return "";
+  return [p.endereco, p.numero, p.cidade].map(normalizarNome).join("|");
+}
 const TIPO_PARADA_LABEL = {retirada:"Retirada", intermediaria:"Parada intermediária", entrega:"Destino"};
 const ETAPA_UI = {
   retirada:{icone:"🔼", nome:"Retirada", cor:"#3b82f6"},
@@ -1114,8 +1165,18 @@ let roteiroRequestId = 0;
 // Viagens que entram no roteiro de um motorista num dia: pendentes (aceitas ou não) e em rota.
 function viagensDoRoteiro(motorista, dataStr){
   return VIAGENS.filter(v =>
-    v.motorista === motorista && (v.status === "pendente" || v.status === "em_rota") && paraDataLocalISO(v.data) === dataStr
+    v.motorista === motorista && (v.status === "pendente" || v.status === "em_rota") && paraDataLocalISO(v.data) === dataStr && !recusaAtiva(v)
   );
+}
+// Agenda estimada de um motorista num dia (linha reta, como o plano B do Roteiro): para mostrar a quem pede.
+function estimarAgendaEr(viagens, dataStr){
+  if(!viagens.length) return null;
+  const ordenadas = ordenarEtapasRoteiro(viagens);
+  let ponto = BASE_MOTORISTA_COORD, km = 0, min = 0;
+  ordenadas.forEach(e=>{ const d = distanciaKm(ponto, e.coord); km += d; min += (d / ROTEIRO_VEL_KMH) * 60 + ROTEIRO_SERVICO_MIN; ponto = e.coord; });
+  const [ano, mes, dia] = dataStr.split("-").map(Number);
+  const fim = new Date(ano, mes - 1, dia, 8, 0, 0); fim.setMinutes(fim.getMinutes() + Math.round(min));
+  return {viagens: viagens.length, paradas: ordenadas.length, km, fim, excede: fim > new Date(ano, mes - 1, dia, 18, 0, 0)};
 }
 // Ordem do Roteiro do Dia: heurística simples de "vizinho mais próximo" saindo da base do motorista,
 // respeitando que a retirada acontece antes da entrega da mesma viagem. Não é um otimizador de rota
@@ -1214,12 +1275,12 @@ async function renderRoteiroDia(){
   if(!rotaReal){
     legsInfo = ordenadas.map((e, idx)=>{
       const d = distanciaKm(pontosOrdem[idx], pontosOrdem[idx+1]);
-      return { distanciaKm: d, duracaoMin: (d/28)*60 };
+      return { distanciaKm: d, duracaoMin: (d/ROTEIRO_VEL_KMH)*60 };
     });
   }
 
   // Linha do tempo estimada a partir das 08:00 (tempo de parada ilustrativo em cada ponto).
-  const SERVICO_MIN = 20;
+  const SERVICO_MIN = ROTEIRO_SERVICO_MIN;
   const [ano,mes,dia] = dataStr.split("-").map(Number);
   let relogio = new Date(ano, mes-1, dia, 8, 0, 0);
   const fimExpediente = new Date(ano, mes-1, dia, 18, 0, 0);
@@ -1365,8 +1426,10 @@ function semMotoristaCadastrado(v){ return v.status !== "concluida" && v.status 
 function detalheEtapa(v){
   const etapa = etapaSolicitante(v);
   if(etapa === "cancelada") return v.cancelamento ? `Motivo: ${esc(v.cancelamento.motivo)}` : "";
+  const rec = recusaAtiva(v);
+  if(rec) return `<span class="txt-alerta">✕ ${esc(rec.motorista)} não consegue: ${esc(rec.motivo)}</span>`;
   if(etapa === "aguardando") return semMotoristaCadastrado(v) ? `<span class="txt-alerta">⚠ Motorista não cadastrado</span>` : "O motorista ainda não aceitou";
-  if(etapa === "aceita") return `Aceita às ${fmtHora(v.aceitaEm)} · aguardando saída`;
+  if(etapa === "aceita") return `Aceita às ${fmtHora(v.aceitaEm)} · aguardando saída${v.precisaAjudante ? ` · <span class="txt-aviso">🤝 precisa de ajudante</span>` : ""}`;
   if(etapa === "em_rota"){ const n = paradasDaViagem(v).length; return `${paradasVisitadas(v)} de ${n} paradas visitadas`; }
   const fim = dataConclusao(v);
   return fim ? `Concluída em ${fmtData(fim)} às ${fmtHora(fim)}` : "";
@@ -1431,7 +1494,8 @@ function renderResumoEr(){
   const hoje = paraDataLocalISO(new Date());
   const concluidasHoje = base.filter(v=> v.status === "concluida" && dataConclusao(v) && paraDataLocalISO(dataConclusao(v)) === hoje).length;
   const quadros = [
-    {etapa:"aguardando", titulo:"Aguardando motorista", n: conta("aguardando"), sub:"ainda não aceitas"},
+    {etapa:"aguardando", titulo:"Aguardando motorista", n: conta("aguardando"),
+      sub: base.some(recusaAtiva) ? `${base.filter(recusaAtiva).length} que o motorista não consegue` : "ainda não aceitas"},
     {etapa:"aceita", titulo:"Aceitas", n: conta("aceita"), sub:"motorista confirmou"},
     {etapa:"em_rota", titulo:"Em rota", n: conta("em_rota"), sub:"motorista a caminho"},
     {etapa:"concluida", titulo:"Concluídas", n: conta("concluida"), sub:`${concluidasHoje} hoje`},
@@ -1443,11 +1507,17 @@ function renderResumoEr(){
   ).join("");
 
   const alerta = document.getElementById("alertaSemMotoristaEr");
-  const semMot = base.filter(semMotoristaCadastrado);
-  alerta.hidden = !semMot.length;
-  alerta.innerHTML = semMot.length
-    ? `⚠ <b>${semMot.length === 1 ? "1 viagem está" : semMot.length + " viagens estão"} com responsável não cadastrado</b> — nenhum motorista vai receber. Abra e corrija o responsável: ` +
-      semMot.map(v=> `<button type="button" class="link-viagem" data-abrir="${v.id}">${v.id}</button>`).join(" ")
+  const atencao = [];
+  base.forEach(v=>{
+    const rec = recusaAtiva(v);
+    if(semMotoristaCadastrado(v)) atencao.push({v, txt:"responsável não cadastrado: nenhum motorista vai receber. Edite e escolha um motorista."});
+    else if(rec) atencao.push({v, txt:`${esc(rec.motorista)} não consegue (${esc(rec.motivo)}). Edite para trocar o motorista ou a data.`});
+    else if(v.precisaAjudante && v.status === "pendente") atencao.push({v, txt:`${esc(v.motorista)} aceitou, mas precisa de ajudante. Combine quem vai junto.`});
+  });
+  alerta.hidden = !atencao.length;
+  alerta.innerHTML = atencao.length
+    ? `⚠ <b>${atencao.length === 1 ? "1 viagem precisa" : atencao.length + " viagens precisam"} de atenção</b><ul>` +
+      atencao.map(a=> `<li><button type="button" class="link-viagem" data-abrir="${a.v.id}">${a.v.id}</button> ${a.txt}</li>`).join("") + `</ul>`
     : "";
 }
 resumoErEl.addEventListener("click", (e)=>{
@@ -1482,7 +1552,7 @@ function htmlLinhaViagemEr(v){
   const motorista = v.motorista
     ? `${esc(v.motorista)}${!cadastrado && v.status !== "concluida" && v.status !== "cancelada" ? `<div class="table-subtext txt-alerta">⚠ não cadastrado</div>` : ""}`
     : `<span class="txt-alerta">—</span>`;
-  return `<tr class="er-row${semMotoristaCadastrado(v) ? " linha-alerta" : ""}" data-id="${v.id}">
+  return `<tr class="er-row${semMotoristaCadastrado(v) || recusaAtiva(v) ? " linha-alerta" : ""}" data-id="${v.id}">
       <td class="c-id"><b>${v.id}</b></td>
       <td class="c-data">${fmtData(v.data)}</td>
       <td class="c-solic"><span class="rot-mobile">Solicitante</span>${esc(v.solicitante)}<div class="table-subtext">${esc(v.setor)}${v.projetoNumero ? " · " + esc(v.projetoNumero) : ""}</div></td>
@@ -1692,6 +1762,14 @@ function abrirDrawerEr(id){
   document.getElementById("erInfoProjeto").textContent = v.projetoNumero || "—";
   document.getElementById("erInfoMotorista").textContent = v.motorista || "—";
   document.getElementById("erInfoDataViagem").textContent = fmtData(v.data);
+  document.getElementById("erInfoCarga").textContent = CARGA_LABEL[v.carga] || "Não informado";
+  const avisoMot = document.getElementById("erAvisoMotorista");
+  const rec = recusaAtiva(v);
+  avisoMot.hidden = !rec && !(v.precisaAjudante && v.status === "pendente");
+  avisoMot.classList.toggle("recusa", !!rec);
+  avisoMot.innerHTML = rec
+    ? `<b>✕ ${esc(rec.motorista)} não consegue fazer esta viagem</b> (${fmtDataHora(rec.em)})<div>Motivo: ${esc(rec.motivo)}</div><div class="form-hint" style="margin-top:4px;">Edite a viagem para trocar o motorista, a data ou a carga — ela volta para o motorista.</div>`
+    : (v.precisaAjudante && v.status === "pendente" ? `<b>🤝 ${esc(v.motorista)} aceitou, mas precisa de ajudante</b><div class="form-hint" style="margin-top:4px;">Combine quem vai junto antes da saída.</div>` : "");
   renderPercursoDrawer(v);
   const atvWrap = document.getElementById("erInfoAtividadeWrap");
   if(v.atividade){ atvWrap.style.display = ""; document.getElementById("erInfoAtividade").textContent = v.atividade; }
@@ -1794,7 +1872,7 @@ document.getElementById("duplicarSimEr").addEventListener("click", ()=>{
   if(!original) return;
   const copia = {
     id: novoId(), data: new Date(), solicitante: original.solicitante, setor: original.setor,
-    projetoNumero: original.projetoNumero, motorista: original.motorista,
+    projetoNumero: original.projetoNumero, motorista: original.motorista, carga: original.carga || "",
     origem: original.origem, destino: original.destino, atividade: original.atividade || "",
     // a cópia começa do zero para o motorista: sem aceite e sem chegadas marcadas
     paradas: JSON.parse(JSON.stringify(paradasDaViagem(original))).map(p=>{ delete p.chegadaEm; delete p.comprovante; return p; }),
@@ -1895,12 +1973,12 @@ const wizErroEl = document.getElementById("formErroEr");
 const nvParadasEl = document.getElementById("nvParadas");
 
 function campo(id){ return document.getElementById(id).value; }
-function dadosVaziosEr(){ return {solicitante:"", setor:"", dataViagem: paraDataLocalISO(new Date()), projetoNumero:"", motorista:""}; }
+function dadosVaziosEr(){ return {solicitante:"", setor:"", dataViagem: paraDataLocalISO(new Date()), projetoNumero:"", motorista:"", carga:""}; }
 function paradaVazia(){ return {cep:"", endereco:"", numero:"", bairro:"", cidade:"", estado:"", instrucoes:"", anexos:[], coord:null, coordCep:""}; }
 function mascaraCep(v){ const d = String(v).replace(/\D/g,"").slice(0,8); return d.length > 5 ? d.slice(0,5) + "-" + d.slice(5) : d; }
 function lerDadosEr(){
   return {solicitante: campo("fSolicitanteEr").trim(), setor: campo("fSetorEr"), dataViagem: campo("fDataViagemEr"),
-          projetoNumero: campo("fProjetoEr").trim(), motorista: campo("fMotoristaEr").trim()};
+          projetoNumero: campo("fProjetoEr").trim(), motorista: campo("fMotoristaEr").trim(), carga: campo("fCargaEr")};
 }
 const CAMPOS_DADOS_OBRIG = ["fSolicitanteEr","fSetorEr","fDataViagemEr","fMotoristaEr"];
 // O solicitante escreve o endereço; o CEP é opcional e só ajuda a preencher.
@@ -1932,6 +2010,7 @@ function htmlParadaForm(p, i, n){
     </div>
     <div class="nv-conteudo">
     <p class="form-hint" style="margin:-4px 0 10px;">${NV_AVISO[tipo]}</p>
+    <p class="nv-mesmo-local" data-mesmo-local hidden></p>
     <div class="form-grid">
       <div class="form-field">
         <label for="${id("cep")}">CEP (opcional)</label>
@@ -2019,6 +2098,7 @@ function preencherDadosForm(){
   document.getElementById("fDataViagemEr").value = d.dataViagem;
   document.getElementById("fProjetoEr").value = d.projetoNumero;
   document.getElementById("fMotoristaEr").value = d.motorista;
+  document.getElementById("fCargaEr").value = d.carga || "";
   CAMPOS_DADOS_OBRIG.forEach(id=> document.getElementById(id).classList.remove("invalido"));
   atualizarAvisoMotoristaEr();
 }
@@ -2033,6 +2113,7 @@ function abrirFormularioEr(titulo){
   document.querySelector("#wizPassoDados [data-toggle]").setAttribute("aria-expanded", "true");
   preencherDadosForm();
   renderParadasForm();
+  atualizarAvisosNv();
   modalBackdropEr.classList.add("open");
   travarRolagemFundoEr(true);
   document.getElementById("nvCorpo").scrollTop = 0;
@@ -2051,7 +2132,7 @@ function abrirModalEdicaoEr(id){
   wiz = {
     dados: {
       solicitante: v.solicitante, setor: SETORES_ER.includes(v.setor) ? v.setor : "Administrativo",
-      dataViagem: paraDataLocalISO(v.data), projetoNumero: v.projetoNumero || "", motorista: v.motorista || "",
+      dataViagem: paraDataLocalISO(v.data), projetoNumero: v.projetoNumero || "", motorista: v.motorista || "", carga: v.carga || "",
     },
     paradas,
   };
@@ -2099,8 +2180,49 @@ function atualizarAvisoMotoristaEr(){
   else el.textContent = "⚠ Nome não cadastrado: a viagem será criada, mas não vai aparecer em \"Minhas corridas\" de nenhum motorista.";
 }
 document.getElementById("fMotoristaEr").addEventListener("input", atualizarAvisoMotoristaEr);
-document.getElementById("wizPassoDados").addEventListener("input", (e)=> e.target.classList.remove("invalido"));
-document.getElementById("wizPassoDados").addEventListener("change", (e)=> e.target.classList.remove("invalido"));
+document.getElementById("wizPassoDados").addEventListener("input", (e)=>{ e.target.classList.remove("invalido"); agendarAvisosNv(); });
+document.getElementById("wizPassoDados").addEventListener("change", (e)=>{ e.target.classList.remove("invalido"); agendarAvisosNv(); });
+
+// ---- Avisos para quem pede: agenda do motorista no dia (A) e "ele já vai neste endereço" (B) ----
+let avisosNvTimer = null;
+function agendarAvisosNv(){ clearTimeout(avisosNvTimer); avisosNvTimer = setTimeout(atualizarAvisosNv, 250); }
+function atualizarAvisosNv(){
+  if(!wiz) return;
+  const d = lerDadosEr();
+  const motorista = motoristaCanonico(d.motorista);
+  const outras = motorista && d.dataViagem ? viagensDoRoteiro(motorista, d.dataViagem).filter(v => v.id !== modoEdicaoIdEr) : [];
+  const dataFmt = d.dataViagem ? d.dataViagem.split("-").reverse().join("/") : "";
+  // A. Agenda do motorista
+  const box = document.getElementById("fAgendaMotorista");
+  box.hidden = !motorista || !d.dataViagem;
+  if(!box.hidden){
+    const rascunho = wiz.paradas.filter(p => (p.endereco || "").trim() || (p.cidade || "").trim());
+    const comEsta = estimarAgendaEr(rascunho.length ? outras.concat([{id:"(esta viagem)", paradas: rascunho}]) : outras, d.dataViagem);
+    const hora = dt => dt.toLocaleTimeString("pt-BR", {hour:"2-digit", minute:"2-digit"});
+    box.classList.toggle("alerta", !!(comEsta && comEsta.excede));
+    box.innerHTML = !outras.length && !rascunho.length
+      ? `📅 <b>${esc(motorista)}</b> está livre em ${dataFmt}.`
+      : `📅 <b>Agenda de ${esc(motorista)} em ${dataFmt}:</b> ${outras.length ? `${outras.length} corrida(s) já marcada(s)` : "nenhuma outra corrida"}` +
+        (comEsta ? `<br>${rascunho.length ? "Com esta viagem" : "No dia"}: ${comEsta.viagens} corrida(s) · ${comEsta.paradas} paradas · ~${comEsta.km.toFixed(0)} km · término previsto por volta de <b>${hora(comEsta.fim)}</b>` : "") +
+        (comEsta && comEsta.excede ? `<br>⚠ <b>Passa do expediente (18:00).</b> Considere outra data ou outro motorista.` : "") +
+        `<div class="form-hint">Estimativa em linha reta, saindo da base às 08:00 — só para ter noção do dia.</div>`;
+  }
+  // B. Mesmo endereço no mesmo dia para o mesmo motorista: só informa, quem decide é o motorista
+  wiz.paradas.forEach((p, i)=>{
+    const card = cardParada(i);
+    const el = card && card.querySelector("[data-mesmo-local]");
+    if(!el) return;
+    const chave = chaveEnderecoEr(p);
+    const iguais = [];
+    if(chave) outras.forEach(v=> paradasDaViagem(v).forEach((q, k, arr)=>{
+      if(chaveEnderecoEr(q) === chave) iguais.push(`${esc(v.id)} (${esc(v.solicitante)} · ${TIPO_PARADA_LABEL[tipoParada(k, arr.length)]})`);
+    }));
+    el.hidden = !iguais.length;
+    el.innerHTML = iguais.length
+      ? `📍 <b>${esc(motorista)} já vai neste endereço nesse dia:</b> ${iguais.join(", ")}. Ele decide se consegue levar junto (carga, espaço no veículo, ajuda).`
+      : "";
+  });
+}
 
 // Digitação nos endereços: guarda no estado da parada (sem redesenhar, para não perder o foco)
 function aoEditarCampoParada(e){
@@ -2118,6 +2240,7 @@ function aoEditarCampoParada(e){
     return;
   }
   p[el.dataset.campo] = el.value;
+  agendarAvisosNv();
 }
 nvParadasEl.addEventListener("input", aoEditarCampoParada);
 nvParadasEl.addEventListener("change", aoEditarCampoParada);
@@ -2147,6 +2270,7 @@ async function buscarCepParada(p){
       inp.value = val; inp.classList.remove("invalido");
     });
     c.querySelector("[data-cep-status]").textContent = "Endereço preenchido pelo CEP — confira e informe o número.";
+    agendarAvisosNv();
     c.querySelector('[data-campo="numero"]').focus();
   }catch(err){
     if(atual()) card().querySelector("[data-cep-status]").textContent = "Não foi possível consultar o CEP agora — escreva o endereço abaixo.";
@@ -2168,6 +2292,7 @@ nvParadasEl.addEventListener("click", (e)=>{
     const n = wiz.paradas.length;
     wiz.paradas.splice(n - 1, 0, paradaVazia());
     renderParadasForm();
+    atualizarAvisosNv();
     const nova = cardParada(n - 1);
     nova.scrollIntoView({block:"start", behavior:"smooth"});
     nova.querySelector('[data-campo="cep"]').focus({preventScroll:true});
@@ -2177,6 +2302,7 @@ nvParadasEl.addEventListener("click", (e)=>{
   if(rm){
     wiz.paradas.splice(parseInt(rm.dataset.remover, 10), 1);
     renderParadasForm();
+    atualizarAvisosNv();
     return;
   }
   const card = e.target.closest(".nv-parada");
@@ -2263,14 +2389,19 @@ document.getElementById("wizConcluir").addEventListener("click", ()=>{
   if(modoEdicaoIdEr){
     const v = VIAGENS.find(x=>x.id===modoEdicaoIdEr);
     // Trocou o responsável: o aceite era do motorista anterior, então o novo precisa aceitar de novo.
-    if(v && v.motorista !== d.motorista){ delete v.aceitaEm; delete v.aceitaPor; }
+    if(v && v.motorista !== d.motorista){ delete v.aceitaEm; delete v.aceitaPor; delete v.precisaAjudante; }
+    // Motorista tinha dito "não consigo": qualquer ajuste (motorista, data, carga...) devolve a viagem para ele decidir de novo.
+    if(v && recusaAtiva(v)){
+      delete v.recusa;
+      v.historico.push({status:v.status, data:new Date(), usuario: usuarioAtualNome() || "Não identificado", evento:"Viagem ajustada e enviada de novo ao motorista"});
+    }
     if(v) Object.assign(v, {data: dataViagem, solicitante: d.solicitante, setor: d.setor, projetoNumero: d.projetoNumero,
-      motorista: d.motorista, origem, destino, paradas});
+      motorista: d.motorista, carga: d.carga, origem, destino, paradas});
     idAbrir = modoEdicaoIdEr;
   } else {
     const nova = {
       id: novoId(), data: dataViagem, solicitante: d.solicitante, setor: d.setor, projetoNumero: d.projetoNumero,
-      motorista: d.motorista, origem, destino, atividade: "", observacao: "", paradas,
+      motorista: d.motorista, carga: d.carga, origem, destino, atividade: "", observacao: "", paradas,
       status: "pendente", historico: [{status:"pendente", data:new Date(), usuario: usuarioAtualNome() || d.solicitante}],
     };
     VIAGENS.unshift(nova);
@@ -2294,7 +2425,17 @@ function salvarMotoristaLogado(nome){
 }
 let motoristaLogado = lerMotoristaLogado();
 let mcConcluidasAberto = false;
-let mcPosRoteiro = new Map();         // posição de cada corrida no roteiro do dia dela (ver posicoesNoRoteiro)       // grupo "Concluídas hoje" aberto/fechado
+let mcPosRoteiro = new Map();
+const mcCorridasVistas = new Map();   // motorista → ids de corridas novas que ele já viu (o resto ganha o aviso 🔔)
+let mcRecemChegadas = new Set();      // corridas novas ainda não vistas (destacadas na lista)
+function marcarVistaMc(id){ const s = mcCorridasVistas.get(motoristaLogado); if(s) s.add(id); }
+function verNovasMc(){
+  const vistas = mcCorridasVistas.get(motoristaLogado);
+  const primeira = [...mcRecemChegadas][0];
+  mcRecemChegadas.forEach(id=> vistas && vistas.add(id));
+  renderMinhasCorridas();
+  if(primeira) focarCartaoMc(primeira);
+}         // posição de cada corrida no roteiro do dia dela (ver posicoesNoRoteiro)       // grupo "Concluídas hoje" aberto/fechado
 const mcParadasAbertas = new Set();   // cartões com a lista de paradas aberta (mantém entre re-renders)
 
 function normalizarNome(s){ return String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().trim().replace(/\s+/g," "); }
@@ -2392,7 +2533,11 @@ function htmlCorridaMc(v, grupo, atual){
   // Ação do cartão (na corrida atual a ação fica na barra fixa de baixo)
   let acoes = "";
   if(grupo === "nova"){
-    acoes = `<button type="button" class="btn-primary mc-btn" data-acao="aceitar" data-id="${idAttr}">Aceitar corrida</button>`;
+    acoes = `<button type="button" class="btn-primary mc-btn" data-acao="aceitar" data-id="${idAttr}">✓ Aceitar corrida</button>
+      <div class="mc-botoes">
+        <button type="button" class="er-btn mc-btn" data-acao="aceitar-ajudante" data-id="${idAttr}">🤝 Aceitar com ajudante</button>
+        <button type="button" class="er-btn mc-btn mc-btn-nao" data-acao="nao-consigo" data-id="${idAttr}">✕ Não consigo</button>
+      </div>`;
   } else if(grupo === "andamento" && !atual && v.status === "pendente"){
     acoes = `<button type="button" class="er-btn mc-btn" data-acao="iniciar" data-id="${idAttr}">▶ Iniciar esta corrida</button>`;
   } else if(grupo === "andamento" && !atual && v.status === "em_rota" && prox < 0){
@@ -2424,12 +2569,21 @@ function htmlCorridaMc(v, grupo, atual){
     ? `<div class="mc-passos" aria-label="Parada ${prox < 0 ? n : prox + 1} de ${n}">${ps.map((p,i)=> `<span class="${p.chegadaEm ? "feito" : (i === prox ? "atual" : "")}">${p.chegadaEm ? "✓" : i + 1}</span>`).join("")}</div>`
     : "";
 
-  return `<article class="mc-card ${grupo}${atual ? " mc-atual" : ""}" data-card="${idAttr}">
+  // Selos de apoio à decisão: tamanho da carga, ajudante pedido e outras corridas no mesmo endereço.
+  const selos = [];
+  if(v.carga) selos.push(`<span class="mc-selo${v.carga === "duas_pessoas" || v.carga === "grande" ? " forte" : ""}">📦 Carga: ${CARGA_LABEL[v.carga]}</span>`);
+  if(v.precisaAjudante && grupo !== "concluida") selos.push(`<span class="mc-selo forte">🤝 Você pediu ajudante</span>`);
+  if(grupo !== "concluida") mesmoLocalMc(v).forEach(t=> selos.push(`<span class="mc-selo local">📍 ${t}</span>`));
+  const recem = grupo === "nova" && mcRecemChegadas.has(v.id);
+
+  return `<article class="mc-card ${grupo}${atual ? " mc-atual" : ""}${recem ? " recem" : ""}" data-card="${idAttr}">
     ${atual ? `<div class="mc-atual-rot">Corrida atual</div>` : ""}
     <div class="mc-head">
       <div><div class="mc-id">${idAttr}</div><div class="mc-data">${dia ? `<b>${dia}</b> · ` : ""}${fmtData(v.data)}${v.projetoNumero ? ` · ${esc(v.projetoNumero)}` : ""}</div>${grupo !== "concluida" && mcPosRoteiro.has(v.id) ? `<div class="mc-ordem">🧭 ${mcPosRoteiro.get(v.id)}ª no roteiro ${dia === "Hoje" ? "de hoje" : "do dia"}</div>` : ""}</div>
       ${badge}
     </div>
+    ${recem ? `<div class="mc-recem-rot">🔔 Nova</div>` : ""}
+    ${selos.length ? `<div class="mc-selos">${selos.join("")}</div>` : ""}
     ${passos}
     ${grupo !== "andamento" ? `<div class="mc-rota">${esc(v.origem)}<span class="rota-seta">→</span>${esc(v.destino)}${nIntermed(v) ? `<div class="table-subtext" style="font-size:12px;">+ ${nIntermed(v)} parada(s) no caminho</div>` : ""}</div>` : ""}
     ${destaque}
@@ -2447,7 +2601,7 @@ function corridasSeparadasMc(){
   mcPosRoteiro = posicoesNoRoteiro(motoristaLogado);
   const pos = v => mcPosRoteiro.get(v.id) || 999;
   const porRoteiro = (a,b)=> paraDataLocalISO(a.data).localeCompare(paraDataLocalISO(b.data)) || (pos(a) - pos(b));
-  const novas = minhas.filter(v => v.status === "pendente" && !v.aceitaEm).sort(porRoteiro);
+  const novas = minhas.filter(v => v.status === "pendente" && !v.aceitaEm && !recusaAtiva(v)).sort(porRoteiro);
   // A corrida em rota continua sendo a atual até terminar (não troca no meio do caminho).
   const aceitas = minhas.filter(v => v.status === "em_rota" || (v.status === "pendente" && v.aceitaEm))
     .sort((a,b)=> ((b.status === "em_rota") - (a.status === "em_rota")) || porRoteiro(a,b));
@@ -2480,9 +2634,19 @@ function renderMinhasCorridas(){
     lista.length ? `<div class="mc-grupo"><h2 class="mc-grupo-titulo">${titulo} <span class="mc-contagem">${lista.length}</span></h2>` +
       `<div class="mc-lista">${lista.map(v=> htmlCorridaMc(v, tipo)).join("")}</div></div>` : "";
 
+  // Corridas novas que chegaram depois que ele abriu a tela: aviso no topo, sem trocar a corrida atual.
+  let vistas = mcCorridasVistas.get(motoristaLogado);
+  if(!vistas){ vistas = new Set(novas.map(v => v.id)); mcCorridasVistas.set(motoristaLogado, vistas); }
+  mcRecemChegadas = new Set(novas.filter(v => !vistas.has(v.id)).map(v => v.id));
+  const recem = novas.filter(v => mcRecemChegadas.has(v.id));
+  const avisoNova = recem.length
+    ? `<div class="mc-aviso-nova" role="status"><div>🔔 <b>${recem.length === 1 ? "Nova corrida para você" : recem.length + " novas corridas para você"}</b>` +
+      recem.map(v=> `<div>${esc(v.id)} · ${esc(v.solicitante)}: ${esc(rotaCurta(v).de)} → ${esc(rotaCurta(v).para)}</div>`).join("") +
+      `</div><button type="button" class="er-btn mc-btn" data-acao="ver-novas">Ver</button></div>`
+    : "";
   const avisosCancel = canceladas.map(v=>
     `<div class="mc-aviso-cancel" role="status">✕ <b>${esc(v.id)} foi cancelada</b> por ${esc(v.cancelamento.por)} às ${fmtHora(v.cancelamento.em)}.<div>Motivo: ${esc(v.cancelamento.motivo)}</div></div>`).join("");
-  cont.innerHTML = avisosCancel +
+  cont.innerHTML = avisoNova + avisosCancel +
     (atual ? `<div class="mc-grupo">${htmlCorridaMc(atual, "andamento", true)}</div>`
            : `<div class="card mc-vazio">Nenhuma corrida em andamento.${novas.length ? " Veja abaixo as novas para aceitar." : ""}</div>`) +
     grupo("Novas para aceitar", novas, "nova") +
@@ -2526,13 +2690,55 @@ function corridaDoMotorista(id){
   const v = VIAGENS.find(x => x.id === id);
   return (v && motoristaLogado && v.motorista === motoristaLogado) ? v : null;
 }
-function aceitarCorrida(id){
+function aceitarCorrida(id, comAjudante){
   const v = corridaDoMotorista(id);
-  if(!v || v.aceitaEm || v.status !== "pendente") return;
+  if(!v || v.aceitaEm || v.status !== "pendente" || recusaAtiva(v)) return;
   v.aceitaEm = new Date();
   v.aceitaPor = motoristaLogado;
-  v.historico.push({status:v.status, data:new Date(), usuario: motoristaLogado, evento:"Corrida aceita pelo motorista"});
+  if(comAjudante) v.precisaAjudante = true; else delete v.precisaAjudante;
+  v.historico.push({status:v.status, data:new Date(), usuario: motoristaLogado, evento: comAjudante ? "Corrida aceita — motorista precisa de ajudante" : "Corrida aceita pelo motorista"});
+  marcarVistaMc(id);
   atualizarTelasEr();
+}
+// "Não consigo": a viagem volta para quem pediu decidir (trocar motorista, data ou carga). Nada é apagado.
+function naoConsigoCorrida(id, motivo){
+  const v = corridaDoMotorista(id);
+  if(!v || v.aceitaEm || v.status !== "pendente" || !motivo) return;
+  v.recusa = {motorista: motoristaLogado, motivo, em: new Date()};
+  v.recusas = (v.recusas || []).concat([v.recusa]);
+  v.historico.push({status:v.status, data:new Date(), usuario: motoristaLogado, evento:`Motorista não consegue fazer: ${motivo}`});
+  marcarVistaMc(id);
+  atualizarTelasEr();
+}
+// Outras corridas do motorista no mesmo dia que passam no mesmo endereço (só informa; ele decide).
+function mesmoLocalMc(v){
+  const dia = paraDataLocalISO(v.data);
+  const outras = viagensDoRoteiro(v.motorista, dia).filter(o => o.id !== v.id);
+  const textos = [];
+  paradasDaViagem(v).forEach(p=>{
+    const chave = chaveEnderecoEr(p);
+    if(!chave) return;
+    const ids = outras.filter(o => paradasDaViagem(o).some(q => chaveEnderecoEr(q) === chave)).map(o => esc(o.id));
+    if(ids.length) textos.push(`Mesmo local da ${ids.join(", ")}: ${esc([p.endereco, p.numero].join(", "))}`);
+  });
+  return [...new Set(textos)];
+}
+function abrirNaoConsigoMc(id){
+  const v = corridaDoMotorista(id);
+  if(!v) return;
+  const corpo = `<p class="mc-dica" style="margin:0;">A corrida ${esc(v.id)} volta para quem pediu, que pode trocar o motorista, a data ou a carga.</p>
+    <div class="mc-motivos" role="radiogroup" aria-label="Motivo">
+      ${MOTIVOS_NAO_CONSIGO.map(m=> `<button type="button" class="er-btn mc-btn mc-motivo" data-motivo="${esc(m)}" role="radio" aria-checked="false">${esc(m)}</button>`).join("")}
+      <button type="button" class="er-btn mc-btn mc-motivo" data-motivo="outro" role="radio" aria-checked="false">Outro motivo</button>
+    </div>
+    <div class="form-field" id="mcMotivoOutroWrap" hidden>
+      <label for="mcMotivoOutro">Qual o motivo? *</label>
+      <textarea id="mcMotivoOutro" maxlength="200" placeholder="Ex.: carro na oficina hoje"></textarea>
+    </div>
+    <p class="form-erro" id="mcSheetErro"></p>`;
+  const rodape = `<button type="button" class="er-btn mc-btn" data-sheet="cancelar">Voltar</button>
+    <button type="button" class="btn-primary mc-btn btn-perigo" data-sheet="confirmar">Enviar</button>`;
+  abrirSheetMc("Não consigo fazer esta corrida", corpo, rodape, {tipo:"nao", id, motivo:""});
 }
 function iniciarRotaCorrida(id){
   const v = corridaDoMotorista(id);
@@ -2662,6 +2868,15 @@ mcSheetEl.addEventListener("change", async (e)=>{
   prev.innerHTML = `<div class="mc-foto-prev"><img src="${esc(foto.dataUrl)}" alt="Foto anexada"><button type="button" class="er-btn" data-sheet="tirar-foto">Remover foto</button></div>`;
 });
 mcSheetEl.addEventListener("click", (e)=>{
+  const mot = e.target.closest("[data-motivo]");
+  if(mot && mcSheetCtx && mcSheetCtx.tipo === "nao"){
+    mcSheetCtx.motivo = mot.dataset.motivo;
+    mcSheetEl.querySelectorAll("[data-motivo]").forEach(b=>{ const on = b === mot; b.classList.toggle("ativo", on); b.setAttribute("aria-checked", String(on)); });
+    document.getElementById("mcMotivoOutroWrap").hidden = mot.dataset.motivo !== "outro";
+    document.getElementById("mcSheetErro").classList.remove("show");
+    if(mot.dataset.motivo === "outro") document.getElementById("mcMotivoOutro").focus();
+    return;
+  }
   const app = e.target.closest("[data-app]");
   if(app){ salvarAppMapa(app.dataset.app); fecharSheetMc(); renderMinhasCorridas(); return; } // o link abre o app; a escolha fica lembrada
   const b = e.target.closest("[data-sheet]");
@@ -2670,6 +2885,15 @@ mcSheetEl.addEventListener("click", (e)=>{
   if(b.dataset.sheet === "cancelar"){ fecharSheetMc(); return; }
   if(b.dataset.sheet === "foto"){ document.getElementById("mcFotoInput").click(); return; }
   if(b.dataset.sheet === "tirar-foto"){ ctx.foto = null; document.getElementById("mcFotoPreview").innerHTML = ""; return; }
+  if(b.dataset.sheet === "confirmar" && ctx.tipo === "nao"){
+    const erro = document.getElementById("mcSheetErro");
+    let motivo = ctx.motivo;
+    if(motivo === "outro") motivo = document.getElementById("mcMotivoOutro").value.trim();
+    if(!motivo){ erro.textContent = ctx.motivo === "outro" ? "Escreva o motivo." : "Escolha um motivo."; erro.classList.add("show"); return; }
+    fecharSheetMc();
+    naoConsigoCorrida(ctx.id, motivo);
+    return;
+  }
   if(b.dataset.sheet === "confirmar" && ctx.tipo === "chegada"){
     const nomeEl = document.getElementById("mcRecebidoPor");
     const recebidoPor = nomeEl ? nomeEl.value.trim() : "";
@@ -2717,7 +2941,10 @@ mcSheetEl.addEventListener("input", (e)=>{ if(e.target.id === "mcRecebidoPor") e
     const id = btn.dataset.id;
     const idx = parseInt(btn.dataset.parada, 10);
     switch(btn.dataset.acao){
-      case "aceitar": aceitarCorrida(id); break;
+      case "aceitar": aceitarCorrida(id, false); break;
+      case "aceitar-ajudante": aceitarCorrida(id, true); break;
+      case "nao-consigo": abrirNaoConsigoMc(id); return;
+      case "ver-novas": verNovasMc(); return;
       case "iniciar": iniciarRotaCorrida(id); break;
       case "chegada": abrirConfirmacaoChegadaMc(id, idx); return;
       case "escolher-app": abrirEscolhaAppMc(id, idx); return;
