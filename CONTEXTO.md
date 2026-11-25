@@ -35,6 +35,26 @@ Funções e estados importantes: `LOCAIS_SEED`, `SETORES_ER`, `TIPO_PARADA_LABEL
 - O motorista é o usuário final no celular: toque grande (44 px), campos de 16 px (evita zoom no iPhone), layout em cartões.
 - Os sistemas de mapa e CEP são gratuitos e públicos, só para demonstração. Em produção, trocar por serviço contratado (rota e mapa com chave de API e contrato).
 
+- **Relatório da viagem concluída (PDF, 25/11/2026):** botão "Baixar relatório (PDF)" no detalhe da viagem e no menu "⋮" (só quando Concluída); na tela do motorista, link discreto "Relatório (PDF)" no cartão concluído, que abre o Compartilhar do celular quando possível. O PDF traz resumo (solicitante, motorista, datas, tempo total, distância pelas ruas para controle de custo), percurso com o que foi feito em cada parada, **fotos da retirada e da entrega** e o histórico. Gerado no navegador com jsPDF (cdnjs, carregado só ao clicar): `gerarRelatorioPdf`, `baixarRelatorioEr`.
+
+## Em discussão (NÃO implementar antes de fechar com o autor)
+
+O autor avisou em 25/11/2026 que parte do fluxo pode ter sido entendida errado e vai trazer ajustes. Antes de mexer, confirmar o entendimento com ele.
+
+**Remanejamento de viagens (ideia do autor, 25/11/2026):**
+- Várias pessoas pedem viagens para o mesmo motorista (ex.: Jailson). Ao criar, a agenda e o aviso de "passa do expediente" são **só recomendação**: a viagem pode ser criada mesmo assim.
+- Quem decide é o motorista. **Aceitou:** segue normal. **Não aceitou:** depois de criada, o próprio motorista **remaneja para a próxima data**.
+- Se a próxima data já estiver **muito cheia**, o sistema avisa o motorista ("haverá muitas viagens nesse dia, deseja incluir?").
+- Todo remanejamento gera uma **notificação dentro do site** ("sua viagem foi remanejada para tal data").
+- **Quem pode remanejar:** o motorista (porque é ele quem aceita), o gestor geral e o solicitante (ex.: ele não vai poder usar naquele dia). Mais ninguém.
+- **Respostas do autor (25/11/2026):**
+  - Remanejar pelo motorista **conta como aceite** na nova data.
+  - **Notificação:** motorista remanejou → solicitante e gestor; solicitante remanejou → motorista (e gestor); gestor remanejou → motorista e solicitante. O gestor acompanha tudo.
+  - Solicitante (ou gestor) remanejou uma viagem já aceita → o motorista **precisa aceitar de novo** a nova data. Ele recebe na hora, mesmo que a corrida ainda não tenha começado, e o **cartão mostra um símbolo fixo e bem visível** (sem piscar) indicando "remanejada, precisa rever", para ele perceber sem abrir nada.
+  - **Motivo obrigatório, escrito** (sem opções prontas).
+  - O "combo" foi engano: **descartado**.
+  - **Em aberto:** se "Remanejar" substitui o "Não consigo" atual ou se os dois convivem (o autor vai pensar).
+
 ## Pendências (em ordem de prioridade)
 
 1. **Confirmar se o mapa do Roteiro do Dia aparece** no navegador e no celular. Esse ponto ficou sem confirmação do usuário. Se os tiles bloquearem ("Access blocked"), usar outro provedor ou mapa estático.

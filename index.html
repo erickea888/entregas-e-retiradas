@@ -466,6 +466,8 @@
   .progresso.st-cancelada span{background:rgba(239,68,68,.25);}
   .resumo-card.st-cancelada{border-left-color:var(--danger);}
   .er-btn-perigo{color:var(--danger); border-color:rgba(239,68,68,.45); margin-top:12px;}
+  .er-btn-relatorio{display:block; width:100%; margin-top:12px; min-height:40px;}
+  .mc-link-relatorio{align-self:flex-start; padding:0; min-height:36px; font-size:13px; color:var(--muted);}
   .er-btn-perigo:hover{color:#fff; background:var(--danger); border-color:var(--danger);}
   .er-cancelada{border:1px solid var(--danger); background:rgba(239,68,68,.07); border-radius:10px; padding:10px 12px; font-size:12.5px; line-height:1.5; margin-bottom:12px; overflow-wrap:anywhere;}
   .er-cancelada b{color:var(--danger);}
@@ -769,6 +771,7 @@
     </div>
     <p class="aviso-permissao" id="erStatusAviso" hidden></p>
     <button type="button" class="er-btn er-btn-perigo" id="btnCancelarViagem" hidden>✕ Cancelar viagem</button>
+    <button type="button" class="btn-primary er-btn-relatorio" id="btnRelatorioViagem" hidden>📄 Baixar relatório (PDF)</button>
     <p class="er-section-title" style="margin-top:16px;">Histórico</p>
     <ul class="er-historico" id="erHistorico"></ul>
   </div>
@@ -776,6 +779,7 @@
 
 <div class="card-menu" id="cardMenuEr">
   <button type="button" class="card-menu-item" id="cardMenuErDuplicar">⧉ Duplicar</button>
+  <button type="button" class="card-menu-item" id="cardMenuErRelatorio">📄 Baixar relatório</button>
   <button type="button" class="card-menu-item perigo" id="cardMenuErCancelar">✕ Cancelar viagem</button>
   <button type="button" class="card-menu-item perigo" id="cardMenuErExcluir">🗑 Excluir</button>
 </div>
@@ -1794,6 +1798,7 @@ function abrirDrawerEr(id){
   // Ações conforme a permissão de quem está usando
   document.getElementById("btnEditarViagem").hidden = !podeEditarEr(v);
   document.getElementById("btnCancelarViagem").hidden = !podeCancelarEr(v);
+  document.getElementById("btnRelatorioViagem").hidden = v.status !== "concluida";
   const canc = document.getElementById("erCanceladaInfo");
   canc.hidden = v.status !== "cancelada";
   canc.innerHTML = v.status === "cancelada" && v.cancelamento
@@ -1827,6 +1832,7 @@ function abrirCardMenuEr(id, btnEl){
   const v = VIAGENS.find(x=>x.id===id);
   document.getElementById("cardMenuErCancelar").hidden = !podeCancelarEr(v);
   document.getElementById("cardMenuErExcluir").hidden = !podeExcluirEr();
+  document.getElementById("cardMenuErRelatorio").hidden = !v || v.status !== "concluida";
   cardMenuEr.classList.add("open");
   const rect = btnEl.getBoundingClientRect();
   const largura = cardMenuEr.offsetWidth || 150;
@@ -1888,6 +1894,174 @@ document.getElementById("cardMenuErDuplicar").addEventListener("click", (e)=>{
   const id = cardMenuErAlvoId;
   fecharCardMenuEr();
   abrirConfirmacaoDuplicarEr(id);
+});
+
+// ---------- RELATÓRIO DA VIAGEM CONCLUÍDA (PDF para baixar e compartilhar) ----------
+// O PDF é montado no próprio navegador com a biblioteca jsPDF, carregada só quando alguém pede o relatório.
+const JSPDF_URL = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+let jsPDFPromise = null;
+function carregarJsPDF(){
+  if(window.jspdf && window.jspdf.jsPDF) return Promise.resolve(window.jspdf.jsPDF);
+  if(!jsPDFPromise) jsPDFPromise = new Promise((res, rej)=>{
+    const sc = document.createElement("script");
+    sc.src = JSPDF_URL; sc.async = true; sc.crossOrigin = "anonymous";
+    sc.onload = ()=> (window.jspdf && window.jspdf.jsPDF) ? res(window.jspdf.jsPDF) : rej(new Error("jsPDF indisponível"));
+    sc.onerror = ()=>{ jsPDFPromise = null; rej(new Error("Sem conexão para carregar o gerador de PDF")); };
+    document.head.appendChild(sc);
+  });
+  return jsPDFPromise;
+}
+// A fonte padrão do PDF só tem os caracteres do português (Latin-1); tira emoji e símbolos que ela não desenha.
+function textoPdf(t){ return String(t == null ? "" : t).replace(/[\u2192\u2794]/g, "->").replace(/[^\x09\x0A\x0D\x20-\xFF\u2013\u2014\u2018\u2019\u201C\u201D\u2022\u2026]/g, "").trim(); }
+function primeiraVezStatus(v, status){ const h = v.historico.find(x => x.status === status && !x.evento); return h ? new Date(h.data) : null; }
+function duracaoTexto(ms){ const min = Math.max(0, Math.round(ms / 60000)); const h = Math.floor(min / 60); return h ? `${h} h ${min % 60} min` : `${min} min`; }
+// Distância do percurso para controle de custo: pelas ruas (OSRM) quando der; senão linha reta.
+async function distanciaPercursoKm(v){
+  const coords = paradasDaViagem(v).map(p => p.coord || obterCoordEndereco(enderecoCompleto(p)));
+  let reta = 0;
+  for(let i = 1; i < coords.length; i++) reta += distanciaKm(coords[i-1], coords[i]);
+  try{
+    const ctrl = new AbortController();
+    const t = setTimeout(()=> ctrl.abort(), 5000);
+    const resp = await fetch(`https://router.project-osrm.org/route/v1/driving/${coords.map(c => `${c[1]},${c[0]}`).join(";")}?overview=false`, {signal: ctrl.signal});
+    clearTimeout(t);
+    const j = await resp.json();
+    if(j.code === "Ok" && j.routes && j.routes[0]) return {km: j.routes[0].distance / 1000, ruas: true};
+  }catch(err){}
+  return {km: reta, ruas: false};
+}
+function tamanhoImagem(dataUrl){
+  return new Promise(res=>{ const i = new Image(); i.onload = ()=> res({w: i.naturalWidth, h: i.naturalHeight}); i.onerror = ()=> res(null); i.src = dataUrl; });
+}
+
+async function gerarRelatorioPdf(v){
+  const JsPDF = await carregarJsPDF();
+  const doc = new JsPDF({unit: "mm", format: "a4"});
+  const M = 15, W = 210 - 2 * M, FIM = 297 - 18;
+  let y = 0;
+  const cor = {texto:[31,41,55], muted:[110,120,135], azul:[59,130,246], verde:[22,163,74], linha:[226,232,240]};
+  const cabe = h => { if(y + h > FIM){ doc.addPage(); y = M; } };
+  const texto = (t, o = {})=>{
+    const size = o.size || 10, x = M + (o.recuo || 0);
+    doc.setFont("helvetica", o.bold ? "bold" : "normal"); doc.setFontSize(size); doc.setTextColor(...(o.cor || cor.texto));
+    const linhas = doc.splitTextToSize(textoPdf(t), W - (o.recuo || 0));
+    const lh = size * 0.45;
+    linhas.forEach(l=>{ cabe(lh); doc.text(l, x, y + lh * 0.8); y += lh; });
+    y += o.depois == null ? 1.2 : o.depois;
+  };
+  const campo = (rot, val)=>{
+    if(val == null || val === "") return;
+    doc.setFontSize(9.5);
+    const linhas = doc.splitTextToSize(textoPdf(val), W - 48);
+    const lh = 9.5 * 0.45;
+    cabe(linhas.length * lh + 1);
+    doc.setFont("helvetica", "bold"); doc.setTextColor(...cor.muted); doc.text(textoPdf(rot), M, y + lh * 0.8);
+    doc.setFont("helvetica", "normal"); doc.setTextColor(...cor.texto); doc.text(linhas, M + 48, y + lh * 0.8);
+    y += linhas.length * lh + 1.6;
+  };
+  const secao = t=>{ y += 3; cabe(14); doc.setDrawColor(...cor.linha); doc.line(M, y, M + W, y); y += 4; texto(t, {size: 12.5, bold: true, depois: 2}); };
+
+  // Cabeçalho
+  doc.setFillColor(...cor.azul); doc.rect(0, 0, 210, 24, "F");
+  doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(16);
+  doc.text(textoPdf(`Relatório da viagem ${v.id}`), M, 13);
+  doc.setFont("helvetica", "normal"); doc.setFontSize(9);
+  doc.text(textoPdf(`Entregas e Retiradas · gerado em ${fmtDataHora(new Date())}`), M, 19.5);
+  y = 32;
+
+  // Resumo (o que interessa para controle e custo)
+  const ps = paradasDaViagem(v);
+  const inicio = primeiraVezStatus(v, "em_rota"), fim = dataConclusao(v);
+  const dist = await distanciaPercursoKm(v);
+  secao("Resumo");
+  campo("Status", fim ? `Concluída em ${fmtDataHora(fim)}` : STATUS_LABEL[v.status]);
+  campo("Data da viagem", fmtData(v.data));
+  campo("Solicitante", v.solicitante);
+  campo("Setor", v.setor);
+  campo("Nº do projeto", v.projetoNumero || "—");
+  campo("Motorista", v.motorista || "—");
+  if(v.carga) campo("Tamanho da carga", CARGA_LABEL[v.carga]);
+  if(v.precisaAjudante) campo("Ajudante", "Sim, o motorista pediu ajudante");
+  if(v.aceitaEm) campo("Aceita pelo motorista", fmtDataHora(v.aceitaEm));
+  if(inicio) campo("Início da rota", fmtDataHora(inicio));
+  if(inicio && fim) campo("Tempo total", duracaoTexto(fim - inicio));
+  campo("Paradas", `${ps.length} (${ps.map((p,i)=> TIPO_PARADA_LABEL[tipoParada(i, ps.length)]).join(", ")})`);
+  campo("Distância do percurso", `~${dist.km.toFixed(1).replace(".", ",")} km ${dist.ruas ? "(pelas ruas, entre as paradas)" : "(estimativa em linha reta, entre as paradas)"}`);
+
+  // Percurso, com o que foi feito e as fotos de cada parada
+  secao("Percurso");
+  for(let i = 0; i < ps.length; i++){
+    const p = ps[i], tipo = tipoParada(i, ps.length), c = p.comprovante || {};
+    cabe(24);
+    texto(`${i + 1}. ${TIPO_PARADA_LABEL[tipo]}`, {size: 11, bold: true, cor: cor.azul, depois: 0.6});
+    texto(enderecoCompleto(p), {bold: true, depois: 1});
+    if(p.instrucoes) texto(`O que fazer: ${p.instrucoes}`, {size: 9.5, cor: cor.muted});
+    if(p.chegadaEm){
+      const acao = c.acao ? (ACAO_PARADA_LABEL[c.acao] || "Feito") : "Chegada do motorista";
+      texto(`${acao} às ${fmtHora(p.chegadaEm)} de ${fmtData(p.chegadaEm)}${c.recebidoPor ? ` · recebido por ${c.recebidoPor}` : ""}`, {size: 9.5, bold: true, cor: cor.verde});
+    }
+    if(c.obs) texto(`Observação: ${c.obs}`, {size: 9.5});
+    const foto = c.foto && typeof c.foto.dataUrl === "string" && /^data:image\/(jpeg|jpg|png);/.test(c.foto.dataUrl) ? c.foto.dataUrl : null;
+    if(foto){
+      const dim = await tamanhoImagem(foto);
+      if(dim && dim.w && dim.h){
+        const k = Math.min(90 / dim.w, 75 / dim.h);
+        const w = dim.w * k, h = dim.h * k;
+        cabe(h + 8);
+        texto(c.acao === "entregue" ? "Foto da entrega:" : (c.acao === "coletado" ? "Foto da retirada:" : "Foto:"), {size: 9, cor: cor.muted, depois: 0.8});
+        doc.addImage(foto, /^data:image\/png/.test(foto) ? "PNG" : "JPEG", M, y, w, h);
+        doc.setDrawColor(...cor.linha); doc.rect(M, y, w, h);
+        y += h + 3;
+      }
+    }
+    y += 2.5;
+  }
+
+  // Histórico completo
+  secao("Histórico");
+  v.historico.forEach(h=>{
+    texto(`${fmtDataHora(h.data)} — ${h.evento || STATUS_LABEL[h.status]} — ${h.usuario || "Não identificado"}`, {size: 9, depois: 0.8});
+  });
+
+  // Rodapé em todas as páginas
+  const n = doc.getNumberOfPages();
+  for(let i = 1; i <= n; i++){
+    doc.setPage(i);
+    doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(...cor.muted);
+    doc.text(textoPdf(`Viagem ${v.id} · página ${i} de ${n}`), 210 / 2, 297 - 8, {align: "center"});
+  }
+  return doc;
+}
+
+// Baixa o PDF. No celular (compartilhar=true) abre o "Compartilhar" do aparelho quando ele aceita arquivos (WhatsApp, e-mail...).
+async function baixarRelatorioEr(id, compartilhar, botao){
+  const v = VIAGENS.find(x => x.id === id);
+  if(!v || v.status !== "concluida") return;
+  const textoOriginal = botao ? botao.textContent : "";
+  if(botao){ botao.disabled = true; botao.textContent = "Gerando relatório..."; }
+  try{
+    const doc = await gerarRelatorioPdf(v);
+    const nome = `relatorio-${v.id}.pdf`;
+    if(compartilhar && navigator.canShare){
+      const arquivo = new File([doc.output("blob")], nome, {type: "application/pdf"});
+      if(navigator.canShare({files: [arquivo]})){
+        try{ await navigator.share({files: [arquivo], title: `Relatório da viagem ${v.id}`}); return; }
+        catch(err){ if(err && err.name === "AbortError") return; } // cancelou o compartilhar: não baixa por cima
+      }
+    }
+    doc.save(nome);
+  }catch(err){
+    alert("Não foi possível gerar o relatório agora. Confira a conexão com a internet e tente de novo.");
+  }finally{
+    if(botao){ botao.disabled = false; botao.textContent = textoOriginal; }
+  }
+}
+document.getElementById("btnRelatorioViagem").addEventListener("click", (e)=> baixarRelatorioEr(viagemAtualId, false, e.currentTarget));
+document.getElementById("cardMenuErRelatorio").addEventListener("click", (e)=>{
+  e.stopPropagation();
+  const id = cardMenuErAlvoId;
+  fecharCardMenuEr();
+  baixarRelatorioEr(id, false);
 });
 
 // ---------- CANCELAR VIAGEM (com motivo; fica no histórico e some da tela do motorista) ----------
@@ -2544,7 +2718,8 @@ function htmlCorridaMc(v, grupo, atual){
     acoes = `<button type="button" class="btn-primary mc-btn ok" data-acao="concluir" data-id="${idAttr}">✔ Concluir corrida</button>`;
   } else if(grupo === "concluida"){
     const dc = dataConclusao(v);
-    acoes = dc ? `<p class="mc-dica">Concluída às ${fmtHora(dc)}.</p>` : "";
+    acoes = (dc ? `<p class="mc-dica">Concluída às ${fmtHora(dc)}.</p>` : "") +
+      `<button type="button" class="mc-link mc-link-relatorio" data-acao="relatorio" data-id="${idAttr}">📄 Relatório (PDF)</button>`;
   }
 
   // Lista completa das paradas (recolhível), com instruções, anexos e o que foi feito em cada uma
@@ -2950,6 +3125,7 @@ mcSheetEl.addEventListener("input", (e)=>{ if(e.target.id === "mcRecebidoPor") e
       case "escolher-app": abrirEscolhaAppMc(id, idx); return;
       case "desfazer": desfazerChegadaParada(id, idx); break;
       case "concluir": concluirCorrida(id); break;
+      case "relatorio": baixarRelatorioEr(id, true, btn); return;
       default: return;
     }
     focarCartaoMc(id);
