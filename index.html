@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Entregas e Retiradas — protótipo</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
   :root{
     --bg:#f4f6f8;
@@ -130,7 +129,6 @@
   .roteiro-nota{font-size:10.5px; color:var(--muted); font-style:italic; margin:-6px 0 14px;}
   .er-historico li.excede-expediente{border-color:var(--danger); background:rgba(239,68,68,.06);}
   .badge.excede{background:rgba(239,68,68,.15); color:var(--danger);}
-  .btn-mover-amanha{padding:3px 9px; font-size:10.5px; margin-left:8px;}
   .wiz-steps{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px;}
   .wiz-step{font-size:10.5px; font-weight:700; padding:4px 10px; border-radius:999px; border:1px solid var(--border); color:var(--muted); background:var(--panel-2);}
   .wiz-step.atual{background:rgba(59,130,246,.12); color:var(--accent); border-color:var(--accent);}
@@ -454,6 +452,10 @@
   .aviso-permissao{margin:10px 0 0; padding:8px 10px; border-radius:8px; background:var(--panel-2); border:1px solid var(--border); font-size:12px; color:var(--muted); line-height:1.5;}
   #kanbanAvisoEr{margin:0 0 12px;}
   .kanban-card.travado{cursor:pointer;}
+  .roteiro-lista{display:flex; flex-direction:column; gap:10px;}
+  .roteiro-item{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; padding:10px 12px; border:1px solid var(--border); border-radius:10px; background:var(--panel-2);}
+  .roteiro-links{display:flex; flex-wrap:wrap; gap:6px;}
+  .roteiro-abrir{text-decoration:none; display:inline-flex; align-items:center; min-height:40px; padding:0 14px;}
   .agenda-motorista{margin-top:8px; padding:10px 12px; border-radius:8px; border:1px solid var(--border); background:var(--panel-2); font-size:12.5px; line-height:1.55;}
   .agenda-motorista.alerta{border-color:var(--danger); background:rgba(239,68,68,.07);}
   .nv-mesmo-local{margin:0 0 12px; padding:8px 10px; border-radius:8px; border:1px solid rgba(59,130,246,.45); background:rgba(59,130,246,.07); font-size:12.5px; line-height:1.5;}
@@ -623,7 +625,7 @@
 
       <div class="modo-toggle painel-abas" role="tablist" aria-label="Seções do painel">
         <button type="button" class="ativo" data-aba="viagens" role="tab" aria-selected="true">📋 Viagens</button>
-        <button type="button" data-aba="roteiro" role="tab" aria-selected="false">🗺️ Roteiro do Dia</button>
+        <button type="button" id="btnRoteiroGoogle" title="Abre o roteiro do dia no Google Maps, em outra aba">🗺️ Roteiro do Dia ↗</button>
       </div>
 
       <section id="secaoViagens">
@@ -701,27 +703,6 @@
         </div>
       </section>
 
-      <section id="secaoRoteiroDia" hidden>
-        <h2>Roteiro do Dia <span style="font-weight:600; color:var(--muted); font-size:11px; text-transform:uppercase;">protótipo ilustrativo</span></h2>
-        <p class="sub">Monta automaticamente a sequência de retiradas e entregas do motorista no dia, com estimativa de horário a partir das 08:00.</p>
-        <div class="card">
-          <div class="filtro-toolbar">
-            <div class="filtro-grupo">
-              <label for="roteiroData">Data</label>
-              <input type="date" id="roteiroData">
-            </div>
-            <div class="filtro-grupo">
-              <label for="roteiroMotorista">Motorista</label>
-              <select id="roteiroMotorista"></select>
-            </div>
-          </div>
-          <p class="roteiro-nota">Rota calculada pelas ruas de verdade usando o OSRM, um serviço público e gratuito de roteirização (sem trânsito em tempo real) — se ele estiver indisponível no momento, cai automaticamente para uma estimativa em linha reta. Base de partida: Osasco, 08:00.</p>
-          <div id="roteiroResumo" class="form-hint" style="margin-bottom:12px;"></div>
-          <div id="roteiroMapa" style="position:relative; z-index:0; isolation:isolate; height:360px; border-radius:10px; overflow:hidden; border:1px solid var(--border); margin-bottom:16px;"></div>
-          <ul class="er-historico" id="roteiroTimeline"></ul>
-          <div id="roteiroVazio" style="display:none; font-size:12.5px; color:var(--muted); text-align:center; padding:24px 10px;">Nenhuma viagem pendente ou em rota para esse motorista nessa data.</div>
-        </div>
-      </section>
       </div><!-- /vistaPainel -->
 
     </div>
@@ -782,6 +763,26 @@
   <button type="button" class="card-menu-item" id="cardMenuErRelatorio">📄 Baixar relatório</button>
   <button type="button" class="card-menu-item perigo" id="cardMenuErCancelar">✕ Cancelar viagem</button>
   <button type="button" class="card-menu-item perigo" id="cardMenuErExcluir">🗑 Excluir</button>
+</div>
+
+<div class="modal-backdrop" id="roteiroBackdropEr">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-header">
+      <h3>Roteiro do Dia no Google Maps</h3>
+      <button type="button" class="modal-close" id="roteiroFecharEr" aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-field" style="margin-bottom:12px;">
+        <label for="roteiroDataEr">Data</label>
+        <input type="date" id="roteiroDataEr">
+      </div>
+      <div id="roteiroListaEr" class="roteiro-lista"></div>
+      <p class="form-hint" style="margin-top:12px;">Abre em outra aba, saindo da base do motorista (Osasco) e passando pelas paradas na ordem do roteiro: retiradas antes das entregas de cada viagem.</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="er-btn" id="roteiroFechar2Er">Fechar</button>
+    </div>
+  </div>
 </div>
 
 <div class="modal-backdrop" id="cancelarBackdropEr">
@@ -939,7 +940,6 @@
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
 // ---------- TEMA (claro/escuro) — mesma chave usada na Requisição de Compras, pra manter a preferência ----------
 const TEMA_STORAGE_KEY = "suprimentos-demo-entregas-tema";
@@ -949,7 +949,6 @@ const TEMA_STORAGE_KEY = "suprimentos-demo-entregas-tema";
 })();
 // Visão atual da página: "painel" (tabela/Kanban/Roteiro) ou "motorista" (Minhas corridas).
 let vistaAtualEr = "painel";
-let abaPainelEr = "viagens"; // aba do painel: "viagens" ou "roteiro"
 function fmtData(d){ return new Date(d).toLocaleDateString("pt-BR"); }
 function fmtHora(d){ return new Date(d).toLocaleTimeString("pt-BR", {hour:"2-digit", minute:"2-digit"}); }
 function fmtDataHora(d){ const dt = new Date(d); return dt.toLocaleDateString("pt-BR") + " às " + dt.toLocaleTimeString("pt-BR", {hour:"2-digit", minute:"2-digit"}); }
@@ -1154,18 +1153,6 @@ function paraDataLocalISO(d){
   const dt = new Date(d);
   return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;
 }
-function popularMotoristaRoteiro(){
-  const sel = document.getElementById("roteiroMotorista");
-  if(!sel) return;
-  const atual = sel.value;
-  const nomes = [...new Set([...MOTORISTAS_SEED, ...VIAGENS.map(v=>v.motorista).filter(Boolean)])].sort((a,b)=>a.localeCompare(b,"pt-BR"));
-  sel.innerHTML = nomes.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join("");
-  if(nomes.includes(atual)) sel.value = atual;
-  else if(nomes.includes("Jailson Souza")) sel.value = "Jailson Souza";
-}
-
-let mapaRoteiro = null;
-let roteiroRequestId = 0;
 // Viagens que entram no roteiro de um motorista num dia: pendentes (aceitas ou não) e em rota.
 function viagensDoRoteiro(motorista, dataStr){
   return VIAGENS.filter(v =>
@@ -1216,131 +1203,6 @@ function posicoesNoRoteiro(motorista){
     ordenarEtapasRoteiro(viagensDoRoteiro(motorista, dia)).forEach(e=>{ if(!pos.has(e.viagemId)) pos.set(e.viagemId, ++n); });
   });
   return pos;
-}
-
-async function renderRoteiroDia(){
-  const minhaRequisicao = ++roteiroRequestId;
-  // Com o mapa escondido (tela do motorista ou aba Viagens) não desenha: ele é refeito ao abrir a aba Roteiro do Dia.
-  if(vistaAtualEr !== "painel" || abaPainelEr !== "roteiro") return;
-  const dataInput = document.getElementById("roteiroData");
-  const motoristaSel = document.getElementById("roteiroMotorista");
-  if(!dataInput || !motoristaSel) return;
-  const dataStr = dataInput.value;
-  const motorista = motoristaSel.value;
-  const mapaEl = document.getElementById("roteiroMapa");
-  const timelineEl = document.getElementById("roteiroTimeline");
-  const resumoEl = document.getElementById("roteiroResumo");
-  const vazioEl = document.getElementById("roteiroVazio");
-
-  if(mapaRoteiro){ mapaRoteiro.remove(); mapaRoteiro = null; }
-
-  if(!dataStr || !motorista){
-    mapaEl.style.display = "none"; timelineEl.innerHTML = ""; resumoEl.textContent = "";
-    vazioEl.style.display = ""; return;
-  }
-
-  const viagensDia = viagensDoRoteiro(motorista, dataStr);
-
-  if(viagensDia.length === 0){
-    mapaEl.style.display = "none"; timelineEl.innerHTML = ""; resumoEl.textContent = "";
-    vazioEl.style.display = ""; return;
-  }
-  vazioEl.style.display = "none";
-  mapaEl.style.display = "";
-
-  // Garante coordenadas: o CEP já traz; senão tenta geocodificar; por último usa posição aproximada.
-  for(const v of viagensDia){ for(const p of paradasDaViagem(v)){ if(!p.coord) await geocodificarParada(p); } }
-  if(minhaRequisicao !== roteiroRequestId) return;
-  const ordenadas = ordenarEtapasRoteiro(viagensDia);
-
-  // ---- Rota real pelas ruas, via OSRM (serviço público e gratuito do OpenStreetMap) ----
-  // Enquanto calcula, mostra uma mensagem e mantém o mapa anterior visível pra não "piscar".
-  resumoEl.textContent = "Calculando rota pelas ruas...";
-  const pontosOrdem = [BASE_MOTORISTA_COORD, ...ordenadas.map(e=>e.coord)];
-  let legsInfo = null;      // [{distanciaKm, duracaoMin}] por trecho, na ordem de ordenadas
-  let geometriaRuas = null; // [[lat,lng], ...] do traçado real devolvido pelo OSRM
-
-  try{
-    const coordsStr = pontosOrdem.map(c => `${c[1]},${c[0]}`).join(";");
-    const resp = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordsStr}?overview=full&geometries=geojson`);
-    if(!resp.ok) throw new Error("OSRM HTTP " + resp.status);
-    const json = await resp.json();
-    if(json.code !== "Ok" || !json.routes || !json.routes[0]) throw new Error("Sem rota retornada pelo OSRM");
-    const rota = json.routes[0];
-    legsInfo = rota.legs.map(l => ({ distanciaKm: l.distance/1000, duracaoMin: l.duration/60 }));
-    geometriaRuas = rota.geometry.coordinates.map(([lon,lat]) => [lat,lon]);
-  }catch(err){
-    legsInfo = null; geometriaRuas = null; // cai no fallback de linha reta abaixo
-  }
-
-  if(minhaRequisicao !== roteiroRequestId) return; // usuário já trocou data/motorista — descarta essa resposta
-
-  const rotaReal = !!legsInfo;
-  if(!rotaReal){
-    legsInfo = ordenadas.map((e, idx)=>{
-      const d = distanciaKm(pontosOrdem[idx], pontosOrdem[idx+1]);
-      return { distanciaKm: d, duracaoMin: (d/ROTEIRO_VEL_KMH)*60 };
-    });
-  }
-
-  // Linha do tempo estimada a partir das 08:00 (tempo de parada ilustrativo em cada ponto).
-  const SERVICO_MIN = ROTEIRO_SERVICO_MIN;
-  const [ano,mes,dia] = dataStr.split("-").map(Number);
-  let relogio = new Date(ano, mes-1, dia, 8, 0, 0);
-  const fimExpediente = new Date(ano, mes-1, dia, 18, 0, 0);
-  let distanciaTotalKm = 0;
-  let htmlTimeline = "";
-  ordenadas.forEach((e, idx)=>{
-    const leg = legsInfo[idx];
-    distanciaTotalKm += leg.distanciaKm;
-    relogio = new Date(relogio.getTime() + leg.duracaoMin*60000);
-    const chegada = new Date(relogio);
-    const excede = chegada > fimExpediente;
-    relogio = new Date(relogio.getTime() + SERVICO_MIN*60000);
-    const v = VIAGENS.find(x=>x.id===e.viagemId);
-    const horaFmt = chegada.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
-    htmlTimeline += `<li class="${excede?'excede-expediente':''}">
-      <span><b>${idx+1}.</b> ${ETAPA_UI[e.tipo].icone} ${ETAPA_UI[e.tipo].nome} — ${esc(e.local)} <span style="color:var(--muted);">(${e.viagemId} · ${v?esc(v.solicitante):""})</span>${excede?' <span class="badge excede">excede expediente</span>':''}</span>
-      <span style="display:flex; align-items:center;">${horaFmt}${excede?`<button type="button" class="er-btn btn-mover-amanha" data-mover-amanha="${e.viagemId}">Mover p/ amanhã</button>`:''}</span>
-    </li>`;
-  });
-  timelineEl.innerHTML = htmlTimeline;
-  resumoEl.textContent = `${viagensDia.length} viagem(ns) no dia · ${ordenadas.length} paradas · ~${distanciaTotalKm.toFixed(0)} km · início às 08:00 em Osasco` +
-    (rotaReal ? " · rota real calculada pelas ruas (OSRM)" : " · ⚠ não foi possível calcular a rota real agora — mostrando estimativa em linha reta");
-
-  // Mapa (OpenStreetMap, sem chave de API)
-  if(mapaRoteiro){ mapaRoteiro.remove(); mapaRoteiro = null; }
-  mapaRoteiro = L.map(mapaEl).setView(BASE_MOTORISTA_COORD, 11);
-  L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors', maxZoom: 19,
-    errorTileUrl: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBTAA7',
-  }).addTo(mapaRoteiro);
-  setTimeout(()=>{ try{ mapaRoteiro.invalidateSize(); }catch(err){} }, 50);
-  const baseIcon = L.divIcon({className:"", html:`<div style="background:#1f2937;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:13px;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4);">🏠</div>`, iconSize:[26,26], iconAnchor:[13,13]});
-  L.marker(BASE_MOTORISTA_COORD, {icon: baseIcon}).addTo(mapaRoteiro).bindPopup("Início do dia — base do motorista (Osasco)");
-  ordenadas.forEach((e, idx)=>{
-    const cor = ETAPA_UI[e.tipo].cor;
-    const icon = L.divIcon({className:"", html:`<div style="background:${cor};color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4);">${idx+1}</div>`, iconSize:[24,24], iconAnchor:[12,12]});
-    L.marker(e.coord, {icon}).addTo(mapaRoteiro).bindPopup(`${idx+1}. ${ETAPA_UI[e.tipo].nome} — ${esc(e.local)}<br>${e.viagemId}`);
-  });
-  const tracado = rotaReal ? geometriaRuas : pontosOrdem;
-  L.polyline(tracado, rotaReal
-    ? {color:"#3b82f6", weight:4, opacity:.8}
-    : {color:"#8b5cf6", weight:3, dashArray:"6,8", opacity:.8}
-  ).addTo(mapaRoteiro);
-  try{ mapaRoteiro.fitBounds(L.latLngBounds(pontosOrdem).pad(0.2)); }catch(err){}
-
-  timelineEl.querySelectorAll("[data-mover-amanha]").forEach(btn=>{
-    btn.addEventListener("click", ()=> moverViagemParaAmanha(btn.dataset.moverAmanha));
-  });
-}
-
-function moverViagemParaAmanha(viagemId){
-  const v = VIAGENS.find(x=>x.id===viagemId);
-  if(!v) return;
-  v.data = new Date(v.data.getTime() + 86400000);
-  v.historico.push({status:v.status, data:new Date(), usuario:"Sistema (roteirização automática)"});
-  renderTabelaEr(); renderKanbanEr(); renderRoteiroDia();
 }
 
 const VIAGENS = [];
@@ -1482,7 +1344,6 @@ function atualizarOpcoesFiltroMotoristaEr(){
   el.innerHTML = `<option value="todos">Todos</option>` + nomes.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join("");
   el.value = nomes.includes(atual) ? atual : "todos";
   filtroAtivoEr.motorista = el.value;
-  popularMotoristaRoteiro();
 }
 function atualizarDatalistsEr(){
   // Sugestões do "Responsável pela viagem" = motoristas cadastrados (usuários que têm a tela Minhas corridas).
@@ -1674,7 +1535,7 @@ function mudarStatusEr(id, novoStatus, usuario){
   v.historico.push({status:novoStatus, data:new Date(), usuario: usuario || usuarioAtualNome() || "Não identificado"});
   renderTabelaEr();
   renderKanbanEr();
-  renderRoteiroDia();
+ 
   renderMinhasCorridas();
 }
 
@@ -1886,7 +1747,7 @@ document.getElementById("duplicarSimEr").addEventListener("click", ()=>{
     status: "pendente", historico: [{status:"pendente", data:new Date(), usuario: usuarioAtualNome() || original.solicitante}],
   };
   VIAGENS.unshift(copia);
-  renderTabelaEr(); renderKanbanEr(); atualizarOpcoesFiltroMotoristaEr(); atualizarDatalistsEr(); renderRoteiroDia();
+  renderTabelaEr(); renderKanbanEr(); atualizarOpcoesFiltroMotoristaEr(); atualizarDatalistsEr();
   abrirDrawerEr(copia.id);
 });
 document.getElementById("cardMenuErDuplicar").addEventListener("click", (e)=>{
@@ -2128,7 +1989,7 @@ document.getElementById("excluirConfirmarEr").addEventListener("click", ()=>{
   if(idx === -1 || !podeExcluirEr()) return;
   VIAGENS.splice(idx, 1);
   if(viagemAtualId === id) fecharDrawerEr();
-  renderTabelaEr(); renderKanbanEr(); atualizarOpcoesFiltroMotoristaEr(); renderRoteiroDia();
+  renderTabelaEr(); renderKanbanEr(); atualizarOpcoesFiltroMotoristaEr();
 });
 document.getElementById("cardMenuErExcluir").addEventListener("click", (e)=>{
   e.stopPropagation();
@@ -2584,6 +2445,7 @@ document.getElementById("wizConcluir").addEventListener("click", ()=>{
   modoEdicaoIdEr = null;
   wiz = null;
   fecharModalEr();
+  paradas.forEach(p=>{ if(!p.coord) geocodificarParada(p); }); // em segundo plano; sem posição, usa uma aproximada
   atualizarOpcoesFiltroMotoristaEr(); atualizarDatalistsEr(); atualizarTelasEr();
   abrirDrawerEr(idAbrir);
 });
@@ -2860,7 +2722,7 @@ function focarCartaoMc(id){
   const card = [...document.querySelectorAll("#mcConteudo [data-card]")].find(el => el.dataset.card === id);
   if(card && typeof card.scrollIntoView === "function") card.scrollIntoView({block:"start", behavior:"smooth"});
 }
-function atualizarTelasEr(){ renderTabelaEr(); renderKanbanEr(); renderRoteiroDia(); renderMinhasCorridas(); }
+function atualizarTelasEr(){ renderTabelaEr(); renderKanbanEr(); renderMinhasCorridas(); }
 function corridaDoMotorista(id){
   const v = VIAGENS.find(x => x.id === id);
   return (v && motoristaLogado && v.motorista === motoristaLogado) ? v : null;
@@ -3160,7 +3022,7 @@ function definirVistaEr(vista){
   fecharDrawerEr();
   fecharCardMenuEr();
   if(motorista) renderMinhasCorridas();
-  else { renderTabelaEr(); renderKanbanEr(); renderRoteiroDia(); } // o mapa precisa ser desenhado com o painel visível
+  else { renderTabelaEr(); renderKanbanEr(); }
 }
 function aplicarVistaDoHash(){ definirVistaEr(location.hash === "#corridas" ? "motorista" : "painel"); }
 window.addEventListener("hashchange", ()=>{ aplicarVistaDoHash(); window.scrollTo(0, 0); });
@@ -3179,32 +3041,75 @@ document.getElementById("temaToggle").addEventListener("click", ()=>{
 });
 atualizarTema();
 
-// ---------- ABAS DO PAINEL (Viagens | Roteiro do Dia) ----------
-function definirAbaPainelEr(aba){
-  abaPainelEr = aba === "roteiro" ? "roteiro" : "viagens";
-  document.getElementById("secaoViagens").hidden = abaPainelEr !== "viagens";
-  document.getElementById("secaoRoteiroDia").hidden = abaPainelEr !== "roteiro";
-  document.querySelectorAll(".painel-abas [data-aba]").forEach(b=>{
-    const ativo = b.dataset.aba === abaPainelEr;
-    b.classList.toggle("ativo", ativo);
-    b.setAttribute("aria-selected", String(ativo));
+// ---------- ROTEIRO DO DIA NO GOOGLE MAPS ----------
+// O botão "Roteiro do Dia" abre o Google Maps com a base do motorista e as paradas na ordem do roteiro
+// (mesma ordem da tela Minhas corridas). O link do Google aceita até 9 paradas no meio do caminho,
+// então dias com mais de 10 paradas viram mais de um link ("paradas 1 a 10", "11 a 15"...).
+const MAPS_PARADAS_POR_LINK = 10;
+// Partida escrita como endereço: com coordenadas o Google mostra o nome de alguma empresa próxima e confunde.
+const BASE_MOTORISTA_ENDERECO = "Centro, Osasco - SP, Brasil";
+function paradasDoRoteiro(motorista, dataStr){
+  return ordenarEtapasRoteiro(viagensDoRoteiro(motorista, dataStr)).map(e=>{
+    const v = VIAGENS.find(x => x.id === e.viagemId);
+    return paradasDaViagem(v)[e.ordem];
   });
-  if(abaPainelEr === "roteiro") renderRoteiroDia();
 }
-document.querySelector(".painel-abas").addEventListener("click", (e)=>{
-  const b = e.target.closest("[data-aba]");
-  if(b) definirAbaPainelEr(b.dataset.aba);
+function linksGoogleMapsRoteiro(paradas){
+  const links = [];
+  let origem = BASE_MOTORISTA_ENDERECO, inicio = 0;
+  while(inicio < paradas.length){
+    const trecho = paradas.slice(inicio, inicio + MAPS_PARADAS_POR_LINK).map(enderecoParaMapas);
+    const params = new URLSearchParams({api:"1", origin: origem, destination: trecho[trecho.length - 1], travelmode:"driving"});
+    if(trecho.length > 1) params.set("waypoints", trecho.slice(0, -1).join("|"));
+    links.push({de: inicio + 1, ate: inicio + trecho.length, url: "https://www.google.com/maps/dir/?" + params.toString()});
+    origem = trecho[trecho.length - 1]; // a parte seguinte sai de onde a anterior terminou
+    inicio += MAPS_PARADAS_POR_LINK;
+  }
+  return links;
+}
+// Motoristas com viagens (pendentes ou em rota) na data, cada um com os links do roteiro.
+function roteirosDoDia(dataStr){
+  const nomes = [...new Set(VIAGENS.map(v => v.motorista).filter(Boolean))].sort((a,b)=> a.localeCompare(b, "pt-BR"));
+  return nomes.map(m=>{
+    const viagens = viagensDoRoteiro(m, dataStr);
+    if(!viagens.length) return null;
+    const paradas = paradasDoRoteiro(m, dataStr);
+    return {motorista: m, viagens: viagens.length, paradas: paradas.length, links: linksGoogleMapsRoteiro(paradas)};
+  }).filter(Boolean);
+}
+const roteiroBackdropEr = document.getElementById("roteiroBackdropEr");
+function renderRoteiroModalEr(){
+  const dataStr = document.getElementById("roteiroDataEr").value;
+  const lista = dataStr ? roteirosDoDia(dataStr) : [];
+  document.getElementById("roteiroListaEr").innerHTML = lista.length
+    ? lista.map(r=> `<div class="roteiro-item">
+        <div><b>${esc(r.motorista)}</b><div class="form-hint" style="font-style:normal;">${r.viagens} viagem(ns) · ${r.paradas} parada(s)</div></div>
+        <div class="roteiro-links">${r.links.map(l=> `<a class="btn-primary roteiro-abrir" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer">${r.links.length > 1 ? `Paradas ${l.de} a ${l.ate} ↗` : "Abrir no Google Maps ↗"}</a>`).join("")}</div>
+      </div>`).join("")
+    : `<p class="mc-vazio-grupo" style="margin:0;">Nenhuma viagem pendente ou em rota nessa data.</p>`;
+}
+function fecharRoteiroModalEr(){ roteiroBackdropEr.classList.remove("open"); }
+document.getElementById("btnRoteiroGoogle").addEventListener("click", ()=>{
+  const hoje = paraDataLocalISO(new Date());
+  const lista = roteirosDoDia(hoje);
+  // Só um motorista com viagens hoje e cabe num link só: vai direto para o Google Maps.
+  if(lista.length === 1 && lista[0].links.length === 1){
+    window.open(lista[0].links[0].url, "_blank", "noopener");
+    return;
+  }
+  document.getElementById("roteiroDataEr").value = hoje;
+  renderRoteiroModalEr();
+  roteiroBackdropEr.classList.add("open");
 });
-
-// ---------- ROTEIRO DO DIA: eventos ----------
-document.getElementById("roteiroData").addEventListener("change", renderRoteiroDia);
-document.getElementById("roteiroMotorista").addEventListener("change", renderRoteiroDia);
+document.getElementById("roteiroDataEr").addEventListener("change", renderRoteiroModalEr);
+document.getElementById("roteiroFecharEr").addEventListener("click", fecharRoteiroModalEr);
+document.getElementById("roteiroFechar2Er").addEventListener("click", fecharRoteiroModalEr);
+roteiroBackdropEr.addEventListener("click", (e)=>{ if(e.target === roteiroBackdropEr) fecharRoteiroModalEr(); });
 
 // ---------- INIT ----------
 atualizarOpcoesFiltroMotoristaEr();
 atualizarDatalistsEr();
 renderTabelaEr();
-document.getElementById("roteiroData").value = paraDataLocalISO(new Date());
 aplicarVistaDoHash(); // desenha o Roteiro do Dia (painel) ou Minhas corridas, conforme o endereço (#corridas)
 </script>
 </body>
